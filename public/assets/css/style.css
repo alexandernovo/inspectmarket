@@ -1,0 +1,393 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,100..900;1,100..900&display=swap");
+* {
+    font-family: Arial, Helvetica, sans-serif !important;
+}
+body {
+    background-color: #898989;
+}
+.breadcrumb-item {
+    color: black !important;
+}
+h4 {
+    color: black !important;
+}
+.breadcrumb-item a {
+    color: black !important;
+}
+.title-sidebar {
+    font-family: "Archivo", sans-serif;
+}
+.db-mode {
+    position: absolute;
+    right: -10px;
+    top: 30%;
+    transform: translateY(-50%);
+}
+
+.simplebar-offset .simplebar-content {
+    height: 100%;
+    /* display: flex;
+    flex-direction: column;
+    justify-content: space-between; */
+}
+
+.simplebar-content:before,
+.simplebar-content:after,
+.simplebar-content:before,
+.simplebar-content::before {
+    display: none !important;
+}
+
+div.dt-container div.dt-length select {
+    height: 37px !important;
+}
+
+div.dt-container div.dt-search input {
+    height: 37px !important;
+}
+
+.modal-title {
+    letter-spacing: 1px;
+    /* color: white; */
+}
+
+.modal-content {
+    border-radius: 8px !important;
+}
+
+.modal-header {
+    border-top-left-radius: 8px !important;
+    border-top-right-radius: 8px !important;
+    border-bottom: 1px solid rgb(238, 238, 238);
+    /* background-color: #5c87fe; */
+}
+
+.form-check-input {
+    border: 1.25px solid #d2d2d3;
+    cursor: pointer;
+}
+
+.dt-search input {
+    width: 200px !important;
+}
+
+.pill {
+    display: inline-block;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.pill-success {
+    color: #0fb294;
+    padding: 1px 15px;
+    background-color: #d0f8f1;
+    border-color: #a1f2e3;
+}
+
+.pill-danger {
+    color: #c86e56;
+    padding: 1px 10px;
+    background-color: #fee7e1;
+    border-color: #fdd0c4;
+}
+
+.skeleton {
+    background-color: #c9c9c9;
+    background-image: linear-gradient(90deg, #c9c9c9, #b4b4b4, #c9c9c9);
+    background-repeat: no-repeat;
+    border-radius: 4px;
+    display: inline-block;
+    line-height: 1;
+    animation: skeleton-animation 1.5s ease-in-out infinite;
+}
+
+@keyframes skeleton-animation {
+    0% {
+        background-position: -200px 0;
+    }
+
+    100% {
+        background-position: calc(200px + 100%) 0;
+    }
+}
+.notif-dot-notread {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
+.glass-card {
+    /* From https://css.glass */
+    background: rgba(159, 159, 159, 0.5);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(4.7px);
+    -webkit-backdrop-filter: blur(4.7px);
+    border: 1px solid rgba(159, 159, 159, 0.3);
+}
+
+.glass-card2 {
+    background: rgba(124, 124, 124, 0.5);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(4.7px);
+    -webkit-backdrop-filter: blur(4.7px);
+}
+.glass-card3 {
+    background: rgba(196, 196, 196, 0.5);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(4.7px);
+    -webkit-backdrop-filter: blur(4.7px);
+    border: 1px solid rgba(196, 196, 196, 0.3);
+}
+.btn-notif-hover:hover {
+    background: rgba(124, 124, 124, 0.5) !important;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1) !important;
+    backdrop-filter: blur(4.7px) !important;
+    -webkit-backdrop-filter: blur(4.7px) !important;
+}
+
+.toast-icon {
+    width: 25px;
+    height: 25px;
+}
+
+.profile-avatar {
+    width: 35px;
+    height: 35px;
+    border: 1px solid #fff;
+    border-radius: 50%;
+}
+
+.toast-username,
+.toast-role,
+.toast-message {
+    line-height: 15px;
+}
+
+.hover-image-top {
+    position: absolute;
+    top: -65px;
+    /* Kept as you originally had */
+    left: -90px;
+    /* Kept as you originally had */
+    width: 100px;
+    height: 100px;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+    z-index: 5;
+}
+
+/* Hover image for the first row (below row) */
+.hover-image-bottom {
+    position: absolute;
+    bottom: -65px;
+    /* Kept as you originally had */
+    left: -90px;
+    /* Kept as you originally had */
+    width: 100px;
+    height: 100px;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+    z-index: 5;
+}
+
+/* Image styling */
+.hover-pic {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 9999px;
+    border: 1px solid #ccc;
+    background: white;
+    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* Show image only when hovering over the row */
+.entry-row:hover .hover-image {
+    visibility: visible;
+    opacity: 1;
+}
+
+.hover-image {
+    padding: 4px;
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 999999999px;
+}
+
+/* From Uiverse.io by Ricardo03185997 */
+.loader {
+    --path: #2f3545;
+    --dot: #fb992b;
+    --duration: 3s;
+    width: 44px;
+    height: 44px;
+    position: relative;
+}
+
+.loader:before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    position: absolute;
+    display: block;
+    background: var(--dot);
+    top: 37px;
+    left: 19px;
+    transform: translate(-18px, -18px);
+    animation: dotRect var(--duration) cubic-bezier(0.785, 0.135, 0.15, 0.86)
+        infinite;
+}
+
+.loader svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.loader svg rect,
+.loader svg polygon,
+.loader svg circle {
+    fill: none;
+    stroke: var(--path);
+    stroke-width: 10px;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+}
+
+.loader svg polygon {
+    stroke-dasharray: 145 76 145 76;
+    stroke-dashoffset: 0;
+    animation: pathTriangle var(--duration)
+        cubic-bezier(0.785, 0.135, 0.15, 0.86) infinite;
+}
+
+.loader svg rect {
+    stroke-dasharray: 192 64 192 64;
+    stroke-dashoffset: 0;
+    animation: pathRect 3s cubic-bezier(0.785, 0.135, 0.15, 0.86) infinite;
+}
+
+.loader svg circle {
+    stroke-dasharray: 150 50 150 50;
+    stroke-dashoffset: 75;
+    animation: pathCircle var(--duration) cubic-bezier(0.785, 0.135, 0.15, 0.86)
+        infinite;
+}
+
+.loader.triangle {
+    width: 48px;
+}
+
+.loader.triangle:before {
+    left: 21px;
+    transform: translate(-10px, -18px);
+    animation: dotTriangle var(--duration)
+        cubic-bezier(0.785, 0.135, 0.15, 0.86) infinite;
+}
+
+@keyframes pathTriangle {
+    33% {
+        stroke-dashoffset: 74;
+    }
+
+    66% {
+        stroke-dashoffset: 147;
+    }
+
+    100% {
+        stroke-dashoffset: 221;
+    }
+}
+
+@keyframes dotTriangle {
+    33% {
+        transform: translate(0, 0);
+    }
+
+    66% {
+        transform: translate(10px, -18px);
+    }
+
+    100% {
+        transform: translate(-10px, -18px);
+    }
+}
+
+@keyframes pathRect {
+    25% {
+        stroke-dashoffset: 64;
+    }
+
+    50% {
+        stroke-dashoffset: 128;
+    }
+
+    75% {
+        stroke-dashoffset: 192;
+    }
+
+    100% {
+        stroke-dashoffset: 256;
+    }
+}
+
+@keyframes dotRect {
+    25% {
+        transform: translate(0, 0);
+    }
+
+    50% {
+        transform: translate(18px, -18px);
+    }
+
+    75% {
+        transform: translate(0, -36px);
+    }
+
+    100% {
+        transform: translate(-18px, -18px);
+    }
+}
+
+@keyframes pathCircle {
+    25% {
+        stroke-dashoffset: 125;
+    }
+
+    50% {
+        stroke-dashoffset: 175;
+    }
+
+    75% {
+        stroke-dashoffset: 225;
+    }
+
+    100% {
+        stroke-dashoffset: 275;
+    }
+}
+
+.loader {
+    display: inline-block;
+    margin: 0 16px;
+}
+
+.totalLoader {
+    position: fixed; /* <-- stay fixed relative to viewport */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.4);
+    display: flex; /* center content */
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
