@@ -1,0 +1,48 @@
+{
+  "name": "menrobaars",
+  "version": "1.0.0",
+  "main": "index.js",
+  "description": "Menro-Baars",
+  "author": "",
+  "license": "ISC",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder"
+  },
+  "keywords": [],
+  "devDependencies": {
+    "electron": "^37.2.6",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "productName": "Menro-Baars",
+    "appId": "com.menro.baars",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "index.js",
+      "assets/**/*"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "assets/image/icon.ico"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "assets/image/icon.icns"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "icon": "assets/image"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "perMachine": true
+    }
+  }
+}

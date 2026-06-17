@@ -1,0 +1,25 @@
+<?php
+
+return [
+    "ALEGRE",
+    "AMAR",
+    "BANDOJA",
+    "CASTILLO",
+    "ESPARAGOZA",
+    "IMPORTANTE",
+    "LAPAZ",
+    "MALABOR",
+    "MARTINEZ",
+    "NATIVIDAD",
+    "POBLACION",
+    "PITAC",
+    "SALAZAR",
+    "SAN FRANCISCO NORTE",
+    "SAN FRANCISCO SUR",
+    "SAN ISIDRO",
+    "STA. ANA",
+    "STA. JUSTA",
+    "STO. ROSARIO",
+    "TIGBABOY",
+    "TUNO",
+];
