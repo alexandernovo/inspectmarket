@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "adb4b680144df947b976ddb89b6572b1",
+    "content-hash": "9d63c3cc161f45136d4a1097023ebb4e",
     "packages": [
         {
             "name": "brick/math",
@@ -3271,6 +3271,51 @@
                 "source": "https://github.com/ramsey/uuid/tree/4.8.1"
             },
             "time": "2025-06-01T06:28:46+00:00"
+        },
+        {
+            "name": "smsmobileapi/smsmobileapi-php",
+            "version": "dev-main",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/SmsMobileApi/smsmobileapi-php.git",
+                "reference": "4b78dade4ecda5156d184ee81b2a3144505f1a82"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/SmsMobileApi/smsmobileapi-php/zipball/4b78dade4ecda5156d184ee81b2a3144505f1a82",
+                "reference": "4b78dade4ecda5156d184ee81b2a3144505f1a82",
+                "shasum": ""
+            },
+            "require": {
+                "guzzlehttp/guzzle": "^7.0",
+                "php": ">=7.2"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^9.0"
+            },
+            "default-branch": true,
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "SMSMobileAPI\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Thomas B.",
+                    "email": "contact@smsmobileapi.com"
+                }
+            ],
+            "description": "A PHP SDK that allows sending SMS and WhatsApp messages directly from your own phone number, enabling recipients to reply to you instantly without any third-party provider.",
+            "support": {
+                "issues": "https://github.com/SmsMobileApi/smsmobileapi-php/issues",
+                "source": "https://github.com/SmsMobileApi/smsmobileapi-php/tree/main"
+            },
+            "time": "2025-02-26T11:17:12+00:00"
         },
         {
             "name": "symfony/clock",
@@ -9013,7 +9058,9 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {},
+    "stability-flags": {
+        "smsmobileapi/smsmobileapi-php": 20
+    },
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {

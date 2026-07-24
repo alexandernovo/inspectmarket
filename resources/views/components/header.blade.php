@@ -13,12 +13,12 @@
                     <div class="brand-logo d-flex align-items-center justify-content-between ps-0">
                         <a href="#" class="text-nowrap logo-img d-flex align-items-center gap-2">
                             <div class=" d-flex align-items-center" style="width: 40px; height: 40px">
-                                <img src="{{ asset('assets/images/logo1.png') }}"
+                                <img src="{{ asset('assets/images/logo2.png') }}"
                                     class="rounded-circle w-100 h-100 object-fit-cover">
                             </div>
-                            <span style="font-size: 28px; letter-spacing: 4px; font-weight: 600;"
+                            <span style="font-size: 25px; letter-spacing: 4px; font-weight: 600;"
                                 class="text-white title-sidebar">
-                                Tibiao MDRRMO Portal
+                                PANDAN MARKET PORTAL
                             </span>
                         </a>
                     </div>
@@ -82,7 +82,7 @@
                         </a>
                     </li>
                     <li class="nav-item dropdown">
-                        <a href="{{ route('contact') }}"
+                        <a href=""
                             class="nav-link nav-icon-hover px-2 cursor-pointer text-white fw-semibold"
                             style="font-size: 16px">
                             <i class="bi bi-telephone-fill me-1"></i>

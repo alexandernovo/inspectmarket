@@ -27,24 +27,19 @@ class AuthController extends Controller
                     'message' => 'This Account is not yet activated, Please contact the administrator.',
                 ]);
             }
-            if ($user->usertype == "ADMIN" && $request->typeLogin == "STAFF") {
+
+            if ($user->usertype == "ADMIN" && $request->typeLogin != "ADMIN") {
                 return response()->json([
                     'status' => 'error',
                     'message' => 'This is an Admin account. Please log in through the Admin Portal.',
                 ]);
-            } else if ($user->usertype == "STAFF" && $request->typeLogin == "ADMIN") {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'This is a Staff account. Please log in through the Staff Portal.',
-                ]);
             }
-
             $request->session()->regenerate();
 
             return response()->json([
+                'type' => $user->usertype,
                 'status' => 'success',
                 'message' => 'Login successful.',
-                'redirect' => route('dashboard')
             ]);
         }
 

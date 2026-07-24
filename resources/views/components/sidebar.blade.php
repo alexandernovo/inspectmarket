@@ -3,55 +3,107 @@
         <div class="mt-3 mb-4">
             <div class="d-flex justify-content-center gap-2 align-items-center mb-2">
                 <img src="{{ asset('assets/images/logo2.png') }}" class="bg-white rounded-circle" width=""
-                    alt="" style="width: 78px; height: 78px" />
-                <img src="{{ asset('assets/images/logo1.png') }}" class="bg-white rounded-circle" width=""
-                    alt="" style="width: 78px; height: 78px" />
+                    alt="" style="width: 84px; height: 84px" />
             </div>
-            <p class="mb-0 text-center text-white fw-semibold" style="font-size: 17px;">TIBIAO MDRRMO PORTAL</p>
+            <p class="mb-0 text-center text-white fw-semibold" style="font-size: 17px;">PANDAN MARKET PORTAL</p>
         </div>
         <nav class="sidebar-nav scroll-sidebar mt-1 position-relative pb-3 h-100">
             <ul id="sidebarnav">
-                <li class="sidebar-item mb-1">
-                    <a class="sidebar-link" href="{{ route('dashboard') }}" aria-expanded="false">
-                        <span>
-                            <i class="bi bi-microsoft"></i>
-                        </span>
-                        <span class="hide-menu">Dashboard</span>
-                    </a>
-                </li>
-                <hr class="border-top border-white">
-                <span class="hide-menu ms-2 text-white fw-semibold" style="font-size: 16px">DOCUMENT</span>
-                <li class="sidebar-item mb-1 mt-1">
-                    <a class="sidebar-link" href="{{ route('incidentreport_view') }}" aria-expanded="false">
-                        <span>
-                            <i class="bi bi-journals"></i>
-                        </span>
-                        <span class="hide-menu d-flex position-relative" id="incidentCountId">
-                            Incident Report
-                        </span>
-                    </a>
-                </li>
-                <li class="sidebar-item mb-1">
-                    <a class="sidebar-link" href="{{ route('situationalreport_view') }}" aria-expanded="false">
-                        <span>
-                            <i class="bi bi-journals"></i>
-                        </span>
-                        <span class="hide-menu d-flex position-relative" id="situationalCountId">
-                            Situational Report
-                        </span>
-                    </a>
-                </li>
+                @if (auth()->user() && auth()->user()->usertype == 'TREASURER')
+                    <li class="sidebar-item mb-1">
+                        <a class="sidebar-link" href="{{ route('treasurer.dashboard.view') }}" aria-expanded="false">
+                            <span>
+                                <i class="bi bi-microsoft"></i>
+                            </span>
+                            <span class="hide-menu">Dashboard</span>
+                        </a>
+                    </li>
+                    <hr class="border-top border-white my-2">
+                    <li class="sidebar-item mb-1">
+                        <a class="sidebar-link" href="{{ route('treasurer.stallrental.view') }}" aria-expanded="false">
+                            <span>
+                                <i class="bi bi-shop"></i>
+                            </span>
+                            <span class="hide-menu">Stall Rental</span>
+                        </a>
+                    </li>
+                    <hr class="border-top border-white my-3">
+                    <span class="hide-menu ms-2 text-white fw-semibold" style="font-size: 16px">TENANT</span>
+                    <li class="sidebar-item mb-1 mt-1">
+                        <a class="sidebar-link" href="{{ route('treasurer.bidding_request.view') }}"
+                            aria-expanded="false">
+                            <span>
+                                <i class="bi bi-journals"></i>
+                            </span>
+                            <span class="hide-menu d-flex position-relative" id="incidentCountId">
+                                Bidding Request
+                            </span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item mb-3">
+                        <a class="sidebar-link" href="{{ route('situationalreport_view') }}" aria-expanded="false">
+                            <span>
+                                <i class="bi bi-shop"></i>
+                            </span>
+                            <span class="hide-menu d-flex position-relative" id="situationalCountId">
+                                Stall Rental Monthly Fee
+                            </span>
+                        </a>
+                    </li>
+                    <span class="hide-menu ms-2 text-white fw-semibold" style="font-size: 16px">REVENUE COLLECTOR</span>
+                    <li class="sidebar-item mb-3 mt-2">
+                        <a class="sidebar-link" href="{{ route('progressreport_view') }}" aria-expanded="false">
+                            <span>
+                                <i class="bi bi-journals"></i>
+                            </span>
+                            <span class="hide-menu d-flex position-relative" id="progressCountId">
+                                Collected Fee
+                            </span>
+                        </a>
+                    </li>
+                    <span class="hide-menu ms-2 text-white fw-semibold" style="font-size: 16px">REPORT</span>
+                    <li class="sidebar-item mb-1 mt-2">
+                        <a class="sidebar-link" href="{{ route('progressreport_view') }}" aria-expanded="false">
+                            <span>
+                                <i class="bi bi-journals"></i>
+                            </span>
+                            <span class="hide-menu d-flex position-relative" id="progressCountId">
+                                Summary of Collection
+                            </span>
+                        </a>
+                    </li>
+                @endif
 
-                <li class="sidebar-item mb-1">
-                    <a class="sidebar-link" href="{{ route('progressreport_view') }}" aria-expanded="false">
-                        <span>
-                            <i class="bi bi-journals"></i>
-                        </span>
-                        <span class="hide-menu d-flex position-relative" id="progressCountId">
-                            Progress Report
-                        </span>
-                    </a>
-                </li>
+                @if (auth()->user() && auth()->user()->usertype == 'TENANT')
+                    <li class="sidebar-item mb-1">
+                        <a class="sidebar-link" href="{{ route('dashboard') }}" aria-expanded="false">
+                            <span>
+                                <i class="bi bi-microsoft"></i>
+                            </span>
+                            <span class="hide-menu">Dashboard</span>
+                        </a>
+                    </li>
+                    <hr class="border-top border-white my-2">
+                    <span class="hide-menu ms-2 text-white fw-semibold" style="font-size: 16px">STALL RENTAL</span>
+                    <li class="sidebar-item mb-1 mt-3">
+                        <a class="sidebar-link" href="{{ route('tenant.bidding_request.view') }}" aria-expanded="false">
+                            <span>
+                                <i class="bi bi-journal-text"></i>
+                            </span>
+                            <span class="hide-menu">Bidding Application</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item mb-1 mt-2">
+                        <a class="sidebar-link" href="{{ route('tenant.bidding_request_table.view') }}"
+                            aria-expanded="false">
+                            <span>
+                                <i class="bi bi-journal-text"></i>
+                            </span>
+                            <span class="hide-menu">Received Request</span>
+                        </a>
+                    </li>
+                @endif
+
                 @if (auth()->user() && auth()->user()->usertype == 'ADMIN')
                     <hr class="border-top border-white mb-2">
                     <li class="sidebar-item mb-1">
@@ -77,7 +129,8 @@
                         </a>
                     </li>
                     <li class="sidebar-item mb-1">
-                        <a class="sidebar-link {{ in_array(Route::currentRouteName(), ['incidentreportPrint', 'situationalreportPrint', 'progressreportPrint']) ? 'active' : '' }}" data-bs-toggle="modal" data-bs-target="#monthlyReportModal">
+                        <a class="sidebar-link {{ in_array(Route::currentRouteName(), ['incidentreportPrint', 'situationalreportPrint', 'progressreportPrint']) ? 'active' : '' }}"
+                            data-bs-toggle="modal" data-bs-target="#monthlyReportModal">
                             <span>
                                 <i class="bi bi-folder2-open"></i>
                             </span>
