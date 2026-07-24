@@ -18,19 +18,27 @@ beforeEach(function () {
     $this->seed(DatabaseSeeder::class);
 });
 
-it('shows the five user portals on the homepage', function () {
+it('shows the wireframe homepage and opens the five-role login page', function () {
     $this->get(route('home'))
         ->assertOk()
         ->assertSee('PANDAN PUBLIC MARKET')
         ->assertSee('Sign in')
         ->assertSee('Log in')
         ->assertDontSee('Explore services')
+        ->assertDontSee('Administrator');
+
+    $this->get(route('public.roles', 'login'))
+        ->assertOk()
         ->assertSee('User-Login')
         ->assertSee('Administrator')
         ->assertSee('Treasurer')
         ->assertSee('Inspector')
         ->assertSee('Clerk')
         ->assertSee('Tenant');
+
+    $this->get(route('public.roles', 'register'))
+        ->assertOk()
+        ->assertSee('Create an Account');
 });
 
 it('lets every seeded role open only its own dashboard', function (string $role) {

@@ -100,19 +100,24 @@ class AccountController extends Controller
         abort_unless($request->session()->get('account.verified') && $request->session()->get('account.purpose') === 'REGISTER', 419);
 
         $data = $request->validate([
-            'firstname' => ['required', 'string', 'max:100'],
+            'firstname' => ['nullable', 'string', 'max:100'],
             'middlename' => ['nullable', 'string', 'max:100'],
-            'lastname' => ['required', 'string', 'max:100'],
-            'username' => ['required', 'string', 'max:100', 'unique:users,username'],
+            'lastname' => ['nullable', 'string', 'max:100'],
+            'username' => ['nullable', 'string', 'max:100', 'unique:users,username'],
             'email' => ['nullable', 'email', 'max:255', 'unique:users,email'],
-            'address' => ['required', 'string', 'max:255'],
+            'address' => ['nullable', 'string', 'max:255'],
             'password' => ['required', 'confirmed', 'min:8'],
         ]);
 
         $role = $request->session()->get('account.role');
+        $phone = $request->session()->get('account.phone');
         $user = User::create([
             ...$data,
-            'phone_num' => $request->session()->get('account.phone'),
+            'firstname' => $data['firstname'] ?? ucfirst(strtolower($role)),
+            'lastname' => $data['lastname'] ?? 'User',
+            'username' => $data['username'] ?? strtolower($role).preg_replace('/\D+/', '', $phone),
+            'address' => $data['address'] ?? 'Pandan, Antique',
+            'phone_num' => $phone,
             'designation' => ucfirst(strtolower($role)),
             'usertype' => $role,
             'status' => $role === User::ROLE_TENANT ? 'ACTIVE' : 'INACTIVE',

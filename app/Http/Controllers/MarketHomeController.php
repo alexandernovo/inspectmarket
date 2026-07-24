@@ -80,6 +80,16 @@ class MarketHomeController extends Controller
         ]);
     }
 
+    public function roles(string $mode)
+    {
+        abort_unless(in_array($mode, ['register', 'login'], true), 404);
+
+        return view('market.public.roles', [
+            'mode' => $mode,
+            'announcementCount' => Announcement::where('is_published', true)->count(),
+        ]);
+    }
+
     public function publicInspection(Request $request)
     {
         $data = $request->validate([

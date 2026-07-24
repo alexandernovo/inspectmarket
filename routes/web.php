@@ -18,6 +18,7 @@ use App\Http\Controllers\TreasurerController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [MarketHomeController::class, 'index'])->name('home');
+Route::get('/roles/{mode}', [MarketHomeController::class, 'roles'])->name('public.roles');
 Route::post('/contact', [MarketHomeController::class, 'contact'])->name('contact.store');
 Route::get('/public/{screen}', [MarketHomeController::class, 'service'])->name('public.service');
 Route::post('/public/inspection-request', [MarketHomeController::class, 'publicInspection'])->name('public.inspection.store');

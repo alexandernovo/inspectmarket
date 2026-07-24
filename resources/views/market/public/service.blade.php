@@ -3,19 +3,15 @@
 @section('title', 'E-Inspect | '.str($screen)->replace('-', ' ')->title())
 
 @section('content')
-    <header class="public-header">
-        <a href="{{ route('home') }}" class="public-brand">
-            <img src="{{ asset('assets/einspect/HOMEPAGE/Logo.png') }}" alt="Pandan Public Market">
-            <span>PANDAN MARKET</span>
-        </a>
-        <nav>
-            <a href="{{ route('home') }}"><i class="bi bi-house-door-fill"></i> Home</a>
-            <a href="{{ route('public.service', 'contact') }}"><i class="bi bi-envelope-fill"></i> Contact</a>
-            <a href="{{ route('public.service', 'stall-rental') }}"><i class="bi bi-shop"></i> Stall Rental</a>
-            <a href="{{ route('public.service', 'slaughtered-inspection') }}"><i class="bi bi-clipboard2-pulse"></i> Slaughtered Inspect</a>
-            <a href="{{ route('public.service', 'announcements') }}"><i class="bi bi-megaphone-fill"></i> Announcements</a>
-        </nav>
-    </header>
+    @php
+        $activeNav = match ($screen) {
+            'contact' => 'contact',
+            'stall-rental', 'stall-location', 'stall-application' => 'stall-rental',
+            'slaughtered-inspection', 'inspection-request' => 'slaughtered-inspection',
+            default => 'announcements',
+        };
+    @endphp
+    @include('market.public.header', ['active' => $activeNav, 'announcementCount' => $announcements->count()])
 
     <main class="public-screen public-screen-{{ $screen }}">
         @if (session('success'))
@@ -42,11 +38,23 @@
             </section>
         @elseif ($screen === 'stall-rental')
             <section class="public-feature-screen">
-                <img class="public-feature-character" src="{{ asset('assets/einspect/USERS/H-Treasurer.png') }}" alt="Market treasurer">
-                <img class="public-feature-image" src="{{ asset('assets/einspect/HOMEPAGE/Stall.png') }}" alt="Market stall">
-                <div class="public-feature-actions">
-                    <a class="button button-primary" href="{{ route('public.service', 'stall-application') }}"><i class="bi bi-file-earmark-text"></i> Application</a>
-                    <a class="button button-primary" href="{{ route('public.service', 'stall-location') }}"><i class="bi bi-geo-alt"></i> Location</a>
+                @php $stallMonth = now()->startOfMonth(); @endphp
+                <div class="stall-rental-calendar">
+                    <div class="calendar-heading"><strong>{{ $stallMonth->format('m') }}</strong><span>{{ $stallMonth->format('F') }}</span><strong>{{ $stallMonth->format('Y') }}</strong></div>
+                    <div class="calendar-weekdays">@foreach (['SUN','MON','TUE','WED','THU','FRI','SAT'] as $day)<span>{{ $day }}</span>@endforeach</div>
+                    <div class="calendar-days">
+                        @for ($blank = 0; $blank < $stallMonth->dayOfWeek; $blank++)<span class="blank"></span>@endfor
+                        @for ($day = 1; $day <= $stallMonth->daysInMonth; $day++)<span class="{{ $day >= now()->day ? 'available' : 'occupied' }}">{{ $day }}</span>@endfor
+                    </div>
+                    <div class="calendar-legend"><span><i class="available"></i> Available</span><span><i class="occupied"></i> Occupied</span></div>
+                </div>
+                <div class="stall-rental-stage">
+                    <img class="public-feature-character" src="{{ asset('assets/einspect/USERS/H-Treasurer.png') }}" alt="Market treasurer">
+                    <img class="public-feature-image" src="{{ asset('assets/einspect/HOMEPAGE/Stall.png') }}" alt="Market stall">
+                    <div class="public-feature-actions">
+                        <a class="button button-primary" href="{{ route('public.service', 'stall-application') }}"><i class="bi bi-file-earmark-text"></i> Application</a>
+                        <a class="button button-primary" href="{{ route('public.service', 'stall-location') }}"><i class="bi bi-geo-alt"></i> Location</a>
+                    </div>
                 </div>
             </section>
         @elseif ($screen === 'stall-location')

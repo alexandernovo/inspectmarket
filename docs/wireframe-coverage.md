@@ -8,7 +8,7 @@ This inventory maps all 285 supplied PowerPoint slides to implemented routes, vi
 | --- | --- | --- |
 | 1 | Deck title | Documentation divider |
 | 2 | Public landing page | `/` |
-| 3 | Five-user portal selector | `/#roles` |
+| 3 | Five-user portal selector | `/roles/login` and `/roles/register` |
 | 4 | Contact screen and form | `/public/contact` |
 | 5 | Stall-rental service landing | `/public/stall-rental` |
 | 6 | Stall-application form state | `/public/stall-application`; tenant application dialog |
@@ -25,7 +25,7 @@ This inventory maps all 285 supplied PowerPoint slides to implemented routes, vi
 | --- | --- | --- |
 | 1 | Deck title | Documentation divider |
 | 2–4 | Phone registration, verification code, password setup | `/register/tenant`, `/account/verify`, `/account/password` |
-| 5–6 | Portal selector and tenant login | `/#roles`, `/portal/tenant/login` |
+| 5–6 | Portal selector and tenant login | `/roles/login`, `/portal/tenant/login` |
 | 7 | Tenant dashboard | `/tenant/dashboard` |
 | 8 | Stall-location map | `/tenant/stall-map` |
 | 9 | Application records | `/tenant/stall-applications` |
