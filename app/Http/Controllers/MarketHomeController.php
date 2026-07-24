@@ -7,9 +7,12 @@ use App\Models\ContactMessage;
 use App\Models\LivestockInspection;
 use App\Models\MarketNotification;
 use App\Models\Stall;
+use App\Models\StallApplication;
+use App\Models\StallApplicationDocument;
 use App\Models\SystemSetting;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class MarketHomeController extends Controller
@@ -108,5 +111,66 @@ class MarketHomeController extends Controller
             ]));
 
         return back()->with('success', "Inspection request {$inspection->request_number} was submitted.");
+    }
+
+    public function publicStallApplication(Request $request)
+    {
+        $data = $request->validate([
+            'business_owner' => ['required', 'string', 'max:255'],
+            'birth_date' => ['required', 'date', 'before:today'],
+            'civil_status' => ['required', 'string', 'max:30'],
+            'sex' => ['required', 'in:MALE,FEMALE'],
+            'email' => ['required', 'email', 'max:255'],
+            'contact_number' => ['required', 'string', 'max:30'],
+            'business_address' => ['required', 'string', 'max:255'],
+            'business_name' => ['required', 'string', 'max:255'],
+            'business_category' => ['required', 'string', 'max:255'],
+            'business_nature' => ['required', 'string', 'max:255'],
+            'trade_name' => ['required', 'string', 'max:255'],
+            'permit_issued_at' => ['nullable', 'date'],
+            'other_business' => ['nullable', 'string', 'max:255'],
+            'preferred_section' => ['required', 'in:FISH,PORK,POULTRY,BEEF,MIXED'],
+            'preferred_stall_number' => ['nullable', 'integer', 'min:1'],
+            'documents' => ['required', 'array', 'min:1', 'max:5'],
+            'documents.*' => ['file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],
+        ]);
+
+        $documents = $data['documents'];
+        unset($data['documents']);
+
+        $application = DB::transaction(function () use ($data, $documents) {
+            $application = StallApplication::create([
+                ...$data,
+                'tenant_id' => null,
+                'request_source' => 'PUBLIC',
+                'application_number' => 'APP-'.now()->format('Ymd').'-'.strtoupper(Str::random(6)),
+                'status' => 'PENDING',
+            ]);
+
+            foreach ($documents as $document) {
+                StallApplicationDocument::create([
+                    'stall_application_id' => $application->id,
+                    'document_type' => 'PUBLIC_REQUIREMENT',
+                    'path' => $document->store("stall-applications/{$application->id}", 'public'),
+                    'original_name' => $document->getClientOriginalName(),
+                    'mime_type' => $document->getClientMimeType(),
+                    'size' => $document->getSize(),
+                ]);
+            }
+
+            return $application;
+        });
+
+        User::where('usertype', User::ROLE_TREASURER)
+            ->where('status', 'ACTIVE')
+            ->each(fn (User $user) => MarketNotification::create([
+                'user_id' => $user->id,
+                'type' => 'STALL_APPLICATION',
+                'title' => 'New public stall application',
+                'message' => "{$application->application_number}: {$application->business_name}.",
+                'action_url' => route('treasurer.rentals'),
+            ]));
+
+        return back()->with('success', "Application {$application->application_number} and its documents were submitted.");
     }
 }

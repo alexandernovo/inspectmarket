@@ -139,7 +139,7 @@ return new class extends Migration
         Schema::dropIfExists('market_notifications');
         Schema::dropIfExists('market_messages');
 
-        Schema::table('cash_ticket_collections', function (Blueprint $table) {
+        Schem::table('cash_ticket_collections', function (Blueprint $table) {
             $table->dropConstrainedForeignId('cash_ticket_assignment_id');
             $table->dropColumn(['ticket_start', 'ticket_end', 'shortage_amount']);
         });

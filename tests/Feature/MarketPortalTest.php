@@ -22,6 +22,10 @@ it('shows the five user portals on the homepage', function () {
     $this->get(route('home'))
         ->assertOk()
         ->assertSee('PANDAN PUBLIC MARKET')
+        ->assertSee('Sign in')
+        ->assertSee('Log in')
+        ->assertDontSee('Explore services')
+        ->assertSee('User-Login')
         ->assertSee('Administrator')
         ->assertSee('Treasurer')
         ->assertSee('Inspector')
@@ -289,6 +293,31 @@ it('renders every public wireframe service screen and accepts a public inspectio
         'request_source' => 'PUBLIC',
         'tenant_id' => null,
     ]);
+
+    Storage::fake('public');
+    $this->post(route('public.stall-application.store'), [
+        'business_owner' => 'Public Applicant',
+        'birth_date' => '1990-01-15',
+        'civil_status' => 'SINGLE',
+        'sex' => 'MALE',
+        'email' => 'applicant@example.test',
+        'contact_number' => '09170000001',
+        'business_address' => 'Pandan, Antique',
+        'business_name' => 'Public Fresh Goods',
+        'business_category' => 'Retail',
+        'business_nature' => 'Fresh produce retail',
+        'trade_name' => 'Fresh Goods',
+        'permit_issued_at' => now()->subMonth()->toDateString(),
+        'preferred_section' => 'MIXED',
+        'preferred_stall_number' => 12,
+        'documents' => [UploadedFile::fake()->create('barangay-permit.pdf', 300, 'application/pdf')],
+    ])->assertRedirect();
+
+    $application = StallApplication::where('business_owner', 'Public Applicant')->firstOrFail();
+    expect($application->tenant_id)->toBeNull()
+        ->and($application->request_source)->toBe('PUBLIC')
+        ->and($application->documents)->toHaveCount(1);
+    Storage::disk('public')->assertExists($application->documents->first()->path);
 });
 
 it('supports collector management role reports and administrator record drilldowns', function () {

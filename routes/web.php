@@ -21,6 +21,7 @@ Route::get('/', [MarketHomeController::class, 'index'])->name('home');
 Route::post('/contact', [MarketHomeController::class, 'contact'])->name('contact.store');
 Route::get('/public/{screen}', [MarketHomeController::class, 'service'])->name('public.service');
 Route::post('/public/inspection-request', [MarketHomeController::class, 'publicInspection'])->name('public.inspection.store');
+Route::post('/public/stall-application', [MarketHomeController::class, 'publicStallApplication'])->name('public.stall-application.store');
 Route::get('/announcements/{announcement}/attachment', [MarketRecordController::class, 'announcementAttachment'])->name('announcements.attachment');
 Route::redirect('/login', '/portal/tenant/login')->name('login');
 

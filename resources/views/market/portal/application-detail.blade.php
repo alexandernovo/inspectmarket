@@ -5,8 +5,10 @@
         <section class="panel detail-card">
             <div class="panel-heading"><div><span class="eyebrow">{{ $application->application_number }}</span><h2>{{ $application->business_name }}</h2></div><span class="status status-{{ strtolower($application->status) }}">{{ $application->status }}</span></div>
             <dl class="record-details">
-                <dt>Tenant</dt><dd>{{ $application->tenant?->full_name }}</dd>
+                <dt>Applicant source</dt><dd>{{ $application->request_source ?? 'TENANT' }}</dd>
+                <dt>Tenant</dt><dd>{{ $application->tenant?->full_name ?? 'Public applicant' }}</dd>
                 <dt>Business owner</dt><dd>{{ $application->business_owner }}</dd>
+                <dt>Email</dt><dd>{{ $application->email ?? $application->tenant?->email ?? '—' }}</dd>
                 <dt>Category</dt><dd>{{ $application->business_category }}</dd>
                 <dt>Address</dt><dd>{{ $application->business_address }}</dd>
                 <dt>Contact</dt><dd>{{ $application->contact_number }}</dd>

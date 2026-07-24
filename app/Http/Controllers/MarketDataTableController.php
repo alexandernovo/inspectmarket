@@ -35,7 +35,7 @@ class MarketDataTableController extends Controller
 
                 return [
                     'reference' => e($application->application_number),
-                    'tenant' => '<strong>'.e($application->tenant?->full_name).'</strong><br><small>'.e($application->business_name).'</small>',
+                    'tenant' => '<strong>'.e($application->tenant?->full_name ?? $application->business_owner).'</strong><br><small>'.e($application->business_name).'</small>',
                     'section' => e($application->preferred_section),
                     'stall' => e($application->stall?->stall_number ?? $application->preferred_stall_number ?? 'Unassigned'),
                     'status' => $this->status($application->status),

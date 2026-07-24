@@ -20,7 +20,7 @@
                     @forelse ($applications as $application)
                         <tr>
                             <td>{{ $application->application_number }}</td>
-                            <td><strong>{{ $application->tenant?->full_name ?? auth()->user()->full_name }}</strong><br><small>{{ $application->business_name }}</small></td>
+                            <td><strong>{{ $application->tenant?->full_name ?? $application->business_owner }}</strong><br><small>{{ $application->business_name }}</small></td>
                             <td>{{ $application->preferred_section }}</td>
                             <td>{{ $application->stall?->stall_number ?? $application->preferred_stall_number ?? 'Unassigned' }}</td>
                             <td><span class="status status-{{ strtolower($application->status) }}">{{ $application->status }}</span></td>

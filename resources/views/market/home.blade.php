@@ -27,8 +27,8 @@
                 <h1>PANDAN PUBLIC MARKET</h1>
                 <p class="hero-copy">An organized public market committed to food safety, fair trade, and sustainable local business.</p>
                 <div class="hero-actions">
-                    <a href="#roles" class="button button-primary">Sign in</a>
-                    <a href="#stall-rental" class="button button-outline">Explore services</a>
+                    <a href="#roles" class="button button-primary" data-role-mode="register">Sign in</a>
+                    <a href="#roles" class="button button-outline" data-role-mode="login">Log in</a>
                 </div>
             </div>
         </section>
@@ -37,7 +37,7 @@
             <div class="section-heading">
                 <span>E-INSPECT</span>
                 <h2>Public Market Inspection Recording Management System</h2>
-                <p>Select your assigned portal.</p>
+                <p id="roleSelectorMode">User-Login</p>
             </div>
             <div class="role-grid">
                 @foreach ([
@@ -47,7 +47,12 @@
                     ['clerk', 'Clerk', '3-Collector Clerk.png'],
                     ['tenant', 'Tenant', '5-Tenants.png'],
                 ] as [$slug, $label, $image])
-                    <a href="{{ route('portal.login', ['role' => $slug]) }}" class="role-card role-{{ $slug }}">
+                    <a
+                        href="{{ route('portal.login', ['role' => $slug]) }}"
+                        class="role-card role-{{ $slug }}"
+                        data-login-url="{{ route('portal.login', ['role' => $slug]) }}"
+                        data-register-url="{{ route('account.register', ['role' => $slug]) }}"
+                    >
                         <img src="{{ asset('assets/einspect/USERS/'.$image) }}" alt="{{ $label }}">
                         <span>{{ $label }}</span>
                     </a>
@@ -150,6 +155,15 @@
     <script>
         document.querySelector('.mobile-nav-toggle').addEventListener('click', () => {
             document.querySelector('.public-header nav').classList.toggle('open');
+        });
+        document.querySelectorAll('[data-role-mode]').forEach((button) => {
+            button.addEventListener('click', () => {
+                const registerMode = button.dataset.roleMode === 'register';
+                document.getElementById('roleSelectorMode').textContent = registerMode ? 'Create an Account' : 'User-Login';
+                document.querySelectorAll('.role-card[data-login-url]').forEach((card) => {
+                    card.href = registerMode ? card.dataset.registerUrl : card.dataset.loginUrl;
+                });
+            });
         });
     </script>
 @endsection

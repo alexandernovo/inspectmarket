@@ -14,6 +14,7 @@ class StallApplication extends Model
     protected $fillable = [
         'application_number',
         'tenant_id',
+        'request_source',
         'stall_id',
         'business_name',
         'business_category',
@@ -26,8 +27,14 @@ class StallApplication extends Model
         'reviewed_at',
         'birth_date',
         'civil_status',
+        'sex',
         'contact_number',
+        'email',
         'business_owner',
+        'business_nature',
+        'trade_name',
+        'permit_issued_at',
+        'other_business',
     ];
 
     protected function casts(): array
@@ -35,6 +42,7 @@ class StallApplication extends Model
         return [
             'reviewed_at' => 'datetime',
             'birth_date' => 'date',
+            'permit_issued_at' => 'date',
         ];
     }
 

@@ -27,7 +27,7 @@
 
         @if ($screen === 'contact')
             <section class="wireframe-contact">
-                <div class="contact-character"><img src="{{ asset('assets/einspect/USERS/C-Clerk.png') }}" alt=""><h1>Let's Get in Touch!</h1></div>
+                <div class="contact-character"><img src="{{ asset('assets/einspect/USERS/G-Administrator.png') }}" alt="Market administrator"><h1>Let's Get in Touch!</h1></div>
                 <div class="contact-seal"><img src="{{ asset('assets/einspect/HOMEPAGE/Logo.png') }}" alt=""><strong>Connect with Us</strong><i class="bi bi-facebook"></i></div>
                 <form action="{{ route('contact.store') }}" method="POST" class="wireframe-form">
                     @csrf
@@ -42,7 +42,7 @@
             </section>
         @elseif ($screen === 'stall-rental')
             <section class="public-feature-screen">
-                <img class="public-feature-character" src="{{ asset('assets/einspect/USERS/G-Administrator.png') }}" alt="">
+                <img class="public-feature-character" src="{{ asset('assets/einspect/USERS/H-Treasurer.png') }}" alt="Market treasurer">
                 <img class="public-feature-image" src="{{ asset('assets/einspect/HOMEPAGE/Stall.png') }}" alt="Market stall">
                 <div class="public-feature-actions">
                     <a class="button button-primary" href="{{ route('public.service', 'stall-application') }}"><i class="bi bi-file-earmark-text"></i> Application</a>
@@ -67,27 +67,51 @@
                 <div class="map-legend"><span><i class="available"></i> Available</span><span><i class="occupied"></i> Occupied</span><span><i class="maintenance"></i> Maintenance</span></div>
             </section>
         @elseif ($screen === 'stall-application')
-            <section class="public-document-form">
-                <div class="document-preview">
-                    <img src="{{ asset('assets/einspect/HOMEPAGE/Logo.png') }}" alt="">
-                    <h2>Republic of the Philippines<br>Municipality of Pandan</h2>
-                    <h3>Barangay Business Permit</h3>
-                    <p>Upload the required permit, valid ID, and supporting documents in your tenant portal.</p>
-                </div>
-                <div class="wireframe-form">
-                    <span class="eyebrow">A. Requestor Information</span>
-                    <h1>Stall Rental Application Request Form</h1>
-                    <div class="form-grid">
-                        <label>Full Name<input disabled placeholder="Create or sign in to your tenant account"></label>
-                        <label>Address<input disabled></label>
-                        <label>Email Address<input disabled></label>
-                        <label>Contact Number<input disabled></label>
-                        <label>Type of Business<input disabled></label>
-                        <label>Preferred Stall Section<input disabled></label>
+            <section class="public-document-form public-stall-application">
+                <form action="{{ route('public.stall-application.store') }}" method="POST" enctype="multipart/form-data" class="wireframe-stall-form">
+                    @csrf
+                    <label class="document-upload">
+                        <input type="file" name="documents[]" accept=".pdf,.jpg,.jpeg,.png" multiple required>
+                        <i class="bi bi-file-earmark-arrow-up"></i>
+                        <strong>Upload Requirements</strong>
+                        <span>Barangay business permit, valid ID, and supporting documents</span>
+                        <small>PDF, JPG, JPEG, or PNG · up to 10 MB each</small>
+                    </label>
+                    <div class="stall-form-fields">
+                        <div class="stall-form-heading"><img src="{{ asset('assets/einspect/HOMEPAGE/Logo.png') }}" alt=""><div><span>STALL RENTAL</span><h1>Application Request Form</h1></div></div>
+                        <fieldset>
+                            <legend>A. Requestor Information</legend>
+                            <div class="form-grid">
+                                <label>Complete Name<input name="business_owner" value="{{ old('business_owner') }}" required></label>
+                                <label>Birth Date<input type="date" name="birth_date" value="{{ old('birth_date') }}" required></label>
+                                <label>Address<input name="business_address" value="{{ old('business_address') }}" required></label>
+                                <label>Civil Status<select name="civil_status" required><option>SINGLE</option><option>MARRIED</option><option>WIDOWED</option><option>SEPARATED</option></select></label>
+                                <label>Email Address<input type="email" name="email" value="{{ old('email') }}" required></label>
+                                <label>Contact Number<input name="contact_number" value="{{ old('contact_number') }}" required></label>
+                                <label>Sex<select name="sex" required><option>MALE</option><option>FEMALE</option></select></label>
+                            </div>
+                        </fieldset>
+                        <fieldset>
+                            <legend>B. Business Information</legend>
+                            <div class="form-grid">
+                                <label>Type of Business<input name="business_name" value="{{ old('business_name') }}" required></label>
+                                <label>Nature of Business<input name="business_nature" value="{{ old('business_nature') }}" required></label>
+                                <label>Category<input name="business_category" value="{{ old('business_category') }}" required></label>
+                                <label>Business Trade Name<input name="trade_name" value="{{ old('trade_name') }}" required></label>
+                                <label>Business Permit Date Issued<input type="date" name="permit_issued_at" value="{{ old('permit_issued_at') }}"></label>
+                                <label>Other Business<input name="other_business" value="{{ old('other_business') }}"></label>
+                            </div>
+                        </fieldset>
+                        <fieldset>
+                            <legend>C. Stall Preference</legend>
+                            <div class="form-grid">
+                                <label>Preferred Stall Section<select name="preferred_section" required>@foreach (['FISH','PORK','POULTRY','BEEF','MIXED'] as $section)<option>{{ $section }}</option>@endforeach</select></label>
+                                <label>Preferred Stall Number<input type="number" min="1" name="preferred_stall_number" value="{{ old('preferred_stall_number') }}"></label>
+                            </div>
+                        </fieldset>
+                        <div class="dialog-actions"><a href="{{ route('home') }}" class="button button-muted">Cancel</a><button class="button button-primary">Submit</button></div>
                     </div>
-                    <a href="{{ route('account.register', 'tenant') }}" class="button button-primary">Create tenant account</a>
-                    <a href="{{ route('portal.login', 'tenant') }}" class="button button-outline">Tenant login</a>
-                </div>
+                </form>
             </section>
         @elseif ($screen === 'slaughtered-inspection')
             <section class="public-feature-screen livestock-selection">
