@@ -220,10 +220,10 @@
                         ->all();
                 @endphp
                 <section id="inspection-{{ strtolower($type) }}" class="inspection-request-modal">
-                    <a href="{{ route('public.service', 'inspection-request') }}" class="modal-backdrop" aria-label="Close"></a>
+                    <button type="button" class="modal-backdrop" aria-label="Close" data-close-public-modal></button>
                     <form action="{{ route('public.inspection.store') }}" method="POST" class="inspection-modal-card" data-inspection-form>
                         @csrf
-                        <a href="{{ route('public.service', 'inspection-request') }}" class="login-close" aria-label="Close"><i class="bi bi-x-circle-fill"></i></a>
+                        <button type="button" class="login-close" aria-label="Close" data-close-public-modal><i class="bi bi-x-circle-fill"></i></button>
                         <input type="hidden" name="livestock_type" value="{{ $type }}">
                         <input type="hidden" name="owner_name" data-owner-name>
                         <input type="hidden" name="address" data-owner-address>
@@ -299,9 +299,9 @@
 
             @foreach ($announcements as $announcement)
                 <section id="announcement-{{ $announcement->id }}" class="announcement-detail-modal">
-                    <a href="{{ route('public.service', 'announcements') }}" class="modal-backdrop" aria-label="Close"></a>
+                    <button type="button" class="modal-backdrop" aria-label="Close" data-close-public-modal></button>
                     <article>
-                        <a href="{{ route('public.service', 'announcements') }}" class="login-close" aria-label="Close"><i class="bi bi-x-circle-fill"></i></a>
+                        <button type="button" class="login-close" aria-label="Close" data-close-public-modal><i class="bi bi-x-circle-fill"></i></button>
                         <span>{{ $announcement->category }}</span>
                         <h1>{{ $announcement->title }}</h1>
                         <small>{{ optional($announcement->published_at)->format('F j, Y g:i A') ?? $announcement->created_at->format('F j, Y g:i A') }}</small>
@@ -361,6 +361,14 @@
             });
         </script>
     @endif
+
+    <script>
+        document.querySelectorAll('[data-close-public-modal]').forEach((button) => {
+            button.addEventListener('click', () => {
+                history.replaceState(null, '', location.pathname + location.search);
+            });
+        });
+    </script>
 
     <footer class="public-footer">&copy; {{ date('Y') }} Pandan Public Market. All rights reserved.</footer>
 @endsection

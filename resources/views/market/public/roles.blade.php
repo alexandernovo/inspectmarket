@@ -24,19 +24,19 @@
 
         <div class="wireframe-role-grid">
             @foreach ($roles as [$slug, $label, $image])
-                <a href="{{ $mode === 'register' ? route('account.register', $slug) : '#login-'.$slug }}" class="wireframe-role role-{{ $slug }}">
+                <a href="#{{ $mode === 'register' ? 'register' : 'login' }}-{{ $slug }}" class="wireframe-role role-{{ $slug }}">
                     <img src="{{ asset('assets/einspect/USERS/'.$image) }}" alt="{{ $label }}">
                     <span>{{ $label }}</span>
                 </a>
             @endforeach
         </div>
 
-        @if ($mode === 'login')
-            @foreach ($roles as [$slug, $label, $image])
-                <section id="login-{{ $slug }}" class="role-login-modal" aria-label="{{ $label }} login modal">
-                    <a href="{{ route('public.roles', 'login') }}" class="modal-backdrop" aria-label="Close"></a>
+        @foreach ($roles as [$slug, $label, $image])
+            @if ($mode === 'login')
+                <section id="login-{{ $slug }}" class="role-login-modal js-role-modal" aria-label="{{ $label }} login modal">
+                    <button type="button" class="modal-backdrop" aria-label="Close" data-close-role-modal></button>
                     <div class="login-card role-modal-card role-modal-{{ $slug }}">
-                        <a href="{{ route('public.roles', 'login') }}" class="login-close" aria-label="Close"><i class="bi bi-x-circle-fill"></i></a>
+                        <button type="button" class="login-close" aria-label="Close" data-close-role-modal><i class="bi bi-x-circle-fill"></i></button>
                         <div class="login-card-role">
                             <img src="{{ asset('assets/einspect/USERS/'.$image) }}" alt="{{ $label }}">
                             <h1>{{ $label }}</h1>
@@ -56,19 +56,41 @@
                         <p class="account-prompt">Don't have an account? <a href="{{ route('account.register', ['role' => $slug]) }}">Sign in</a></p>
                     </div>
                 </section>
-            @endforeach
-        @endif
+            @else
+                <section id="register-{{ $slug }}" class="role-login-modal js-role-modal" aria-label="{{ $label }} sign in modal">
+                    <button type="button" class="modal-backdrop" aria-label="Close" data-close-role-modal></button>
+                    <div class="login-card account-card role-modal-card role-modal-{{ $slug }}">
+                        <button type="button" class="login-close" aria-label="Close" data-close-role-modal><i class="bi bi-x-circle-fill"></i></button>
+                        <div class="account-card-role">
+                            <img src="{{ asset('assets/einspect/USERS/'.$image) }}" alt="{{ $label }}">
+                            <h1>SIGN IN</h1>
+                            <p>Register your phone number to create your {{ strtolower($label) }} account</p>
+                        </div>
+                        <form action="{{ route('account.register.code', ['role' => $slug]) }}" method="POST">
+                            @csrf
+                            <label class="phone-wireframe-input"><span><b>PH</b><input name="phone_num" placeholder="Enter phone number" required><i class="bi bi-person-fill"></i></span></label>
+                            <button class="button button-primary">Next</button>
+                        </form>
+                        <p class="account-prompt">Already have an account? <a href="{{ route('public.roles', 'login') }}#login-{{ $slug }}">Log in</a></p>
+                    </div>
+                </section>
+            @endif
+        @endforeach
     </main>
     <footer class="public-footer">&copy; Copyright {{ date('Y') }}. Developed by KAJS CODERS INVADER. All Rights Reserved</footer>
 
-    @if ($mode === 'login')
-        <script>
-            document.querySelectorAll('.password-toggle').forEach((toggle) => {
-                toggle.addEventListener('click', () => {
-                    const input = toggle.closest('span')?.querySelector('input');
-                    if (input) input.type = input.type === 'password' ? 'text' : 'password';
-                });
+    <script>
+        document.querySelectorAll('.password-toggle').forEach((toggle) => {
+            toggle.addEventListener('click', () => {
+                const input = toggle.closest('span')?.querySelector('input');
+                if (input) input.type = input.type === 'password' ? 'text' : 'password';
             });
-        </script>
-    @endif
+        });
+
+        document.querySelectorAll('[data-close-role-modal]').forEach((button) => {
+            button.addEventListener('click', () => {
+                history.replaceState(null, '', location.pathname + location.search);
+            });
+        });
+    </script>
 @endsection

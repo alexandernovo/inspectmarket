@@ -390,7 +390,7 @@ td small { color: var(--muted); }
     background: #730006;
     font-size: 1.45rem;
     font-weight: 400;
-    transform: translateX(-10%);
+    transform: translateX(-50%);
 }
 .livestock-choice-screen {
     position: relative;
@@ -438,6 +438,7 @@ td small { color: var(--muted); }
     margin: 0 auto;
 }
 .livestock-choice-card {
+    position: relative;
     display: grid;
     justify-items: center;
     gap: 20px;
@@ -445,13 +446,33 @@ td small { color: var(--muted); }
     padding: 30px 28px 26px;
     border-radius: 8px;
     color: #fff;
+    box-shadow: inset 0 0 0 999px rgba(255, 255, 255, .08), 0 18px 45px rgba(0, 0, 0, .3);
+    transition: transform .18s ease, box-shadow .18s ease;
+}
+.livestock-choice-card::before {
+    content: "";
+    position: absolute;
+    inset: 20px 28px auto;
+    height: 68%;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, .13);
+}
+.livestock-choice-card:hover,
+.livestock-choice-card:focus-visible {
+    transform: translateY(-5px);
+    box-shadow: inset 0 0 0 999px rgba(255, 255, 255, .18), 0 24px 55px rgba(0, 0, 0, .38);
+    outline: 0;
 }
 .livestock-choice-card img {
+    position: relative;
+    z-index: 1;
     width: min(65%, 230px);
     height: 210px;
     object-fit: contain;
 }
 .livestock-choice-card span {
+    position: relative;
+    z-index: 1;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1045,6 +1066,11 @@ td small { color: var(--muted); }
     text-align: left;
 }
 .login-close { position: absolute; z-index: 2; top: 34px; right: 34px; color: #fff; font-size: 1.35rem; }
+button.login-close {
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+}
 .login-card-role {
     padding: 20px 12px 22px;
     border: 1px solid #5b0005;
@@ -1108,7 +1134,12 @@ td small { color: var(--muted); }
 .modal-backdrop {
     position: absolute;
     inset: 78px 0 62px;
+    width: auto;
+    height: auto;
+    padding: 0;
+    border: 0;
     background: rgba(0, 0, 0, .68);
+    cursor: default;
 }
 .role-modal-card {
     z-index: 1;

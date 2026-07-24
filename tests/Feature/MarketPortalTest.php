@@ -38,7 +38,9 @@ it('shows the wireframe homepage and opens the five-role login page', function (
 
     $this->get(route('public.roles', 'register'))
         ->assertOk()
-        ->assertSee('Create an Account');
+        ->assertSee('Create an Account')
+        ->assertSee('#register-tenant', false)
+        ->assertSee('Register your phone number');
 });
 
 it('lets every seeded role open only its own dashboard', function (string $role) {
