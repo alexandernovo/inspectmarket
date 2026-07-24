@@ -290,7 +290,7 @@ it('renders every public wireframe service screen and accepts a public inspectio
         ->assertOk()
         ->assertSee('data-rate="750.00"', false)
         ->assertSee('FISH SECTION')
-        ->assertDontSee('No fish stalls configured from the backend.');
+        ->assertDontSee('configured from the backend');
 
     $this->post(route('public.inspection.store'), [
         'livestock_type' => 'POULTRY',

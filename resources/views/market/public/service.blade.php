@@ -87,7 +87,7 @@
                                     title="{{ $stall->section }} stall {{ $stall->stall_number }} - {{ $stall->status }}"
                                 >{{ $stall->stall_number }}</button>
                             @empty
-                                <p class="empty-state">No {{ strtolower($section) }} stalls configured from the backend.</p>
+                                <p class="empty-state wireframe-empty">No stall available</p>
                             @endforelse
                         </div>
                     </section>
@@ -291,7 +291,7 @@
                                 <a href="#announcement-{{ $announcement->id }}">View Full Details <i class="bi bi-arrow-right"></i></a>
                             </article>
                         @empty
-                            <p class="empty-state">No announcements published.</p>
+                            <p class="empty-state wireframe-empty announcement-empty">No announcement available</p>
                         @endforelse
                     </div>
                 </div>
