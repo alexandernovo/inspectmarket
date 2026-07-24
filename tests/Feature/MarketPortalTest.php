@@ -286,6 +286,12 @@ it('renders every public wireframe service screen and accepts a public inspectio
         $this->get(route('public.service', $screen))->assertOk();
     }
 
+    $this->get(route('public.service', 'stall-location'))
+        ->assertOk()
+        ->assertSee('data-rate="750.00"', false)
+        ->assertSee('FISH SECTION')
+        ->assertDontSee('No fish stalls configured from the backend.');
+
     $this->post(route('public.inspection.store'), [
         'livestock_type' => 'POULTRY',
         'owner_name' => 'Public Requestor',

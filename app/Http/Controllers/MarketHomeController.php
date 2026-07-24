@@ -75,6 +75,7 @@ class MarketHomeController extends Controller
         return view('market.public.service', [
             'screen' => $screen,
             'announcements' => Announcement::where('is_published', true)->latest('published_at')->get(),
+            'inspections' => LivestockInspection::latest('scheduled_at')->get()->groupBy('livestock_type'),
             'stalls' => Stall::orderBy('section')->orderBy('stall_number')->get()->groupBy('section'),
             'settings' => SystemSetting::pluck('value', 'key'),
         ]);
