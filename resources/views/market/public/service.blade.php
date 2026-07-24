@@ -52,22 +52,74 @@
             </section>
         @elseif ($screen === 'stall-location')
             <section class="public-map-card stall-location-screen">
-                <div class="stall-location-map">
-                    <div class="panel-heading"><div><span class="eyebrow">Public Market Pandan, Antique</span><h1>Stall Location</h1></div></div>
-                    <div class="stall-map-layout">
-                        @foreach (['FISH', 'PORK', 'POULTRY', 'BEEF', 'MIXED'] as $section)
-                            <section class="stall-section section-{{ strtolower($section) }}">
-                                <div class="section-title"><span>{{ $section }} SECTION</span></div>
-                                <div class="stall-grid">
-                                    @foreach ($stalls->get($section, collect()) as $stall)
-                                        <span class="stall-box {{ strtolower($stall->status) }}" title="{{ $stall->status }}">{{ $stall->stall_number }}</span>
-                                    @endforeach
-                                </div>
-                            </section>
-                        @endforeach
-                    </div>
-                    <div class="map-legend"><span><i class="available"></i> Available</span><span><i class="occupied"></i> Occupied</span><span><i class="maintenance"></i> Maintenance</span></div>
+                @php
+                    $sectionMeta = [
+                        'FISH' => ['count' => 20, 'image' => 'Fish Section.png', 'class' => 'fish'],
+                        'PORK' => ['count' => 14, 'image' => 'Pork Section.png', 'class' => 'pork'],
+                        'POULTRY' => ['count' => 2, 'image' => 'Poultry Section.png', 'class' => 'poultry'],
+                        'BEEF' => ['count' => 12, 'image' => 'Beef Section.png', 'class' => 'beef'],
+                        'MIXED' => ['count' => 84, 'image' => 'Mixed Section.png', 'class' => 'mixed'],
+                    ];
+
+                    $statusFor = function (string $section, int $number) use ($stalls) {
+                        $stall = $stalls->get($section, collect())->firstWhere('stall_number', $number);
+
+                        return $stall?->status ?? ($number % 3 === 1 ? 'OCCUPIED' : 'AVAILABLE');
+                    };
+                @endphp
+                <div class="stall-location-topbar">
+                    <div class="stall-location-legend"><strong>Legend:</strong><span class="available">Available</span><span class="occupied">Occupied</span></div>
+                    <button type="button" class="stall-detail-button" data-stall-details-open>Stall Details</button>
                 </div>
+                <div class="wireframe-location-people" aria-hidden="true">
+                    <img src="{{ asset('assets/einspect/USERS/G-Administrator.png') }}" alt="">
+                    <img src="{{ asset('assets/einspect/USERS/H-Treasurer.png') }}" alt="">
+                    <img src="{{ asset('assets/einspect/USERS/I-Clerk.png') }}" alt="">
+                    <img src="{{ asset('assets/einspect/USERS/J-Inspector.png') }}" alt="">
+                </div>
+                @foreach ($sectionMeta as $section => $meta)
+                    <section class="wireframe-stall-section wireframe-stall-{{ $meta['class'] }}">
+                        <h2><img src="{{ asset('assets/einspect/HOMEPAGE/'.$meta['image']) }}" alt="">{{ $section }} SECTION</h2>
+                        <div class="wireframe-stall-row">
+                            @for ($number = 1; $number <= $meta['count']; $number++)
+                                @php $status = $statusFor($section, $number); @endphp
+                                <button type="button" class="wireframe-stall-square {{ strtolower($status) }}" data-section="{{ $section }}" data-number="{{ $number }}" data-status="{{ $status }}">{{ $number }}</button>
+                            @endfor
+                        </div>
+                    </section>
+                @endforeach
+                <dialog id="publicStallDetails" class="market-dialog compact-dialog public-stall-detail-dialog">
+                    <div class="dialog-heading"><div><span>Public Market</span><h2>Stall Details</h2></div><button type="button" data-close-stall-details>&times;</button></div>
+                    <dl class="record-details">
+                        <dt>Section</dt><dd data-stall-section>Choose a stall</dd>
+                        <dt>Stall Number</dt><dd data-stall-number>-</dd>
+                        <dt>Status</dt><dd><span class="status" data-stall-status>-</span></dd>
+                    </dl>
+                    <div class="dialog-actions"><button type="button" class="button button-muted" data-close-stall-details>Close</button><a href="{{ route('public.service', 'stall-application') }}" class="button button-primary">Apply for Stall</a></div>
+                </dialog>
+                <script>
+                    (() => {
+                        const dialog = document.getElementById('publicStallDetails');
+                        const section = dialog?.querySelector('[data-stall-section]');
+                        const number = dialog?.querySelector('[data-stall-number]');
+                        const status = dialog?.querySelector('[data-stall-status]');
+
+                        document.querySelectorAll('.wireframe-stall-square').forEach((stall) => {
+                            stall.addEventListener('click', () => {
+                                if (!dialog || !section || !number || !status) return;
+
+                                section.textContent = `${stall.dataset.section} SECTION`;
+                                number.textContent = stall.dataset.number;
+                                status.textContent = stall.dataset.status;
+                                status.className = `status status-${stall.dataset.status.toLowerCase()}`;
+                                dialog?.showModal();
+                            });
+                        });
+
+                        document.querySelector('[data-stall-details-open]')?.addEventListener('click', () => dialog?.showModal());
+                        dialog?.querySelectorAll('[data-close-stall-details]').forEach((button) => button.addEventListener('click', () => dialog.close()));
+                    })();
+                </script>
             </section>
         @elseif ($screen === 'stall-application')
             <section class="public-document-form public-stall-application">
