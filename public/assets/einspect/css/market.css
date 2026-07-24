@@ -508,51 +508,52 @@ td small { color: var(--muted); }
 }
 
 /* Homepage and authentication fidelity overrides */
-.public-header {
-    min-height: 123px;
-    padding: 16px 20px 18px;
+.public-header.homepage-header {
+    min-height: clamp(72px, 9vh, 96px);
+    padding: clamp(8px, 1.2vh, 14px) clamp(14px, 1.5vw, 20px);
     border-bottom: 0;
     background: #350000;
     backdrop-filter: none;
 }
-.public-brand { gap: 18px; font-size: clamp(1.7rem, 1.85vw, 2.2rem); font-weight: 400; letter-spacing: 0; }
-.public-brand img { width: 77px; height: 77px; }
-.public-header nav { gap: clamp(14px, 1.55vw, 30px); }
-.public-header nav a {
+.homepage-header .public-brand { gap: 12px; font-size: clamp(1.25rem, 1.45vw, 1.8rem); font-weight: 400; letter-spacing: 0; }
+.homepage-header .public-brand img { width: clamp(52px, 6.2vh, 68px); height: clamp(52px, 6.2vh, 68px); }
+.homepage-header nav { gap: clamp(8px, 1vw, 18px); }
+.homepage-header nav a {
     position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
-    min-height: 59px;
-    padding: 9px 28px;
+    gap: 8px;
+    min-height: clamp(42px, 5.2vh, 54px);
+    padding: 7px clamp(12px, 1.25vw, 22px);
     border: 2px solid #fff;
     border-radius: 6px;
-    font-size: clamp(1.18rem, 1.45vw, 1.75rem);
+    font-size: clamp(.9rem, 1.12vw, 1.35rem);
     font-weight: 400;
     white-space: nowrap;
 }
-.public-header nav a i { font-size: 1.35em; line-height: 1; }
-.public-header nav a:hover { color: #1f0000; border-color: #fff; background: #fff; }
-.public-header nav a.active { color: #220000; border-color: #fff; background: #fff; }
-.public-header nav a b {
+.homepage-header nav a i { font-size: 1.35em; line-height: 1; }
+.homepage-header nav a:hover { color: #1f0000; border-color: #fff; background: #fff; }
+.homepage-header nav a.active { color: #220000; border-color: #fff; background: #fff; }
+.homepage-header nav a b {
     position: absolute;
     top: -15px;
     right: -12px;
     display: grid;
     place-items: center;
-    min-width: 40px;
-    height: 40px;
+    min-width: 30px;
+    height: 30px;
     padding: 0 6px;
     border-radius: 50%;
     color: #fff;
     background: #991b1f;
-    font-size: 1.05rem;
+    font-size: .82rem;
 }
 .wireframe-home {
-    min-height: calc(100vh - 206px);
-    padding: 46px 1.5rem 64px;
-    background-position: center center;
+    min-height: calc(100vh - clamp(52px, 7vh, 66px));
+    padding: clamp(34px, 6vh, 64px) 24px clamp(28px, 5vh, 48px);
+    align-items: start;
+    background-position: center top;
 }
 .wireframe-home .hero-overlay { background: rgba(0, 0, 0, .61); }
 .wireframe-home .hero-content {
@@ -561,11 +562,11 @@ td small { color: var(--muted); }
     align-items: center;
     max-width: 1360px;
 }
-.wireframe-home .hero-seal { width: clamp(180px, 13.6vw, 262px); }
+.wireframe-home .hero-seal { width: clamp(118px, 18vh, 190px); filter: none; }
 .wireframe-home .hero-content > p:first-of-type {
-    margin: 25px 0 34px;
+    margin: clamp(12px, 2vh, 20px) 0 clamp(16px, 3vh, 28px);
     color: #fff;
-    font-size: clamp(2rem, 2.55vw, 3.05rem);
+    font-size: clamp(1.4rem, 2vw, 2.35rem);
     font-weight: 300;
     line-height: 1;
 }
@@ -573,37 +574,39 @@ td small { color: var(--muted); }
     font-family: "Segoe UI", Arial, sans-serif;
     margin: 0;
     color: #fff;
-    font-size: clamp(4.2rem, 5vw, 6rem);
+    font-size: clamp(2.9rem, 4.4vw, 4.9rem);
     font-weight: 800;
     letter-spacing: 0;
-    line-height: 1;
+    line-height: 1.08;
     text-shadow: none;
 }
 .wireframe-home .hero-copy {
-    max-width: 1120px;
-    margin: 51px auto 68px;
+    max-width: 920px;
+    margin: clamp(22px, 4vh, 36px) auto clamp(28px, 5.5vh, 48px);
     color: #fff;
-    font-size: clamp(1.25rem, 1.58vw, 1.9rem);
+    font-size: clamp(.95rem, 1.32vw, 1.45rem);
     font-weight: 300;
     line-height: 1.28;
 }
-.wireframe-home .hero-actions { gap: 40px; }
+.wireframe-home .hero-actions { gap: clamp(24px, 3vw, 40px); }
 .wireframe-home .hero-actions .button {
-    width: 218px;
-    min-height: 78px;
+    width: clamp(154px, 11.4vw, 190px);
+    min-height: clamp(52px, 6vh, 64px);
     border: 0;
     border-radius: 8px;
     color: #fff;
-    background: #aa6200;
-    font-size: clamp(1.55rem, 1.8vw, 2.15rem);
+    padding: 10px;
+    background: #a45c00;
+    font-size: clamp(1.15rem, 1.45vw, 1.6rem);
     font-weight: 400;
+    line-height: 1;
 }
-.public-footer {
-    min-height: 83px;
-    padding: 18px 12px 20px;
+.public-footer.homepage-footer {
+    min-height: clamp(52px, 7vh, 66px);
+    padding: 10px 12px 12px;
     background: #350000;
-    font-size: clamp(1.05rem, 1.42vw, 1.72rem);
-    font-weight: 300;
+    font-size: clamp(.88rem, 1.2vw, 1.3rem);
+    font-weight: 400;
 }
 .role-selection-page {
     position: relative;
@@ -881,16 +884,29 @@ td small { color: var(--muted); }
     font-weight: 500;
 }
 @media (max-width: 1050px) {
-    .public-header { min-height: 66px; }
-    .public-brand img { width: 48px; height: 48px; }
-    .public-header nav { gap: 6px; }
-    .public-header nav a { padding: 7px 9px; }
+    .public-header.homepage-header { min-height: 66px; }
+    .homepage-header .public-brand img { width: 48px; height: 48px; }
+    .homepage-header nav { gap: 6px; }
+    .homepage-header nav a { padding: 7px 9px; }
     .wireframe-role-grid { gap: 12px; }
     .public-screen-stall-rental .public-feature-screen { grid-template-columns: 1fr; }
     .stall-rental-stage { min-height: 520px; }
 }
+@media (max-height: 760px) and (min-width: 781px) {
+    .public-header.homepage-header { min-height: 66px; }
+    .homepage-header .public-brand img { width: 50px; height: 50px; }
+    .homepage-header nav a { min-height: 40px; padding: 6px 12px; font-size: .9rem; }
+    .wireframe-home { padding-top: 24px; padding-bottom: 24px; }
+    .wireframe-home .hero-seal { width: 110px; }
+    .wireframe-home .hero-content > p:first-of-type { margin: 10px 0 14px; font-size: 1.3rem; }
+    .wireframe-home h1 { font-size: 3.2rem; }
+    .wireframe-home .hero-copy { margin: 20px auto 24px; font-size: .95rem; }
+    .wireframe-home .hero-actions .button { width: 150px; min-height: 48px; font-size: 1.1rem; }
+    .public-footer.homepage-footer { min-height: 46px; font-size: .86rem; }
+}
 @media (max-width: 780px) {
-    .public-header nav { top: 66px; }
+    .public-header nav { top: 58px; }
+    .homepage-header nav { top: 66px; }
     .wireframe-role-grid { grid-template-columns: repeat(2, 1fr); }
     .role-selection-page { padding-top: 95px; }
     .login-role-background { display: none; }
