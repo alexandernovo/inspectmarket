@@ -10,7 +10,10 @@
             'slaughtered-inspection', 'inspection-request' => 'slaughtered-inspection',
             default => 'announcements',
         };
+
+        $inspectionMonth = now()->startOfMonth();
     @endphp
+
     @include('market.public.header', ['active' => $activeNav, 'announcementCount' => $announcements->count()])
 
     <main class="public-screen public-screen-{{ $screen }}">
@@ -38,16 +41,6 @@
             </section>
         @elseif ($screen === 'stall-rental')
             <section class="public-feature-screen">
-                @php $stallMonth = now()->startOfMonth(); @endphp
-                <div class="stall-rental-calendar">
-                    <div class="calendar-heading"><strong>{{ $stallMonth->format('m') }}</strong><span>{{ $stallMonth->format('F') }}</span><strong>{{ $stallMonth->format('Y') }}</strong></div>
-                    <div class="calendar-weekdays">@foreach (['SUN','MON','TUE','WED','THU','FRI','SAT'] as $day)<span>{{ $day }}</span>@endforeach</div>
-                    <div class="calendar-days">
-                        @for ($blank = 0; $blank < $stallMonth->dayOfWeek; $blank++)<span class="blank"></span>@endfor
-                        @for ($day = 1; $day <= $stallMonth->daysInMonth; $day++)<span class="{{ $day >= now()->day ? 'available' : 'occupied' }}">{{ $day }}</span>@endfor
-                    </div>
-                    <div class="calendar-legend"><span><i class="available"></i> Available</span><span><i class="occupied"></i> Occupied</span></div>
-                </div>
                 <div class="stall-rental-stage">
                     <img class="public-feature-character" src="{{ asset('assets/einspect/USERS/H-Treasurer.png') }}" alt="Market treasurer">
                     <img class="public-feature-image" src="{{ asset('assets/einspect/HOMEPAGE/Stall.png') }}" alt="Market stall">
@@ -58,21 +51,23 @@
                 </div>
             </section>
         @elseif ($screen === 'stall-location')
-            <section class="public-map-card">
-                <div class="panel-heading"><div><span class="eyebrow">Public Market Pandan, Antique</span><h1>Stall Location</h1></div></div>
-                <div class="stall-map-layout">
-                    @foreach (['FISH', 'PORK', 'POULTRY', 'BEEF', 'MIXED'] as $section)
-                        <section class="stall-section section-{{ strtolower($section) }}">
-                            <div class="section-title"><span>{{ $section }} SECTION</span></div>
-                            <div class="stall-grid">
-                                @foreach ($stalls->get($section, collect()) as $stall)
-                                    <span class="stall-box {{ strtolower($stall->status) }}" title="{{ $stall->status }}">{{ $stall->stall_number }}</span>
-                                @endforeach
-                            </div>
-                        </section>
-                    @endforeach
+            <section class="public-map-card stall-location-screen">
+                <div class="stall-location-map">
+                    <div class="panel-heading"><div><span class="eyebrow">Public Market Pandan, Antique</span><h1>Stall Location</h1></div></div>
+                    <div class="stall-map-layout">
+                        @foreach (['FISH', 'PORK', 'POULTRY', 'BEEF', 'MIXED'] as $section)
+                            <section class="stall-section section-{{ strtolower($section) }}">
+                                <div class="section-title"><span>{{ $section }} SECTION</span></div>
+                                <div class="stall-grid">
+                                    @foreach ($stalls->get($section, collect()) as $stall)
+                                        <span class="stall-box {{ strtolower($stall->status) }}" title="{{ $stall->status }}">{{ $stall->stall_number }}</span>
+                                    @endforeach
+                                </div>
+                            </section>
+                        @endforeach
+                    </div>
+                    <div class="map-legend"><span><i class="available"></i> Available</span><span><i class="occupied"></i> Occupied</span><span><i class="maintenance"></i> Maintenance</span></div>
                 </div>
-                <div class="map-legend"><span><i class="available"></i> Available</span><span><i class="occupied"></i> Occupied</span><span><i class="maintenance"></i> Maintenance</span></div>
             </section>
         @elseif ($screen === 'stall-application')
             <section class="public-document-form public-stall-application">
@@ -83,7 +78,7 @@
                         <i class="bi bi-file-earmark-arrow-up"></i>
                         <strong>Upload Requirements</strong>
                         <span>Barangay business permit, valid ID, and supporting documents</span>
-                        <small>PDF, JPG, JPEG, or PNG · up to 10 MB each</small>
+                        <small>PDF, JPG, JPEG, or PNG &middot; up to 10 MB each</small>
                     </label>
                     <div class="stall-form-fields">
                         <div class="stall-form-heading"><img src="{{ asset('assets/einspect/HOMEPAGE/Logo.png') }}" alt=""><div><span>STALL RENTAL</span><h1>Application Request Form</h1></div></div>
@@ -117,7 +112,7 @@
                                 <label>Preferred Stall Number<input type="number" min="1" name="preferred_stall_number" value="{{ old('preferred_stall_number') }}"></label>
                             </div>
                         </fieldset>
-                        <div class="dialog-actions"><a href="{{ route('home') }}" class="button button-muted">Cancel</a><button class="button button-primary">Submit</button></div>
+                        <div class="dialog-actions"><a href="{{ route('public.service', 'stall-rental') }}" class="button button-muted">Cancel</a><button class="button button-primary">Submit</button></div>
                     </div>
                 </form>
             </section>
@@ -138,8 +133,8 @@
                     <div class="calendar-heading"><strong>{{ now()->format('m') }}</strong><span>{{ now()->format('F') }}</span><strong>{{ now()->format('Y') }}</strong></div>
                     <div class="calendar-weekdays">@foreach (['SUN','MON','TUE','WED','THU','FRI','SAT'] as $day)<span>{{ $day }}</span>@endforeach</div>
                     <div class="calendar-days">
-                        @for ($blank = 0; $blank < now()->startOfMonth()->dayOfWeek; $blank++)<span class="blank"></span>@endfor
-                        @for ($day = 1; $day <= now()->daysInMonth; $day++)<span class="{{ $day >= now()->day ? 'available' : 'occupied' }}">{{ $day }}</span>@endfor
+                        @for ($blank = 0; $blank < $inspectionMonth->dayOfWeek; $blank++)<span class="blank"></span>@endfor
+                        @for ($day = 1; $day <= $inspectionMonth->daysInMonth; $day++)<span class="{{ $day >= now()->day ? 'available' : 'occupied' }}">{{ $day }}</span>@endfor
                     </div>
                 </div>
                 <form action="{{ route('public.inspection.store') }}" method="POST" class="wireframe-form">
@@ -159,21 +154,67 @@
         @else
             <section class="public-announcement-screen">
                 <div class="announcement-summary">
-                    <article><strong>{{ \App\Models\User::where('usertype', 'TENANT')->count() }}</strong><span>Total Tenants</span></article>
-                    <article><strong>{{ \App\Models\Stall::count() }}</strong><span>Total Stalls</span></article>
-                    <article><strong>{{ \App\Models\Stall::where('status', 'AVAILABLE')->count() }}</strong><span>Available</span></article>
-                    <article><strong>{{ \App\Models\Stall::where('status', 'OCCUPIED')->count() }}</strong><span>Occupied</span></article>
+                    <article><span>Total Tenants</span><div><i class="bi bi-people-fill"></i><strong>{{ \App\Models\User::where('usertype', 'TENANT')->count() }}</strong></div></article>
+                    <article><span>Total Stalls</span><div><i class="bi bi-shop-window"></i><strong>{{ \App\Models\Stall::count() }}</strong></div></article>
+                    <article><span>Total Stalls<br>( Available )</span><div><i class="bi bi-shop"></i><strong>{{ \App\Models\Stall::where('status', 'AVAILABLE')->count() }}</strong></div></article>
+                    <article><span>Total Stalls<br>( Occupied )</span><div><i class="bi bi-shop"></i><strong>{{ \App\Models\Stall::where('status', 'OCCUPIED')->count() }}</strong></div></article>
                 </div>
-                <div class="portal-announcement-list">
-                    @forelse ($announcements as $announcement)
-                        <article><span>{{ $announcement->category }}</span><h2>{{ $announcement->title }}</h2><p>{{ $announcement->content }}</p><small>{{ optional($announcement->published_at)->format('F j, Y g:i A') }}</small></article>
-                    @empty
-                        <p class="empty-state">No announcements published.</p>
-                    @endforelse
+                <div class="wireframe-announcements">
+                    <i class="bi bi-megaphone-fill announcement-megaphone"></i>
+                    <nav class="announcement-tabs" aria-label="Announcement categories">
+                        @foreach (['ALL' => 'All', 'OTHERS' => 'Others', 'MARKET ADVISORY' => 'Market Advisory', 'BIDDING' => 'Bidding', 'STALL RENTAL' => 'Stall Rental', 'SLAUGHTERED INSPECT' => 'Slaughtered Inspect'] as $category => $tab)
+                            <button type="button" @class(['active' => $loop->first]) data-announcement-filter="{{ $category }}">{{ $tab }}</button>
+                        @endforeach
+                    </nav>
+                    <div class="announcement-wire-list">
+                        @forelse ($announcements as $announcement)
+                            <article data-announcement-category="{{ $announcement->category }}">
+                                <img src="{{ asset('assets/einspect/USERS/J-Inspector.png') }}" alt="Market staff">
+                                <div>
+                                    <h2>{{ optional($announcement->published_at)->format('F j, Y | g:i A') ?? $announcement->created_at->format('F j, Y | g:i A') }}</h2>
+                                    <strong>{{ $announcement->title }}</strong>
+                                    <p>{{ $announcement->content }}</p>
+                                </div>
+                                <a href="#announcement-{{ $announcement->id }}">View Full Details <i class="bi bi-arrow-right"></i></a>
+                            </article>
+                        @empty
+                            <p class="empty-state">No announcements published.</p>
+                        @endforelse
+                    </div>
                 </div>
             </section>
+
+            @foreach ($announcements as $announcement)
+                <section id="announcement-{{ $announcement->id }}" class="announcement-detail-modal">
+                    <a href="{{ route('public.service', 'announcements') }}" class="modal-backdrop" aria-label="Close"></a>
+                    <article>
+                        <a href="{{ route('public.service', 'announcements') }}" class="login-close" aria-label="Close"><i class="bi bi-x-circle-fill"></i></a>
+                        <span>{{ $announcement->category }}</span>
+                        <h1>{{ $announcement->title }}</h1>
+                        <small>{{ optional($announcement->published_at)->format('F j, Y g:i A') ?? $announcement->created_at->format('F j, Y g:i A') }}</small>
+                        <p>{{ $announcement->content }}</p>
+                        @if ($announcement->attachment_path)
+                            <a class="button button-primary" href="{{ route('announcements.attachment', $announcement) }}"><i class="bi bi-paperclip"></i> Download Attachment</a>
+                        @endif
+                    </article>
+                </section>
+            @endforeach
         @endif
     </main>
 
-    <footer class="public-footer">© {{ date('Y') }} Pandan Public Market. All rights reserved.</footer>
+    @if ($screen === 'announcements')
+        <script>
+            document.querySelectorAll('[data-announcement-filter]').forEach((button) => {
+                button.addEventListener('click', () => {
+                    const selected = button.dataset.announcementFilter;
+                    document.querySelectorAll('[data-announcement-filter]').forEach((tab) => tab.classList.toggle('active', tab === button));
+                    document.querySelectorAll('[data-announcement-category]').forEach((article) => {
+                        article.hidden = selected !== 'ALL' && article.dataset.announcementCategory !== selected;
+                    });
+                });
+            });
+        </script>
+    @endif
+
+    <footer class="public-footer">&copy; {{ date('Y') }} Pandan Public Market. All rights reserved.</footer>
 @endsection
