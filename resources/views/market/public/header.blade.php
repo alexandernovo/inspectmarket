@@ -13,10 +13,26 @@
             <i class="bi bi-megaphone-fill"></i> Announcements
             @if (($announcementCount ?? 0) > 0)<b>{{ $announcementCount }}</b>@endif
         </a>
+        @auth
+            @if (auth()->user()->isRole('TENANT'))
+                <a href="{{ route('tenant.dashboard') }}" class="dashboard-link"><i class="bi bi-speedometer2"></i> Go to Dashboard</a>
+            @endif
+        @endauth
     </nav>
 </header>
 <script>
-    document.querySelector('.mobile-nav-toggle')?.addEventListener('click', () => {
-        document.querySelector('.public-header nav')?.classList.toggle('open');
+    document.addEventListener('click', (event) => {
+        const toggle = event.target.closest('.mobile-nav-toggle');
+        if (toggle) {
+            document.querySelector('.public-header nav')?.classList.toggle('open');
+            return;
+        }
+
+        const navLink = event.target.closest('.public-header nav a');
+        if (navLink) {
+            document.querySelector('.public-header nav')?.classList.remove('open');
+            document.querySelectorAll('.role-login-modal:target, .inspection-request-modal:target, .announcement-detail-modal:target')
+                .forEach(() => history.replaceState(null, '', location.pathname + location.search));
+        }
     });
 </script>

@@ -38,6 +38,7 @@ class MarketReportController extends Controller
             'inspection' => LivestockInspection::with(['tenant', 'inspector'])
                 ->when($month, fn (Builder $query) => $query->whereBetween('scheduled_at', [$month, $month->copy()->endOfMonth()]))
                 ->when($livestock, fn (Builder $query) => $query->where('livestock_type', $livestock))
+                ->when($user->isRole(User::ROLE_INSPECTOR), fn (Builder $query) => $query->where('status', 'COMPLETED'))
                 ->latest('scheduled_at')->get(),
             'payments' => Payment::with('tenant')
                 ->when($month, fn (Builder $query) => $query->whereBetween('period_month', [$month, $month->copy()->endOfMonth()]))
@@ -47,12 +48,14 @@ class MarketReportController extends Controller
                 ->latest()->get(),
         };
 
-        return view('market.portal.reports', [
+        return view($user->isRole(User::ROLE_INSPECTOR) ? 'market.inspector.reports' : 'market.portal.reports', [
             'pageTitle' => 'Market Reports',
             'report' => $report,
             'rows' => $rows,
             'allowedReports' => $allowed,
             'printMode' => false,
+            'selectedLivestock' => $livestock,
+            'selectedMonth' => $month,
         ]);
     }
 

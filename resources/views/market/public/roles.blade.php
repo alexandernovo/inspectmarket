@@ -24,7 +24,12 @@
 
         <div class="wireframe-role-grid">
             @foreach ($roles as [$slug, $label, $image])
-                <a href="#{{ $mode === 'register' ? 'register' : 'login' }}-{{ $slug }}" class="wireframe-role role-{{ $slug }}">
+                @php
+                    $roleHref = auth()->check() && auth()->user()->isRole(strtoupper($slug))
+                        ? route($slug.'.dashboard')
+                        : '#'.($mode === 'register' ? 'register' : 'login').'-'.$slug;
+                @endphp
+                <a href="{{ $roleHref }}" class="wireframe-role role-{{ $slug }}">
                     <img src="{{ asset('assets/einspect/USERS/'.$image) }}" alt="{{ $label }}">
                     <span>{{ $label }}</span>
                 </a>
@@ -87,10 +92,19 @@
             });
         });
 
+        const closeRoleModal = () => {
+            if (!location.hash) return;
+
+            location.hash = '_';
+            history.replaceState(null, '', location.pathname + location.search);
+        };
+
         document.querySelectorAll('[data-close-role-modal]').forEach((button) => {
-            button.addEventListener('click', () => {
-                history.replaceState(null, '', location.pathname + location.search);
-            });
+            button.addEventListener('click', closeRoleModal);
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') closeRoleModal();
         });
     </script>
 @endsection

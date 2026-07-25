@@ -31,6 +31,7 @@ class StallApplication extends Model
         'contact_number',
         'email',
         'business_owner',
+        'tin_number',
         'business_nature',
         'trade_name',
         'permit_issued_at',

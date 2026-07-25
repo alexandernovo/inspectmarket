@@ -5,8 +5,11 @@ use App\Models\CashTicketAssignment;
 use App\Models\CashTicketCollection;
 use App\Models\LivestockInspection;
 use App\Models\MarketMessage;
+use App\Models\MarketNotification;
 use App\Models\Payment;
 use App\Models\StallApplication;
+use App\Models\StallApplicationDocument;
+use App\Models\SystemSetting;
 use App\Models\User;
 use App\Models\VerificationCode;
 use Database\Seeders\DatabaseSeeder;
@@ -19,9 +22,15 @@ beforeEach(function () {
 });
 
 it('shows the wireframe homepage and opens the five-role login page', function () {
+    SystemSetting::updateOrCreate(
+        ['key' => 'market_tagline'],
+        ['value' => 'Backend managed market service information', 'group' => 'GENERAL']
+    );
+
     $this->get(route('home'))
         ->assertOk()
         ->assertSee('PANDAN PUBLIC MARKET')
+        ->assertSee('Backend managed market service information')
         ->assertSee('Sign in')
         ->assertSee('Log in')
         ->assertDontSee('Explore services')
@@ -76,9 +85,11 @@ it('authenticates a seeded user through the matching role portal', function () {
 });
 
 it('allows a tenant to submit a stall application', function () {
+    Storage::fake('public');
     $tenant = User::where('usertype', User::ROLE_TENANT)->firstOrFail();
 
     $this->actingAs($tenant)
+        ->withHeader('Accept', 'application/json')
         ->post(route('tenant.applications.store'), [
             'business_name' => 'Test Market Store',
             'business_category' => 'Dry goods',
@@ -86,13 +97,196 @@ it('allows a tenant to submit a stall application', function () {
             'preferred_section' => 'MIXED',
             'preferred_stall_number' => 12,
             'business_owner' => $tenant->full_name,
+            'tin_number' => '123-456-789-000',
             'contact_number' => $tenant->phone_num,
+            'documents' => [
+                UploadedFile::fake()->create('tenant-permit.pdf', 100, 'application/pdf'),
+            ],
         ])
+        ->assertOk()
+        ->assertJsonPath('status', 'success');
+
+    $application = StallApplication::where('business_name', 'Test Market Store')->firstOrFail();
+    $document = StallApplicationDocument::where('stall_application_id', $application->id)->firstOrFail();
+
+    expect($application->tenant_id)->toBe($tenant->id)
+        ->and($application->tin_number)->toBe('123-456-789-000');
+    Storage::disk('public')->assertExists($document->path);
+
+    $this->actingAs($tenant)
+        ->get(route('stall-applications.documents.preview', $document))
+        ->assertOk()
+        ->assertHeader('content-disposition', 'inline; filename="tenant-permit.pdf"');
+});
+
+it('allows a tenant to delete only their pending stall application', function () {
+    $tenant = User::where('usertype', User::ROLE_TENANT)->firstOrFail();
+    $application = $tenant->stallApplications()->create([
+        'application_number' => 'APP-DELETE-TEST',
+        'business_name' => 'Pending Store',
+        'business_category' => 'Dry goods',
+        'business_address' => 'Pandan, Antique',
+        'preferred_section' => 'MIXED',
+        'business_owner' => $tenant->full_name,
+        'contact_number' => $tenant->phone_num,
+        'status' => 'PENDING',
+    ]);
+
+    $this->actingAs($tenant)
+        ->delete(route('tenant.applications.destroy', $application))
         ->assertRedirect();
 
-    expect(
-        StallApplication::where('business_name', 'Test Market Store')->exists()
-    )->toBeTrue();
+    $this->assertDatabaseMissing('stall_applications', ['id' => $application->id]);
+});
+
+it('lets tenants manage pending inspection requests from backend table actions', function () {
+    $tenant = User::where('usertype', User::ROLE_TENANT)->firstOrFail();
+    $inspection = $tenant->inspectionRequests()->create([
+        'request_number' => 'INSP-TENANT-ACTIONS',
+        'livestock_type' => 'POULTRY',
+        'owner_name' => $tenant->full_name,
+        'address' => 'Pandan, Antique',
+        'contact_number' => $tenant->phone_num,
+        'scheduled_at' => now()->addDays(4),
+        'animal_count' => 2,
+        'status' => 'PENDING',
+    ]);
+
+    $this->actingAs($tenant)
+        ->getJson(route('tenant.datatable.inspections', [
+            'draw' => 1,
+            'start' => 0,
+            'length' => 20,
+            'search' => ['value' => 'INSP-TENANT-ACTIONS', 'regex' => false],
+        ]))
+        ->assertOk()
+        ->assertJsonFragment(['reference' => 'INSP-TENANT-ACTIONS'])
+        ->assertJsonPath('data.0.action', fn (string $actions) => str_contains($actions, 'js-view-inspection')
+            && str_contains($actions, 'js-edit-inspection')
+            && str_contains($actions, 'js-delete-inspection'));
+
+    $this->actingAs($tenant)
+        ->withHeader('Accept', 'application/json')
+        ->put(route('tenant.inspections.update', $inspection), [
+            'livestock_type' => 'BEEF',
+            'owner_name' => $tenant->full_name,
+            'address' => 'Centro, Pandan, Antique',
+            'contact_number' => $tenant->phone_num,
+            'scheduled_at' => now()->addDays(6)->format('Y-m-d H:i:s'),
+            'animal_count' => 3,
+        ])
+        ->assertOk()
+        ->assertJsonPath('status', 'success');
+
+    $this->assertDatabaseHas('livestock_inspections', [
+        'id' => $inspection->id,
+        'livestock_type' => 'BEEF',
+        'animal_count' => 3,
+    ]);
+
+    $this->actingAs($tenant)
+        ->withHeader('Accept', 'application/json')
+        ->delete(route('tenant.inspections.destroy', $inspection))
+        ->assertOk();
+
+    $this->assertDatabaseMissing('livestock_inspections', ['id' => $inspection->id]);
+});
+
+it('runs the inspector wireframe workflow against shared tenant records', function () {
+    $inspector = User::where('usertype', User::ROLE_INSPECTOR)->firstOrFail();
+    $tenant = User::where('usertype', User::ROLE_TENANT)->firstOrFail();
+    $scheduledAt = now()->addDays(8)->setTime(14, 30);
+
+    $this->actingAs($inspector)
+        ->withHeader('Accept', 'application/json')
+        ->post(route('inspector.inspections.store'), [
+            'livestock_type' => 'POULTRY',
+            'owner_name' => 'Inspector Added Owner',
+            'address' => 'Pandan, Antique',
+            'contact_number' => '09170001111',
+            'scheduled_at' => $scheduledAt->format('Y-m-d H:i:s'),
+            'animal_count' => 6,
+            'breed' => 'Chicken (Native)',
+            'source_location' => 'Pandan Farm',
+            'purpose' => 'Human Consumption',
+            'ante_mortem_findings' => ['general_condition' => 'HEALTHY'],
+            'post_mortem_findings' => ['general_condition' => 'PASSED', 'organs_examination' => 'PASSED'],
+            'inspection_result' => 'PASSED',
+        ])
+        ->assertOk()
+        ->assertJsonPath('status', 'success');
+
+    $created = LivestockInspection::where('owner_name', 'Inspector Added Owner')->firstOrFail();
+    expect($created->inspector_id)->toBe($inspector->id)
+        ->and($created->request_source)->toBe('INSPECTOR')
+        ->and($created->status)->toBe('COMPLETED')
+        ->and($created->certificate_number)->not->toBeNull();
+
+    $tenantRequest = $tenant->inspectionRequests()->create([
+        'request_number' => 'INSP-INSPECTOR-DECISION',
+        'livestock_type' => 'BEEF',
+        'owner_name' => $tenant->full_name,
+        'address' => $tenant->address,
+        'contact_number' => $tenant->phone_num,
+        'email' => $tenant->email,
+        'request_source' => 'TENANT',
+        'scheduled_at' => now()->addDays(10),
+        'animal_count' => 2,
+        'status' => 'PENDING',
+    ]);
+
+    $this->actingAs($inspector)
+        ->withHeader('Accept', 'application/json')
+        ->put(route('inspector.inspections.update', $tenantRequest), [
+            'status' => 'APPROVED',
+            'scheduled_at' => now()->addDays(11)->format('Y-m-d H:i:s'),
+            'remarks' => 'Approved inspection schedule.',
+        ])
+        ->assertOk()
+        ->assertJsonPath('status', 'success');
+
+    expect($tenantRequest->fresh()->status)->toBe('APPROVED')
+        ->and($tenantRequest->fresh()->inspector_id)->toBe($inspector->id)
+        ->and(MarketNotification::where('user_id', $tenant->id)->where('message', 'like', '%INSP-INSPECTOR-DECISION%')->exists())->toBeTrue();
+
+    $this->actingAs($inspector)
+        ->getJson(route('inspector.datatable.inspections', [
+            'draw' => 1,
+            'start' => 0,
+            'length' => 20,
+            'mode' => 'requests',
+            'status' => 'APPROVED',
+            'search' => ['value' => 'INSP-INSPECTOR-DECISION', 'regex' => false],
+        ]))
+        ->assertOk()
+        ->assertJsonPath('data.0.reference', 'INSP-INSPECTOR-DECISION')
+        ->assertJsonPath('data.0.action', fn (string $action) => str_contains($action, 'js-request-view'));
+
+    $this->actingAs($inspector)
+        ->get(route('inspector.reports', [
+            'livestock' => 'POULTRY',
+            'month' => $scheduledAt->format('Y-m'),
+        ]))
+        ->assertOk()
+        ->assertSee('Inspector Added Owner');
+
+    foreach (['doc', 'xls'] as $format) {
+        $this->actingAs($inspector)
+            ->get(route('inspector.reports.export', [
+                'format' => $format,
+                'livestock' => 'POULTRY',
+                'month' => $scheduledAt->format('Y-m'),
+            ]))
+            ->assertOk()
+            ->assertDownload();
+    }
+
+    $this->actingAs($inspector)
+        ->withHeader('Accept', 'application/json')
+        ->delete(route('inspector.inspections.destroy', $created))
+        ->assertOk();
+
+    $this->assertDatabaseMissing('livestock_inspections', ['id' => $created->id]);
 });
 
 it('supports the clerk inspector and treasurer write workflows', function () {
@@ -313,6 +507,7 @@ it('renders every public wireframe service screen and accepts a public inspectio
     Storage::fake('public');
     $this->post(route('public.stall-application.store'), [
         'business_owner' => 'Public Applicant',
+        'tin_number' => '987-654-321-000',
         'birth_date' => '1990-01-15',
         'civil_status' => 'SINGLE',
         'sex' => 'MALE',
@@ -326,14 +521,41 @@ it('renders every public wireframe service screen and accepts a public inspectio
         'permit_issued_at' => now()->subMonth()->toDateString(),
         'preferred_section' => 'MIXED',
         'preferred_stall_number' => 12,
-        'documents' => [UploadedFile::fake()->create('barangay-permit.pdf', 300, 'application/pdf')],
+        'documents' => [
+            UploadedFile::fake()->create('barangay-permit.pdf', 300, 'application/pdf'),
+            UploadedFile::fake()->create('business-profile.docx', 300, 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'),
+        ],
     ])->assertRedirect();
 
     $application = StallApplication::where('business_owner', 'Public Applicant')->firstOrFail();
     expect($application->tenant_id)->toBeNull()
         ->and($application->request_source)->toBe('PUBLIC')
-        ->and($application->documents)->toHaveCount(1);
-    Storage::disk('public')->assertExists($application->documents->first()->path);
+        ->and($application->tin_number)->toBe('987-654-321-000')
+        ->and($application->documents)->toHaveCount(2);
+    $application->documents->each(fn ($document) => Storage::disk('public')->assertExists($document->path));
+});
+
+it('connects homepage inspection requests to the logged in tenant', function () {
+    $tenant = User::where('usertype', User::ROLE_TENANT)->firstOrFail();
+
+    $this->actingAs($tenant)
+        ->post(route('public.inspection.store'), [
+            'livestock_type' => 'BEEF',
+            'owner_name' => $tenant->full_name,
+            'address' => 'Pandan, Antique',
+            'contact_number' => $tenant->phone_num,
+            'email' => $tenant->email,
+            'scheduled_at' => now()->addDays(5)->format('Y-m-d H:i:s'),
+            'animal_count' => 2,
+        ])
+        ->assertRedirect();
+
+    $this->assertDatabaseHas('livestock_inspections', [
+        'owner_name' => $tenant->full_name,
+        'livestock_type' => 'BEEF',
+        'request_source' => 'TENANT',
+        'tenant_id' => $tenant->id,
+    ]);
 });
 
 it('supports collector management role reports and administrator record drilldowns', function () {

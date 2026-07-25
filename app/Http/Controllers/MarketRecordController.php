@@ -31,6 +31,18 @@ class MarketRecordController extends Controller
         return Storage::disk('public')->download($document->path, $document->original_name);
     }
 
+    public function applicationDocumentPreview(Request $request, StallApplicationDocument $document)
+    {
+        $this->authorizeApplication($request, $document->application);
+
+        abort_unless(Storage::disk('public')->exists($document->path), 404);
+
+        return Storage::disk('public')->response($document->path, $document->original_name, [
+            'Content-Type' => $document->mime_type ?: 'application/octet-stream',
+            'Content-Disposition' => 'inline; filename="'.$document->original_name.'"',
+        ]);
+    }
+
     public function inspection(Request $request, LivestockInspection $inspection)
     {
         abort_if(

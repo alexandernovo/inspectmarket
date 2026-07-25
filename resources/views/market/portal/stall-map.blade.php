@@ -1,6 +1,62 @@
 @extends('market.layouts.portal')
 
 @section('content')
+    @if (auth()->user()->isRole('TENANT'))
+        @php
+            $sectionMeta = [
+                'FISH' => ['image' => 'Fish Section.png', 'class' => 'fish'],
+                'PORK' => ['image' => 'Pork Section.png', 'class' => 'pork'],
+                'POULTRY' => ['image' => 'Poultry Section.png', 'class' => 'poultry'],
+                'BEEF' => ['image' => 'Beef Section.png', 'class' => 'beef'],
+                'MIXED' => ['image' => 'Mixed Section.png', 'class' => 'mixed'],
+            ];
+        @endphp
+
+        <section class="public-map-card stall-location-screen tenant-location-screen">
+            <div class="stall-location-topbar">
+                <div class="stall-location-legend"><strong>Legend:</strong><span class="available">Available</span><span class="occupied">Occupied</span></div>
+                <button type="button" class="stall-detail-button" data-stall-details-open>Stall Details</button>
+            </div>
+            <div class="wireframe-location-people" aria-hidden="true">
+                <img src="{{ asset('assets/einspect/USERS/G-Administrator.png') }}" alt="">
+                <img src="{{ asset('assets/einspect/USERS/H-Treasurer.png') }}" alt="">
+                <img src="{{ asset('assets/einspect/USERS/I-Clerk.png') }}" alt="">
+                <img src="{{ asset('assets/einspect/USERS/J-Inspector.png') }}" alt="">
+            </div>
+            @foreach ($sectionMeta as $section => $meta)
+                <section class="wireframe-stall-section wireframe-stall-{{ $meta['class'] }}">
+                    <h2><img src="{{ asset('assets/einspect/HOMEPAGE/'.$meta['image']) }}" alt="">{{ $section }} SECTION</h2>
+                    <div class="wireframe-stall-row">
+                        @forelse ($stalls->get($section, collect())->sortBy('stall_number') as $stall)
+                            <button
+                                type="button"
+                                class="wireframe-stall-square {{ strtolower($stall->status) }}"
+                                data-section="{{ $stall->section }}"
+                                data-number="{{ $stall->stall_number }}"
+                                data-status="{{ $stall->status }}"
+                                data-rate="{{ number_format((float) $stall->monthly_rate, 2) }}"
+                                data-description="{{ $stall->description ?: 'No description provided.' }}"
+                                title="{{ $stall->section }} stall {{ $stall->stall_number }} - {{ $stall->status }}"
+                            >{{ $stall->stall_number }}</button>
+                        @empty
+                            <p class="empty-state wireframe-empty">No stall available</p>
+                        @endforelse
+                    </div>
+                </section>
+            @endforeach
+        </section>
+        <dialog id="tenantStallDetails" class="market-dialog compact-dialog public-stall-detail-dialog">
+            <div class="dialog-heading"><div><span>Pandan Public Market</span><h2>Stall Details</h2></div><button type="button" data-close-stall-details>&times;</button></div>
+            <dl class="record-details">
+                <dt>Section</dt><dd data-stall-section>Choose a stall</dd>
+                <dt>Stall Number</dt><dd data-stall-number>-</dd>
+                <dt>Status</dt><dd><span class="status" data-stall-status>-</span></dd>
+                <dt>Monthly Rate</dt><dd data-stall-rate>-</dd>
+                <dt>Description</dt><dd data-stall-description>-</dd>
+            </dl>
+            <div class="dialog-actions"><button type="button" class="button button-muted" data-close-stall-details>Close</button><a href="{{ route('tenant.applications') }}" class="button button-primary" data-apply-stall>Apply for Stall</a></div>
+        </dialog>
+    @else
     <section class="panel">
         <div class="panel-heading"><div><span class="eyebrow">Pandan Public Market</span><h2>Stall Map</h2></div><span class="legend"><i class="available"></i> Available <i class="occupied"></i> Occupied</span></div>
         <div class="market-map">
@@ -37,4 +93,40 @@
             </dialog>
         @endforeach
     @endif
+    @endif
 @endsection
+
+@push('scripts')
+    @if (auth()->user()->isRole('TENANT'))
+        <script>
+            (() => {
+                const dialog = document.getElementById('tenantStallDetails');
+                const section = dialog?.querySelector('[data-stall-section]');
+                const number = dialog?.querySelector('[data-stall-number]');
+                const status = dialog?.querySelector('[data-stall-status]');
+                const rate = dialog?.querySelector('[data-stall-rate]');
+                const description = dialog?.querySelector('[data-stall-description]');
+                const apply = dialog?.querySelector('[data-apply-stall]');
+
+                document.querySelectorAll('.tenant-location-screen .wireframe-stall-square').forEach((stall) => {
+                    stall.addEventListener('click', () => {
+                        if (!dialog || !section || !number || !status || !rate || !description || !apply) return;
+
+                        section.textContent = `${stall.dataset.section} SECTION`;
+                        number.textContent = stall.dataset.number;
+                        status.textContent = stall.dataset.status;
+                        status.className = `status status-${stall.dataset.status.toLowerCase()}`;
+                        rate.textContent = `PHP ${stall.dataset.rate}`;
+                        description.textContent = stall.dataset.description;
+                        apply.toggleAttribute('aria-disabled', stall.dataset.status !== 'AVAILABLE');
+                        apply.textContent = stall.dataset.status === 'AVAILABLE' ? 'Apply for Stall' : 'Not Available';
+                        dialog.showModal();
+                    });
+                });
+
+                document.querySelector('[data-stall-details-open]')?.addEventListener('click', () => dialog?.showModal());
+                dialog?.querySelectorAll('[data-close-stall-details]').forEach((button) => button.addEventListener('click', () => dialog.close()));
+            })();
+        </script>
+    @endif
+@endpush

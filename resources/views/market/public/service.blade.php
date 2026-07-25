@@ -26,16 +26,23 @@
 
         @if ($screen === 'contact')
             <section class="wireframe-contact">
-                <div class="contact-character"><img src="{{ asset('assets/einspect/USERS/G-Administrator.png') }}" alt="Market administrator"><h1>Let's Get in Touch!</h1></div>
-                <div class="contact-seal"><img src="{{ asset('assets/einspect/HOMEPAGE/Logo.png') }}" alt=""><strong>Connect with Us</strong><i class="bi bi-facebook"></i></div>
+                <div class="contact-visual">
+                    <img class="contact-character-image" src="{{ asset('assets/einspect/USERS/G-Administrator.png') }}" alt="Market administrator">
+                    <div class="contact-visual-card">
+                        <h1>Let's Get in Touch!</h1>
+                        <img src="{{ asset('assets/einspect/HOMEPAGE/Logo.png') }}" alt="Municipality of Pandan seal">
+                        <strong>Connect with Us:</strong>
+                        <i class="bi bi-facebook"></i>
+                    </div>
+                </div>
                 <form action="{{ route('contact.store') }}" method="POST" class="wireframe-form">
                     @csrf
                     <h2>Contact Us</h2>
-                    <label>Name<input name="name" required></label>
-                    <label>Address<input name="address"></label>
-                    <label>Contact Number<input name="contact_number" required></label>
-                    <label>Email<input type="email" name="email"></label>
-                    <label>Message<textarea name="message" rows="5" required></textarea></label>
+                    <label>Name:<span class="contact-input-icon"><i class="bi bi-person-circle"></i><input name="name" required></span></label>
+                    <label>Address:<span class="contact-input-icon"><i class="bi bi-house-fill"></i><input name="address"></span></label>
+                    <label>Contact Number:<span class="contact-input-icon"><i class="bi bi-telephone"></i><input name="contact_number" required></span></label>
+                    <label>Email:<span class="contact-input-icon"><i class="bi bi-envelope"></i><input type="email" name="email"></span></label>
+                    <label>Message:<span class="contact-input-icon textarea"><i class="bi bi-envelope-fill"></i><textarea name="message" rows="5" required></textarea></span></label>
                     <button class="button button-primary">Send</button>
                 </form>
             </section>
@@ -135,15 +142,42 @@
                 </script>
             </section>
         @elseif ($screen === 'stall-application')
-            <section class="public-document-form public-stall-application">
+            @guest
+                <section class="tenant-login-required">
+                    <img src="{{ asset('assets/einspect/USERS/5-Tenants.png') }}" alt="Tenant account">
+                    <h1>Tenant login required</h1>
+                    <p>Please log in as a tenant before submitting a stall rental application.</p>
+                    <div>
+                        <a class="button button-primary" href="{{ route('public.roles', 'login') }}#login-tenant">Log in as Tenant</a>
+                        <a class="button button-muted" href="{{ route('public.roles', 'register') }}#register-tenant">Create Tenant Account</a>
+                    </div>
+                </section>
+            @else
+                @if (auth()->user()->isRole('TENANT'))
+
+                @else
+                    <section class="tenant-login-required">
+                        <img src="{{ asset('assets/einspect/HOMEPAGE/Logo.png') }}" alt="Pandan market">
+                        <h1>Tenant access only</h1>
+                        <p>This request is available for tenant accounts. Please use the tenant login to continue.</p>
+                        <div><a class="button button-primary" href="{{ route('public.roles', 'login') }}#login-tenant">Log in as Tenant</a></div>
+                    </section>
+                @endif
+            @endguest
+
+            @auth
+                @unless (auth()->user()->isRole('TENANT'))
+                @else
+            <section class="public-document-form public-stall-application" hidden>
                 <form action="{{ route('public.stall-application.store') }}" method="POST" enctype="multipart/form-data" class="wireframe-stall-form">
                     @csrf
                     <label class="document-upload">
-                        <input type="file" name="documents[]" accept=".pdf,.jpg,.jpeg,.png" multiple required>
+                        <input type="file" name="documents[]" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" multiple required data-document-input>
                         <i class="bi bi-file-earmark-arrow-up"></i>
                         <strong>Upload Requirements</strong>
                         <span>Barangay business permit, valid ID, and supporting documents</span>
-                        <small>PDF, JPG, JPEG, or PNG &middot; up to 10 MB each</small>
+                        <small>PDF, JPG, JPEG, PNG, DOC, or DOCX &middot; up to 10 MB each</small>
+                        <ul class="document-upload-list" data-document-list></ul>
                     </label>
                     <div class="stall-form-fields">
                         <div class="stall-form-heading"><img src="{{ asset('assets/einspect/HOMEPAGE/Logo.png') }}" alt=""><div><span>STALL RENTAL</span><h1>Application Request Form</h1></div></div>
@@ -151,6 +185,7 @@
                             <legend>A. Requestor Information</legend>
                             <div class="form-grid">
                                 <label>Complete Name<input name="business_owner" value="{{ old('business_owner') }}" required></label>
+                                <label>TIN Number<input name="tin_number" value="{{ old('tin_number') }}" placeholder="000-000-000-000" maxlength="15" inputmode="numeric" required></label>
                                 <label>Birth Date<input type="date" name="birth_date" value="{{ old('birth_date') }}" required></label>
                                 <label>Address<input name="business_address" value="{{ old('business_address') }}" required></label>
                                 <label>Civil Status<select name="civil_status" required><option>SINGLE</option><option>MARRIED</option><option>WIDOWED</option><option>SEPARATED</option></select></label>
@@ -177,10 +212,53 @@
                                 <label>Preferred Stall Number<input type="number" min="1" name="preferred_stall_number" value="{{ old('preferred_stall_number') }}"></label>
                             </div>
                         </fieldset>
-                        <div class="dialog-actions"><a href="{{ route('public.service', 'stall-rental') }}" class="button button-muted">Cancel</a><button class="button button-primary">Submit</button></div>
+                        <div class="dialog-actions stall-application-actions"><button class="button button-primary">Submit</button><a href="{{ route('public.service', 'stall-rental') }}" class="button button-muted">Cancel</a></div>
                     </div>
                 </form>
+                <script>
+                    (() => {
+                        const input = document.querySelector('[data-document-input]');
+                        const list = document.querySelector('[data-document-list]');
+                        let files = [];
+
+                        const renderFiles = () => {
+                            if (!input || !list) return;
+
+                            list.innerHTML = '';
+                            files.forEach((file, index) => {
+                                const item = document.createElement('li');
+                                item.innerHTML = `<i class="bi bi-paperclip"></i><span>${file.name}</span><small>${Math.ceil(file.size / 1024)} KB</small><button type="button" aria-label="Remove ${file.name}" data-remove-document="${index}">&times;</button>`;
+                                list.appendChild(item);
+                            });
+                        };
+
+                        const syncInput = () => {
+                            if (!input) return;
+
+                            const transfer = new DataTransfer();
+                            files.forEach((file) => transfer.items.add(file));
+                            input.files = transfer.files;
+                        };
+
+                        input?.addEventListener('change', () => {
+                            files = [...input.files];
+                            renderFiles();
+                        });
+
+                        list?.addEventListener('click', (event) => {
+                            const button = event.target.closest('[data-remove-document]');
+                            if (!button) return;
+
+                            event.preventDefault();
+                            files.splice(Number(button.dataset.removeDocument), 1);
+                            syncInput();
+                            renderFiles();
+                        });
+                    })();
+                </script>
             </section>
+                @endunless
+            @endauth
         @elseif ($screen === 'slaughtered-inspection')
             <section class="slaughter-house-screen">
                 <img class="slaughter-inspector" src="{{ asset('assets/einspect/USERS/J-Inspector.png') }}" alt="Sanitary inspector">
@@ -195,6 +273,32 @@
                     'PORK' => ['label' => 'PORK', 'image' => 'Pork Section.png', 'class' => 'pork', 'icon' => 'bi bi-piggy-bank-fill'],
                 ];
             @endphp
+            @guest
+                <section class="tenant-login-required">
+                    <img src="{{ asset('assets/einspect/USERS/5-Tenants.png') }}" alt="Tenant account">
+                    <h1>Tenant login required</h1>
+                    <p>Please log in as a tenant before requesting a slaughtered livestock inspection.</p>
+                    <div>
+                        <a class="button button-primary" href="{{ route('public.roles', 'login') }}#login-tenant">Log in as Tenant</a>
+                        <a class="button button-muted" href="{{ route('public.roles', 'register') }}#register-tenant">Create Tenant Account</a>
+                    </div>
+                </section>
+            @else
+                @if (auth()->user()->isRole('TENANT'))
+
+                @else
+                    <section class="tenant-login-required">
+                        <img src="{{ asset('assets/einspect/HOMEPAGE/Logo.png') }}" alt="Pandan market">
+                        <h1>Tenant access only</h1>
+                        <p>This request is available for tenant accounts. Please use the tenant login to continue.</p>
+                        <div><a class="button button-primary" href="{{ route('public.roles', 'login') }}#login-tenant">Log in as Tenant</a></div>
+                    </section>
+                @endif
+            @endguest
+
+            @auth
+                @unless (auth()->user()->isRole('TENANT'))
+                @else
             <section class="livestock-choice-screen">
                 <div class="section-heading light livestock-choice-heading">
                     <img src="{{ asset('assets/einspect/HOMEPAGE/Logo.png') }}" alt="">
@@ -213,15 +317,22 @@
 
             @foreach ($livestockChoices as $type => $choice)
                 @php
-                    $reservedDays = ($inspections->get($type, collect()))
-                        ->filter(fn ($inspection) => $inspection->scheduled_at->isSameMonth($inspectionMonth))
-                        ->pluck('scheduled_at')
-                        ->map->day
-                        ->all();
+                    $monthlyInspections = ($inspections->get($type, collect()))
+                        ->filter(fn ($inspection) => $inspection->scheduled_at->isSameMonth($inspectionMonth));
+                    $reservedDays = $monthlyInspections->pluck('scheduled_at')->map->day->unique()->values()->all();
+                    $reservationDetails = $monthlyInspections
+                        ->groupBy(fn ($inspection) => (string) $inspection->scheduled_at->day)
+                        ->map(fn ($dayInspections) => $dayInspections->map(fn ($inspection) => [
+                            'time' => $inspection->scheduled_at->format('g:i A'),
+                            'request_number' => $inspection->request_number,
+                            'owner_name' => $inspection->owner_name,
+                            'status' => $inspection->status,
+                        ])->values())
+                        ->toArray();
                 @endphp
                 <section id="inspection-{{ strtolower($type) }}" class="inspection-request-modal">
                     <button type="button" class="modal-backdrop" aria-label="Close" data-close-public-modal></button>
-                    <form action="{{ route('public.inspection.store') }}" method="POST" class="inspection-modal-card" data-inspection-form>
+                    <form action="{{ route('public.inspection.store') }}" method="POST" class="inspection-modal-card" data-inspection-form data-reservations='@json($reservationDetails)'>
                         @csrf
                         <button type="button" class="login-close" aria-label="Close" data-close-public-modal><i class="bi bi-x-circle-fill"></i></button>
                         <input type="hidden" name="livestock_type" value="{{ $type }}">
@@ -237,10 +348,20 @@
                             <div class="inspection-calendar-days">
                                 @for ($blank = 0; $blank < $inspectionMonth->dayOfWeek; $blank++)<span class="blank"></span>@endfor
                                 @for ($day = 1; $day <= $inspectionMonth->daysInMonth; $day++)
-                                    <button type="button" @class(['reserved' => in_array($day, $reservedDays) || $day < now()->day || \Carbon\Carbon::create($inspectionMonth->year, $inspectionMonth->month, $day)->isWeekend(), 'available' => ! in_array($day, $reservedDays) && $day >= now()->day && ! \Carbon\Carbon::create($inspectionMonth->year, $inspectionMonth->month, $day)->isWeekend()]) data-inspection-day="{{ $day }}">{{ $day }}@if(in_array($day, $reservedDays))<small>RESERVED</small>@endif</button>
+                                    @php
+                                        $date = \Carbon\Carbon::create($inspectionMonth->year, $inspectionMonth->month, $day);
+                                        $isBooked = in_array($day, $reservedDays);
+                                        $isUnavailable = ! $isBooked && ($day < now()->day || $date->isWeekend());
+                                    @endphp
+                                    <button type="button" @class(['reserved' => $isBooked, 'unavailable' => $isUnavailable, 'available' => ! $isBooked && ! $isUnavailable]) data-inspection-day="{{ $day }}">{{ $day }}@if($isBooked)<small>RESERVED</small>@elseif($isUnavailable)<small>UNAVAILABLE</small>@endif</button>
                                 @endfor
                             </div>
-                            <div class="reserved-note"><strong>RESERVED TIME</strong><span>A.M<br>9:30 - 10:30 AM<br>11:00 - 12:00 PM</span><span>P.M</span></div>
+                            <div class="reserved-note" data-reserved-note hidden>
+                                <button type="button" aria-label="Close reserved time" data-close-reserved-note>&times;</button>
+                                <strong>RESERVED TIME</strong>
+                                <div data-reserved-details></div>
+                            </div>
+                            <div class="calendar-status-legend"><span><i class="available"></i>Available</span><span><i class="reserved"></i>Reserved / unavailable</span></div>
                             <div class="inspector-contact"><img src="{{ asset('assets/einspect/USERS/J-Inspector.png') }}" alt=""><strong>EDWIN C. GREGORIO</strong><span>Rural Sanitary Inspector I</span><i class="bi bi-telephone-fill"></i><span>09679050621</span><i class="bi bi-envelope-fill"></i><span>edwingregorio@gmail.com</span></div>
                         </div>
 
@@ -264,6 +385,8 @@
                 </section>
             @endforeach
             </section>
+                @endunless
+            @endauth
         @else
             <section class="public-announcement-screen">
                 <div class="announcement-summary">
@@ -282,7 +405,7 @@
                     <div class="announcement-wire-list">
                         @forelse ($announcements as $announcement)
                             <article data-announcement-category="{{ $announcement->category }}">
-                                <img src="{{ asset('assets/einspect/USERS/J-Inspector.png') }}" alt="Market staff">
+                                <img src="{{ asset('assets/einspect/USERS/G-Administrator.png') }}" alt="Market administrator">
                                 <div>
                                     <h2>{{ optional($announcement->published_at)->format('F j, Y | g:i A') ?? $announcement->created_at->format('F j, Y | g:i A') }}</h2>
                                     <strong>{{ $announcement->title }}</strong>
@@ -334,16 +457,39 @@
             document.querySelectorAll('[data-inspection-form]').forEach((form) => {
                 const dateInput = form.querySelector('[data-date-input]');
                 const timeInput = form.querySelector('[data-time-input]');
+                const reservedNote = form.querySelector('[data-reserved-note]');
+                const reservedDetails = form.querySelector('[data-reserved-details]');
+                const reservations = JSON.parse(form.dataset.reservations || '{}');
 
                 form.querySelectorAll('[data-inspection-day]').forEach((dayButton) => {
                     dayButton.addEventListener('click', () => {
-                        if (dayButton.classList.contains('reserved')) return;
+                        const day = dayButton.dataset.inspectionDay;
 
-                        const day = dayButton.dataset.inspectionDay.padStart(2, '0');
+                        if (dayButton.classList.contains('reserved')) {
+                            if (!reservedNote || !reservedDetails) return;
+
+                            const details = reservations[day] || [];
+                            reservedDetails.innerHTML = details.length
+                                ? details.map((inspection) => `<article><b>${inspection.time}</b><span>${inspection.request_number}</span><small>${inspection.owner_name} &middot; ${inspection.status}</small></article>`).join('')
+                                : '<p>No reservation details found.</p>';
+                            reservedNote.hidden = false;
+                            form.querySelectorAll('[data-inspection-day]').forEach((button) => button.classList.toggle('selected', button === dayButton));
+                            return;
+                        }
+
+                        if (dayButton.classList.contains('unavailable')) return;
+
+                        reservedNote?.setAttribute('hidden', '');
+
+                        const paddedDay = day.padStart(2, '0');
                         const month = String({{ $inspectionMonth->month }}).padStart(2, '0');
-                        dateInput.value = `{{ $inspectionMonth->year }}-${month}-${day}`;
+                        dateInput.value = `{{ $inspectionMonth->year }}-${month}-${paddedDay}`;
                         form.querySelectorAll('[data-inspection-day]').forEach((button) => button.classList.toggle('selected', button === dayButton));
                     });
+                });
+
+                form.querySelector('[data-close-reserved-note]')?.addEventListener('click', () => {
+                    reservedNote?.setAttribute('hidden', '');
                 });
 
                 form.addEventListener('submit', () => {
@@ -363,12 +509,21 @@
     @endif
 
     <script>
+        const closePublicModal = () => {
+            if (!location.hash) return;
+
+            location.hash = '_';
+            history.replaceState(null, '', location.pathname + location.search);
+        };
+
         document.querySelectorAll('[data-close-public-modal]').forEach((button) => {
-            button.addEventListener('click', () => {
-                history.replaceState(null, '', location.pathname + location.search);
-            });
+            button.addEventListener('click', closePublicModal);
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') closePublicModal();
         });
     </script>
 
-    <footer class="public-footer">&copy; {{ date('Y') }} Pandan Public Market. All rights reserved.</footer>
+    <footer class="public-footer">&copy; Copyright {{ date('Y') }}. Developed by KAJS CODERS INVADER. All Rights Reserved</footer>
 @endsection

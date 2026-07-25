@@ -46,8 +46,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [PortalAuthController::class, 'redirect'])->name('dashboard');
     Route::post('/logout', [PortalAuthController::class, 'destroy'])->name('auth.logout');
 
-    Route::get('/profile', [MarketAccountController::class, 'profile'])->name('profile');
-    Route::put('/profile', [MarketAccountController::class, 'updateProfile'])->name('profile.update');
+    Route::get('/account/profile', [MarketAccountController::class, 'profile'])->name('profile');
+    Route::put('/account/profile', [MarketAccountController::class, 'updateProfile'])->name('profile.update');
     Route::get('/notifications', [MarketNotificationController::class, 'index'])->name('notifications.index');
     Route::put('/notifications/read-all', [MarketNotificationController::class, 'readAll'])->name('notifications.read-all');
     Route::get('/notifications/{notification}', [MarketNotificationController::class, 'read'])->name('notifications.read');
@@ -56,6 +56,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/stall-applications/{application}', [MarketRecordController::class, 'application'])->name('stall-applications.show');
     Route::get('/stall-application-documents/{document}', [MarketRecordController::class, 'applicationDocument'])->name('stall-applications.documents');
+    Route::get('/stall-application-documents/{document}/preview', [MarketRecordController::class, 'applicationDocumentPreview'])->name('stall-applications.documents.preview');
     Route::get('/inspections/{inspection}', [MarketRecordController::class, 'inspection'])->name('inspections.show');
     Route::get('/payments/{payment}/receipt', [ReportExportController::class, 'paymentReceipt'])->name('payments.receipt');
     Route::get('/inspections/{inspection}/certificate', [ReportExportController::class, 'inspectionCertificate'])->name('inspections.certificate');
@@ -68,11 +69,17 @@ Route::middleware('auth')->group(function () {
         Route::get('/dashboard', [TenantController::class, 'dashboard'])->name('dashboard');
         Route::get('/stall-map', [TenantController::class, 'stallMap'])->name('stall-map');
         Route::get('/stall-applications', [TenantController::class, 'applications'])->name('applications');
+        Route::get('/stall-applications/create', [TenantController::class, 'createApplication'])->name('applications.create');
         Route::post('/stall-applications', [TenantController::class, 'storeApplication'])->name('applications.store');
+        Route::get('/stall-applications/{application}/edit', [TenantController::class, 'editApplication'])->name('applications.edit');
+        Route::put('/stall-applications/{application}', [TenantController::class, 'updateApplication'])->name('applications.update');
+        Route::delete('/stall-applications/{application}', [TenantController::class, 'destroyApplication'])->name('applications.destroy');
         Route::get('/payments', [TenantController::class, 'payments'])->name('payments');
         Route::post('/payments/{payment}/receipt', [TenantController::class, 'submitPaymentReceipt'])->name('payments.receipt');
         Route::get('/inspection-requests', [TenantController::class, 'inspections'])->name('inspections');
         Route::post('/inspection-requests', [TenantController::class, 'storeInspection'])->name('inspections.store');
+        Route::put('/inspection-requests/{inspection}', [TenantController::class, 'updateInspection'])->name('inspections.update');
+        Route::delete('/inspection-requests/{inspection}', [TenantController::class, 'destroyInspection'])->name('inspections.destroy');
         Route::get('/datatable/applications', [MarketDataTableController::class, 'applications'])->name('datatable.applications');
         Route::get('/datatable/payments', [MarketDataTableController::class, 'payments'])->name('datatable.payments');
         Route::get('/datatable/inspections', [MarketDataTableController::class, 'inspections'])->name('datatable.inspections');
@@ -82,8 +89,11 @@ Route::middleware('auth')->group(function () {
         Route::get('/dashboard', [InspectorController::class, 'dashboard'])->name('dashboard');
         Route::get('/inspections', [InspectorController::class, 'inspections'])->name('inspections');
         Route::get('/reports', [MarketReportController::class, 'index'])->name('reports');
+        Route::get('/reports/export/{format}', [InspectorController::class, 'exportReport'])->whereIn('format', ['doc', 'xls'])->name('reports.export');
+        Route::post('/inspections', [InspectorController::class, 'store'])->name('inspections.store');
         Route::put('/inspections/{inspection}', [InspectorController::class, 'update'])->name('inspections.update');
-        Route::get('/datatable/inspections', [MarketDataTableController::class, 'inspections'])->name('datatable.inspections');
+        Route::delete('/inspections/{inspection}', [InspectorController::class, 'destroy'])->name('inspections.destroy');
+        Route::get('/datatable/inspections', [InspectorController::class, 'dataTable'])->name('datatable.inspections');
     });
 
     Route::prefix('clerk')->name('clerk.')->middleware('market.role:CLERK')->group(function () {

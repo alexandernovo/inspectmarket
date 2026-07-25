@@ -116,6 +116,7 @@ class DatabaseSeeder extends Seeder
             [
                 'tenant_id' => $tenant->id,
                 'stall_id' => $stall->id,
+                'tin_number' => '123-456-789-000',
                 'business_name' => 'Bernesto Fresh Fish',
                 'business_category' => 'Fresh seafood retail',
                 'business_address' => 'Pandan Public Market, Pandan, Antique',
@@ -131,6 +132,7 @@ class DatabaseSeeder extends Seeder
             ['application_number' => 'APP-DEMO-0002'],
             [
                 'tenant_id' => $tenant->id,
+                'tin_number' => '123-456-789-000',
                 'business_name' => 'Bernesto Poultry Supply',
                 'business_category' => 'Poultry',
                 'business_address' => 'Pandan, Antique',

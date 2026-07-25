@@ -103,10 +103,12 @@ class MarketHomeController extends Controller
             'animal_count' => ['required', 'integer', 'min:1'],
         ]);
 
+        $tenant = $request->user()?->isRole(User::ROLE_TENANT) ? $request->user() : null;
+
         $inspection = LivestockInspection::create([
             ...$data,
-            'tenant_id' => null,
-            'request_source' => 'PUBLIC',
+            'tenant_id' => $tenant?->id,
+            'request_source' => $tenant ? 'TENANT' : 'PUBLIC',
             'request_number' => 'INSP-'.now()->format('Ymd').'-'.strtoupper(Str::random(6)),
             'status' => 'PENDING',
         ]);
@@ -128,6 +130,7 @@ class MarketHomeController extends Controller
     {
         $data = $request->validate([
             'business_owner' => ['required', 'string', 'max:255'],
+            'tin_number' => ['required', 'string', 'max:15', 'regex:/^\d{3}-?\d{3}-?\d{3}(?:-?\d{3})?$/'],
             'birth_date' => ['required', 'date', 'before:today'],
             'civil_status' => ['required', 'string', 'max:30'],
             'sex' => ['required', 'in:MALE,FEMALE'],
@@ -143,7 +146,7 @@ class MarketHomeController extends Controller
             'preferred_section' => ['required', 'in:FISH,PORK,POULTRY,BEEF,MIXED'],
             'preferred_stall_number' => ['nullable', 'integer', 'min:1'],
             'documents' => ['required', 'array', 'min:1', 'max:5'],
-            'documents.*' => ['file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],
+            'documents.*' => ['file', 'mimes:pdf,jpg,jpeg,png,doc,docx', 'max:10240'],
         ]);
 
         $documents = $data['documents'];

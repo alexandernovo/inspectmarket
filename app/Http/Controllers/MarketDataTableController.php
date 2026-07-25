@@ -20,21 +20,45 @@ class MarketDataTableController extends Controller
         if ($request->user()->isRole(User::ROLE_TENANT)) {
             $query->where('tenant_id', $request->user()->id);
         }
+        if ($request->filled('section') && strtoupper($request->string('section')->toString()) !== 'ALL') {
+            $query->where('preferred_section', strtoupper($request->string('section')->toString()));
+        }
+        if ($request->filled('status') && strtoupper($request->string('status')->toString()) !== 'ALL') {
+            $query->where('status', strtoupper($request->string('status')->toString()));
+        }
+        if ($request->filled('dateFrom')) {
+            $query->whereDate('created_at', '>=', $request->date('dateFrom'));
+        }
+        if ($request->filled('dateTo')) {
+            $query->whereDate('created_at', '<=', $request->date('dateTo'));
+        }
 
         return ServerDataTable::make(
             $request,
             $query,
-            ['application_number', 'business_name', 'business_category', 'preferred_section', 'status'],
-            ['application_number', 'business_name', 'preferred_section', 'preferred_stall_number', 'status', 'created_at'],
+            ['application_number', 'tin_number', 'business_name', 'business_category', 'preferred_section', 'status'],
+            ['application_number', 'tin_number', 'business_name', 'preferred_section', 'preferred_stall_number', 'status', 'created_at'],
             function (StallApplication $application) use ($request) {
-                $action = '<a class="table-action" href="'.route('stall-applications.show', $application).'" title="View"><i class="bi bi-eye"></i></a>';
+                $action = '<a class="table-action" href="'.route('stall-applications.show', $application).'" title="View"><i class="bi bi-eye-fill"></i></a>';
+
+                if ($request->user()->isRole(User::ROLE_TENANT)) {
+                    $action = '<button type="button" class="table-action js-view-application" data-url="'.route('stall-applications.show', $application).'" title="View"><i class="bi bi-eye-fill"></i></button>';
+                }
 
                 if ($request->user()->isRole(User::ROLE_TREASURER)) {
                     $action .= ' <button type="button" class="table-action approve js-review-application" data-id="'.$application->id.'" data-reference="'.e($application->application_number).'" title="Review"><i class="bi bi-pencil-square"></i></button>';
                 }
+                if ($request->user()->isRole(User::ROLE_TENANT) && $application->status === 'PENDING') {
+                    $action .= ' <button type="button" class="table-action js-edit-application" data-url="'.route('tenant.applications.edit', $application).'" title="Edit"><i class="bi bi-pencil-fill"></i></button>';
+                    $action .= ' <button type="button" class="table-action reject js-delete-application" data-url="'.route('tenant.applications.destroy', $application).'" data-reference="'.e($application->application_number).'" title="Delete"><i class="bi bi-trash-fill"></i></button>';
+                }
 
                 return [
                     'reference' => e($application->application_number),
+                    'tin_number' => e($application->tin_number ?: 'Not provided'),
+                    'owner_name' => e($application->business_owner ?: $application->tenant?->full_name),
+                    'address' => e($application->business_address),
+                    'contact' => e($application->contact_number),
                     'tenant' => '<strong>'.e($application->tenant?->full_name ?? $application->business_owner).'</strong><br><small>'.e($application->business_name).'</small>',
                     'section' => e($application->preferred_section),
                     'stall' => e($application->stall?->stall_number ?? $application->preferred_stall_number ?? 'Unassigned'),
@@ -90,14 +114,44 @@ class MarketDataTableController extends Controller
         if ($request->filled('type')) {
             $query->where('livestock_type', strtoupper($request->string('type')->toString()));
         }
+        if ($request->filled('status') && strtoupper($request->string('status')->toString()) !== 'ALL') {
+            $query->where('status', strtoupper($request->string('status')->toString()));
+        }
+        if ($request->filled('dateFrom')) {
+            $query->whereDate('scheduled_at', '>=', $request->date('dateFrom'));
+        }
+        if ($request->filled('dateTo')) {
+            $query->whereDate('scheduled_at', '<=', $request->date('dateTo'));
+        }
+        if ($request->user()->isRole(User::ROLE_TENANT) && ! $request->has('order.0.column')) {
+            $request->merge(['order' => [['column' => 4, 'dir' => 'desc']]]);
+        }
 
         return ServerDataTable::make(
             $request,
             $query,
-            ['request_number', 'owner_name', 'livestock_type', 'status', 'inspection_result'],
+            ['request_number', 'owner_name', 'address', 'contact_number', 'livestock_type', 'status', 'inspection_result'],
             ['request_number', 'owner_name', 'livestock_type', 'animal_count', 'scheduled_at', 'inspection_result', 'status'],
             function (LivestockInspection $inspection) use ($request) {
                 $action = '<a class="table-action" href="'.route('inspections.show', $inspection).'"><i class="bi bi-eye"></i></a>';
+                if ($request->user()->isRole(User::ROLE_TENANT)) {
+                    $record = e(json_encode([
+                        'id' => $inspection->id,
+                        'livestock_type' => $inspection->livestock_type,
+                        'owner_name' => $inspection->owner_name,
+                        'address' => $inspection->address,
+                        'contact_number' => $inspection->contact_number,
+                        'scheduled_date' => $inspection->scheduled_at->format('Y-m-d'),
+                        'scheduled_time' => $inspection->scheduled_at->format('H:i'),
+                        'animal_count' => $inspection->animal_count,
+                        'update_url' => route('tenant.inspections.update', $inspection),
+                    ]));
+                    $action = '<button type="button" class="table-action view js-view-inspection" data-record="'.$record.'" title="View"><i class="bi bi-eye-fill"></i></button>';
+                    if ($inspection->status === 'PENDING') {
+                        $action .= ' <button type="button" class="table-action edit js-edit-inspection" data-record="'.$record.'" title="Edit"><i class="bi bi-pencil-fill"></i></button>';
+                        $action .= ' <button type="button" class="table-action reject js-delete-inspection" data-url="'.route('tenant.inspections.destroy', $inspection).'" data-reference="'.e($inspection->request_number).'" title="Delete"><i class="bi bi-trash-fill"></i></button>';
+                    }
+                }
                 if ($request->user()->isRole(User::ROLE_INSPECTOR)) {
                     $action .= ' <button type="button" class="table-action approve js-review-inspection" data-id="'.$inspection->id.'" data-reference="'.e($inspection->request_number).'"><i class="bi bi-clipboard2-check"></i></button>';
                 }
@@ -107,6 +161,9 @@ class MarketDataTableController extends Controller
 
                 return [
                     'reference' => e($inspection->request_number),
+                    'owner_name' => e($inspection->owner_name),
+                    'address' => e($inspection->address),
+                    'contact' => e($inspection->contact_number),
                     'owner' => '<strong>'.e($inspection->owner_name).'</strong><br><small>'.e($inspection->contact_number).'</small>',
                     'type' => e($inspection->livestock_type),
                     'animals' => $inspection->animal_count,

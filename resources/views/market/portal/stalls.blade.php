@@ -42,7 +42,16 @@
                                         </div>
                                     </form>
                                 @else
-                                    <span class="muted">{{ $application->remarks ?: 'View' }}</span>
+                                    <div class="inline-actions">
+                                        <button type="button" class="table-action" data-open-dialog="applicationView{{ $application->id }}" title="View"><i class="bi bi-eye"></i></button>
+                                        <button type="button" class="table-action" data-open-dialog="applicationView{{ $application->id }}" title="Edit"><i class="bi bi-pencil-fill"></i></button>
+                                        @if ($application->status === 'PENDING')
+                                            <form action="{{ route('tenant.applications.destroy', $application) }}" method="POST" class="inline-delete-form">
+                                                @csrf @method('DELETE')
+                                                <button type="button" class="table-action reject" data-confirm-delete title="Delete"><i class="bi bi-trash"></i></button>
+                                            </form>
+                                        @endif
+                                    </div>
                                 @endif
                             </td>
                         </tr>
@@ -56,6 +65,45 @@
                                 </td>
                             </tr>
                         @endif
+                        <dialog id="applicationView{{ $application->id }}" class="market-dialog tenant-application-dialog">
+                            <div class="tenant-application-preview">
+                                <aside class="tenant-document-preview">
+                                    <button type="button" class="tenant-dialog-back" data-close-dialog><i class="bi bi-arrow-left"></i></button>
+                                    @if ($application->documents->first())
+                                        @php $document = $application->documents->first(); @endphp
+                                        @if (str_starts_with($document->mime_type ?? '', 'image/'))
+                                            <img src="{{ asset('storage/'.$document->path) }}" alt="{{ $document->original_name }}">
+                                        @else
+                                            <div><i class="bi bi-file-earmark-text"></i><strong>{{ $document->original_name }}</strong><span>{{ number_format($document->size / 1024, 1) }} KB</span></div>
+                                        @endif
+                                    @else
+                                        <div><i class="bi bi-file-earmark-arrow-up"></i><strong>No uploaded document</strong><span>This application has no requirement file yet.</span></div>
+                                    @endif
+                                </aside>
+                                <section class="tenant-application-readonly">
+                                    <button type="button" class="tenant-dialog-close" data-close-dialog><i class="bi bi-x-circle"></i></button>
+                                    <div class="application-form-banner"><img src="{{ asset('assets/einspect/HOMEPAGE/Logo.png') }}" alt=""><div><span>STALL RENTAL</span><h2>APPLICATION REQUEST FORM</h2></div></div>
+                                    <div class="tenant-readonly-grid">
+                                        <h3>A. REQUESTER INFORMATION</h3>
+                                        <p><span>Name/Owner:</span><strong>{{ $application->business_owner }}</strong></p>
+                                        <p><span>TIN Number:</span><strong>{{ $application->tin_number ?? 'Not provided' }}</strong></p>
+                                        <p><span>Address:</span><strong>{{ $application->business_address }}</strong></p>
+                                        <p><span>Civil Status:</span><strong>{{ $application->civil_status ?? '-' }}</strong></p>
+                                        <p><span>Email Address:</span><strong>{{ $application->email ?? $application->tenant?->email ?? '-' }}</strong></p>
+                                        <p><span>Contact Number:</span><strong>{{ $application->contact_number }}</strong></p>
+                                        <h3>B. BUSINESS INFORMATION</h3>
+                                        <p><span>Type of Business:</span><strong>{{ $application->business_category }}</strong></p>
+                                        <p><span>Nature of Business:</span><strong>{{ $application->business_nature ?? '-' }}</strong></p>
+                                        <p><span>Category:</span><strong>{{ $application->preferred_section }}</strong></p>
+                                        <p><span>Business Trade Name:</span><strong>{{ $application->trade_name ?? $application->business_name }}</strong></p>
+                                        <h3>C. STALL PREFERENCE</h3>
+                                        <p><span>Preferred Stall Section:</span><strong>{{ $application->preferred_section }}</strong></p>
+                                        <p><span>Preferred Stall Number:</span><strong>{{ $application->stall?->stall_number ?? $application->preferred_stall_number ?? 'Any available' }}</strong></p>
+                                    </div>
+                                    <div class="dialog-actions"><button type="button" class="button button-primary" data-close-dialog>Close</button></div>
+                                </section>
+                            </div>
+                        </dialog>
                     @empty
                         <tr><td colspan="7" class="empty-state">No stall applications found.</td></tr>
                     @endforelse
@@ -68,20 +116,21 @@
         <dialog id="applicationDialog" class="market-dialog">
             <form action="{{ route('tenant.applications.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
-                <div class="dialog-heading"><div><span>Application Request Form</span><h2>Stall Rental</h2></div><button type="button" data-close-dialog>×</button></div>
-                <div class="form-grid">
+                <div class="application-form-banner"><img src="{{ asset('assets/einspect/HOMEPAGE/Logo.png') }}" alt=""><div><span>STALL RENTAL</span><h2>APPLICATION REQUEST FORM</h2></div><button type="button" data-close-dialog>&times;</button></div>
+                <div class="form-grid tenant-application-form-grid">
                     <label>Business name<input name="business_name" value="{{ old('business_name') }}" required></label>
                     <label>Business category<input name="business_category" value="{{ old('business_category') }}" required></label>
                     <label>Business owner<input name="business_owner" value="{{ old('business_owner', auth()->user()->full_name) }}" required></label>
+                    <label>TIN number<input name="tin_number" value="{{ old('tin_number') }}" placeholder="000-000-000-000" maxlength="15" inputmode="numeric" required></label>
                     <label>Contact number<input name="contact_number" value="{{ old('contact_number', auth()->user()->phone_num) }}" required></label>
                     <label class="full">Business address<input name="business_address" value="{{ old('business_address') }}" required></label>
                     <label>Birth date<input type="date" name="birth_date" value="{{ old('birth_date') }}"></label>
                     <label>Civil status<select name="civil_status"><option value="">Select status</option>@foreach (['SINGLE','MARRIED','WIDOWED','SEPARATED'] as $status)<option>{{ $status }}</option>@endforeach</select></label>
                     <label>Preferred section<select name="preferred_section" required>@foreach (['FISH','PORK','POULTRY','BEEF','MIXED'] as $section)<option>{{ $section }}</option>@endforeach</select></label>
                     <label>Preferred stall<select name="preferred_stall_number"><option value="">Any available stall</option>@foreach ($stalls as $stall)<option value="{{ $stall->stall_number }}">{{ $stall->section }} #{{ $stall->stall_number }}</option>@endforeach</select></label>
-                    <label class="full">Application requirements (PDF or image, maximum five files)<input type="file" name="documents[]" accept=".pdf,image/*" multiple></label>
+                    <label class="full">Application requirements<input type="file" name="documents[]" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" multiple></label>
                 </div>
-                <div class="dialog-actions"><button type="button" class="button button-muted" data-close-dialog>Cancel</button><button class="button button-primary">Submit application</button></div>
+                <div class="dialog-actions"><button class="button button-primary">Submit</button><button type="button" class="button button-muted" data-close-dialog>Cancel</button></div>
             </form>
         </dialog>
     @endif
