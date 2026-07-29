@@ -8,7 +8,7 @@
         <header class="tenant-page-title">
             <div>
                 <i class="bi bi-shop-window"></i>
-                <div><h1>APPLICATION</h1><p>Stall Rental Application Records</p></div>
+                <div><h1>APPLICATION</h1><p>Dashboard | Application</p></div>
             </div>
             <button type="button" class="button tenant-add-application" data-create-application-url="{{ route('tenant.applications.create') }}">
                 <i class="bi bi-plus-circle-fill"></i> Add Application
