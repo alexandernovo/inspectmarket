@@ -6,6 +6,7 @@ use App\Models\MarketMessage;
 use App\Models\MarketNotification;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class MarketChatController extends Controller
 {
@@ -71,5 +72,18 @@ class MarketChatController extends Controller
         ]);
 
         return redirect()->route('chat.index', ['user' => $data['recipient_id']]);
+    }
+
+    public function attachment(Request $request, MarketMessage $message)
+    {
+        abort_unless(
+            $message->sender_id === $request->user()->id || $message->recipient_id === $request->user()->id,
+            403
+        );
+        abort_unless($message->attachment_path && Storage::disk('public')->exists($message->attachment_path), 404);
+
+        return Storage::disk('public')->response($message->attachment_path, $message->attachment_name, [
+            'Content-Disposition' => 'inline; filename="'.$message->attachment_name.'"',
+        ]);
     }
 }

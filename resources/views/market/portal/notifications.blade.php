@@ -20,7 +20,7 @@
             @forelse ($notifications as $notification)
                 <a href="{{ route('notifications.read', $notification) }}"
                     class="{{ $notification->read_at ? '' : 'unread' }}">
-                    <i class="bi bi-bell-fill"></i>
+                    <img class="notification-avatar" src="{{ market_notification_avatar($notification->type) }}" alt="">
                     <div><strong>{{ $notification->title }}</strong>
                         <p>{{ $notification->message }}</p><small>{{ $notification->created_at->diffForHumans() }}</small>
                     </div>

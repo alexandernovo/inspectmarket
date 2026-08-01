@@ -53,23 +53,29 @@ class InspectorController extends Controller
         }
 
         $month = now()->startOfMonth();
-        $reservations = LivestockInspection::query()
-            ->whereBetween('scheduled_at', [$month, $month->copy()->endOfMonth()])
+        $reservationRows = LivestockInspection::query()
             ->whereIn('status', ['PENDING', 'APPROVED', 'COMPLETED'])
             ->orderBy('scheduled_at')
-            ->get()
-            ->groupBy(fn ($inspection) => (string) $inspection->scheduled_at->day)
+            ->get();
+        $reservations = $reservationRows
+            ->groupBy(fn ($inspection) => $inspection->scheduled_at->format('Y-m'))
+            ->map(fn ($monthRows) => $monthRows->groupBy(fn ($inspection) => (string) $inspection->scheduled_at->day)
             ->map(fn ($rows) => $rows->map(fn ($inspection) => [
                 'time' => $inspection->scheduled_at->format('g:i A'),
                 'owner' => $inspection->owner_name,
                 'type' => $inspection->livestock_type,
                 'status' => $inspection->status,
-            ])->values());
+            ])->values()));
 
         return view('market.inspector.requests', [
             'pageTitle' => 'Request Inspection',
             'inspectionMonth' => $month,
             'reservations' => $reservations,
+            'calendarYears' => collect(range(now()->year - 1, now()->year + 2))
+                ->merge($reservationRows->pluck('scheduled_at')->map->year)
+                ->unique()
+                ->sort()
+                ->values(),
             'pendingCount' => LivestockInspection::where('status', 'PENDING')->where('request_source', '!=', 'INSPECTOR')->count(),
         ]);
     }
@@ -109,6 +115,10 @@ class InspectorController extends Controller
 
                 if ($mode !== 'records') {
                     $action = '<button type="button" class="inspector-table-action view js-request-view" data-record="'.$record.'" title="View request"><i class="bi bi-eye-fill"></i></button>';
+                    if ($inspection->status === 'PENDING') {
+                        $action .= ' <button type="button" class="inspector-table-action approve js-request-decision" data-status="APPROVED" data-record="'.$record.'" title="Approve request"><i class="bi bi-check-lg"></i></button>'
+                            .' <button type="button" class="inspector-table-action disapprove js-request-decision" data-status="DISAPPROVED" data-record="'.$record.'" title="Disapprove request"><i class="bi bi-x-lg"></i></button>';
+                    }
                 } else {
                     $action = $view
                         .' <button type="button" class="inspector-table-action edit js-inspector-edit" data-record="'.$record.'" title="Edit"><i class="bi bi-pencil-fill"></i></button>'

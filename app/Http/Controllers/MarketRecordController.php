@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Announcement;
 use App\Models\LivestockInspection;
+use App\Models\Payment;
 use App\Models\StallApplication;
 use App\Models\StallApplicationDocument;
 use App\Models\User;
@@ -61,6 +62,22 @@ class MarketRecordController extends Controller
         abort_unless($announcement->attachment_path && Storage::disk('public')->exists($announcement->attachment_path), 404);
 
         return Storage::disk('public')->download($announcement->attachment_path, $announcement->attachment_name);
+    }
+
+    public function paymentReceiptFile(Request $request, Payment $payment)
+    {
+        $user = $request->user();
+
+        abort_unless(
+            $user->isRole(User::ROLE_ADMINISTRATOR)
+                || $user->isRole(User::ROLE_TREASURER)
+                || $user->isRole(User::ROLE_CLERK)
+                || ($user->isRole(User::ROLE_TENANT) && $payment->tenant_id === $user->id),
+            403
+        );
+        abort_unless($payment->receipt_path && Storage::disk('public')->exists($payment->receipt_path), 404);
+
+        return Storage::disk('public')->response($payment->receipt_path);
     }
 
     private function authorizeApplication(Request $request, StallApplication $application): void

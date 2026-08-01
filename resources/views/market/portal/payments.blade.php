@@ -54,11 +54,14 @@
                     <p>Stall Number: <strong>{{ $application?->stall?->stall_number ?? $application?->preferred_stall_number ?? 'Unassigned' }}</strong></p>
                     <p>Stall Status: <span class="status status-{{ strtolower($application?->stall?->status ?? 'pending') }}">{{ $application?->stall?->status ?? $application?->status ?? 'PENDING' }}</span></p>
                     @if ($application?->documents?->isNotEmpty())
-                        <p>Business Permit:
-                            <a href="{{ asset('storage/'.$application->documents->first()->path) }}" target="_blank">
-                                <i class="bi bi-image"></i>{{ $application->documents->first()->original_name }}
-                            </a>
-                        </p>
+                        <div class="tenant-file-list">
+                            <strong>Business Permit</strong>
+                            @foreach ($application->documents as $document)
+                                <a href="{{ route('stall-applications.documents.preview', $document) }}" target="_blank">
+                                    <i class="bi bi-paperclip"></i>{{ $document->original_name }}
+                                </a>
+                            @endforeach
+                        </div>
                     @endif
                     <i class="bi bi-shop-window tenant-info-illustration"></i>
                 </article>
@@ -109,7 +112,7 @@
                                             <a href="{{ route('payments.receipt', $payment) }}" target="_blank" class="table-action"><i class="bi bi-receipt"></i></a>
                                         @endif
                                         @if ($payment->receipt_path)
-                                            <a href="{{ asset('storage/'.$payment->receipt_path) }}" target="_blank" class="table-action"><i class="bi bi-paperclip"></i></a>
+                                            <a href="{{ route('payments.receipt-file', $payment) }}" target="_blank" class="table-action"><i class="bi bi-paperclip"></i></a>
                                         @endif
                                         @if (in_array($payment->status, ['PENDING','OVERDUE','DISAPPROVED']))
                                             <button type="button" class="table-action" data-open-dialog="receiptDialog{{ $payment->id }}"><i class="bi bi-upload"></i></button>
@@ -163,7 +166,7 @@
                                 <td><span class="status status-{{ strtolower($payment->status) }}">{{ $payment->status }}</span></td>
                                 <td>
                                     @if ($payment->receipt_path)
-                                        <a href="{{ asset('storage/'.$payment->receipt_path) }}" target="_blank" class="table-action" title="View receipt"><i class="bi bi-paperclip"></i></a>
+                                        <a href="{{ route('payments.receipt-file', $payment) }}" target="_blank" class="table-action" title="View receipt"><i class="bi bi-paperclip"></i></a>
                                     @else
                                         <span class="muted">None</span>
                                     @endif

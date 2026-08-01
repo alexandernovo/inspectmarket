@@ -53,16 +53,19 @@ Route::middleware('auth')->group(function () {
     Route::get('/notifications/{notification}', [MarketNotificationController::class, 'read'])->name('notifications.read');
     Route::get('/messages', [MarketChatController::class, 'index'])->name('chat.index');
     Route::post('/messages', [MarketChatController::class, 'store'])->name('chat.store');
+    Route::get('/messages/{message}/attachment', [MarketChatController::class, 'attachment'])->name('chat.attachment');
 
     Route::get('/stall-applications/{application}', [MarketRecordController::class, 'application'])->name('stall-applications.show');
     Route::get('/stall-application-documents/{document}', [MarketRecordController::class, 'applicationDocument'])->name('stall-applications.documents');
     Route::get('/stall-application-documents/{document}/preview', [MarketRecordController::class, 'applicationDocumentPreview'])->name('stall-applications.documents.preview');
     Route::get('/inspections/{inspection}', [MarketRecordController::class, 'inspection'])->name('inspections.show');
+    Route::get('/payments/{payment}/receipt-file', [MarketRecordController::class, 'paymentReceiptFile'])->name('payments.receipt-file');
     Route::get('/payments/{payment}/receipt', [ReportExportController::class, 'paymentReceipt'])->name('payments.receipt');
     Route::get('/inspections/{inspection}/certificate', [ReportExportController::class, 'inspectionCertificate'])->name('inspections.certificate');
     Route::get('/cash-ticket-assignments/{assignment}/slip', [ReportExportController::class, 'assignmentSlip'])->name('assignments.slip');
     Route::get('/cash-ticket-collections/{collection}/report', [ReportExportController::class, 'collectionReport'])->name('collections.report');
     Route::get('/exports/{report}.csv', [ReportExportController::class, 'csv'])->name('reports.csv');
+    Route::get('/exports/{report}/{format}', [ReportExportController::class, 'office'])->whereIn('format', ['doc', 'xls'])->name('reports.office');
     Route::get('/reports/print', [MarketReportController::class, 'printable'])->name('reports.print');
 
     Route::prefix('tenant')->name('tenant.')->middleware('market.role:TENANT')->group(function () {
@@ -99,8 +102,11 @@ Route::middleware('auth')->group(function () {
     Route::prefix('clerk')->name('clerk.')->middleware('market.role:CLERK')->group(function () {
         Route::get('/dashboard', [ClerkController::class, 'dashboard'])->name('dashboard');
         Route::get('/cash-ticket-collections', [ClerkController::class, 'collections'])->name('collections');
+        Route::post('/cash-ticket-assignments', [ClerkController::class, 'storeAssignment'])->name('assignments.store');
+        Route::post('/cash-ticket-progress', [ClerkController::class, 'storeProgress'])->name('cash-ticket.progress');
         Route::post('/cash-ticket-collections', [ClerkController::class, 'storeCollection'])->name('collections.store');
         Route::get('/stall-rentals', [ClerkController::class, 'rentals'])->name('rentals');
+        Route::put('/stall-rentals/{payment}/history', [ClerkController::class, 'updateRentalHistory'])->name('rentals.history.update');
         Route::get('/reports', [MarketReportController::class, 'index'])->name('reports');
         Route::get('/datatable/collections', [MarketDataTableController::class, 'collections'])->name('datatable.collections');
         Route::get('/datatable/assignments', [MarketDataTableController::class, 'assignments'])->name('datatable.assignments');
@@ -111,6 +117,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/dashboard', [TreasurerController::class, 'dashboard'])->name('dashboard');
         Route::get('/announcements', [TreasurerController::class, 'announcements'])->name('announcements');
         Route::post('/announcements', [TreasurerController::class, 'storeAnnouncement'])->name('announcements.store');
+        Route::put('/announcements/{announcement}', [TreasurerController::class, 'updateAnnouncement'])->name('announcements.update');
         Route::get('/stall-rentals', [TreasurerController::class, 'rentals'])->name('rentals');
         Route::get('/stall-map', [TreasurerController::class, 'stallMap'])->name('stall-map');
         Route::put('/stall-map/{stall}', [TreasurerController::class, 'updateStall'])->name('stall-map.update');

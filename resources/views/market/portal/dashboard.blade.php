@@ -69,6 +69,191 @@
                 </div>
             </section>
         </section>
+    @elseif (auth()->user()->isRole('CLERK'))
+        <section class="clerk-dashboard">
+            <header class="clerk-dashboard-title">
+                <i class="bi bi-grid-fill"></i>
+                <div>
+                    <h1>DASHBOARD</h1>
+                    <p>Cash Tickets and Stall Rental Collection Fee Recording Management System</p>
+                </div>
+            </header>
+
+            <div class="clerk-dashboard-stats">
+                @foreach ($stats as $stat)
+                    <article class="clerk-dashboard-stat {{ $stat['tone'] }}">
+                        <div class="clerk-stat-visual">
+                            <img src="{{ asset('assets/einspect/'.$stat['image']) }}" alt="">
+                        </div>
+                        <div>
+                            <span>{{ $stat['label'] }}</span>
+                            <small>( {{ $stat['sublabel'] }} )</small>
+                            <strong>{{ $stat['value'] }}</strong>
+                        </div>
+                    </article>
+                @endforeach
+            </div>
+
+            <section class="clerk-dashboard-records">
+                <div class="clerk-dashboard-filters">
+                    <select id="clerkDashboardLength" aria-label="Rows per page"><option value="5">5 v</option><option value="10" selected>10 v</option><option value="25">25 v</option></select>
+                    <label>From:<input type="date" id="clerkDashboardFrom"></label>
+                    <label>To:<input type="date" id="clerkDashboardTo"></label>
+                    <button type="button" id="clerkDashboardFilter"><i class="bi bi-funnel-fill"></i> Filter</button>
+                    <button type="button" id="clerkDashboardReload"><i class="bi bi-arrow-clockwise"></i> Reload</button>
+                    <label class="clerk-dashboard-search">Search:<input type="search" id="clerkDashboardSearch"></label>
+                </div>
+                <div class="table-wrap">
+                    <table id="clerkDashboardTable" class="clerk-dashboard-table">
+                        <thead>
+                            <tr>
+                                <th>NO.</th>
+                                <th>TENANT</th>
+                                <th>STALL NUMBER</th>
+                                <th>STALL SECTION</th>
+                                <th>STALL FEE</th>
+                                <th>PAYMENT STATUS</th>
+                                <th>DATE PAYMENT</th>
+                                <th>SHORT CHARGE/S</th>
+                                <th>ACTION</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse ($rows as $payment)
+                                <tr data-payment-date="{{ $payment->paid_at?->toDateString() ?? $payment->due_date->toDateString() }}">
+                                    <td>{{ $loop->iteration }}</td>
+                                    <td>{{ $payment->tenant?->full_name ?? 'Tenant' }}</td>
+                                    <td>{{ $payment->stallApplication?->stall?->stall_number ?? 'Unassigned' }}</td>
+                                    <td>{{ str($payment->stallApplication?->stall?->section ?? $payment->stallApplication?->preferred_section ?? 'Unassigned')->title() }} Section</td>
+                                    <td>P{{ number_format($payment->amount, 2) }}</td>
+                                    <td><span class="status status-{{ strtolower($payment->status) }}">{{ str($payment->status)->title() }}</span></td>
+                                    <td>{{ ($payment->paid_at ?? $payment->due_date)->format('F d, Y') }}</td>
+                                    <td>{{ $payment->shortage_amount > 0 ? 'P'.number_format($payment->shortage_amount, 2) : 'None' }}</td>
+                                    <td>
+                                        <div class="inline-actions">
+                                            <a class="table-action edit" href="{{ route('payments.receipt', $payment) }}" target="_blank" title="View OR"><i class="bi bi-pencil-fill"></i></a>
+                                            @if ($payment->receipt_path)
+                                                <a class="table-action reject" href="{{ route('payments.receipt-file', $payment) }}" target="_blank" title="View uploaded receipt"><i class="bi bi-receipt"></i></a>
+                                            @endif
+                                        </div>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="9" class="empty-state">No stall rental payment records yet.</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="clerk-dashboard-chart">
+                <header>
+                    <h2>{{ $chartTitle }}</h2>
+                    <div>
+                        <select id="clerkChartCategory" aria-label="Select category">
+                            <option value="ALL">Select Category</option>
+                            <option value="CASH_TICKET">Cash Ticket</option>
+                            <option value="STALL_RENTAL">Stall Rental</option>
+                        </select>
+                        <select id="clerkChartMonth" aria-label="Select month">
+                            <option value="ALL">All Months</option>
+                            @foreach (range(1, 12) as $month)
+                                <option value="{{ $month }}">{{ now()->startOfYear()->addMonths($month - 1)->format('F') }}</option>
+                            @endforeach
+                        </select>
+                        <select id="clerkChartYear" aria-label="Select year">
+                            @foreach (($chartYears ?? collect([now()->year])) as $year)
+                                <option value="{{ $year }}">{{ $year }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </header>
+                <div class="clerk-chart-plot" data-clerk-chart-series='@json($chartSeries ?? [])'>
+                    @foreach (($chartValues ?? collect(array_fill(0, 12, 6))) as $height)
+                        <div>
+                            <span style="height: {{ $height }}%" title="P{{ number_format((float) ($chartTotals[$loop->index] ?? 0), 2) }}"></span>
+                            <small>{{ now()->startOfYear()->addMonths($loop->index)->format('F') }}</small>
+                        </div>
+                    @endforeach
+                </div>
+            </section>
+        </section>
+    @elseif (auth()->user()->isRole('TREASURER'))
+        <section class="treasurer-dashboard">
+            <header class="treasurer-dashboard-title">
+                <i class="bi bi-grid-fill"></i>
+                <div>
+                    <h1>DASHBOARD</h1>
+                    <p>Cash Ticket and Stall Rental Revenue Management</p>
+                </div>
+            </header>
+
+            <div class="treasurer-dashboard-stats">
+                @foreach ($stats as $stat)
+                    <article class="treasurer-dashboard-stat {{ $stat['tone'] }}">
+                        <div class="treasurer-stat-visual">
+                            <i class="bi {{ $stat['icon'] }}"></i>
+                        </div>
+                        <div>
+                            <span>{{ $stat['label'] }}</span>
+                            <small>( {{ $stat['sublabel'] }} )</small>
+                            <strong>{{ $stat['value'] }}</strong>
+                        </div>
+                    </article>
+                @endforeach
+            </div>
+
+            <section class="treasurer-dashboard-records">
+                <div class="treasurer-dashboard-filters">
+                    <select id="treasurerDashboardLength" aria-label="Rows per page"><option value="5">5 v</option><option value="10" selected>10 v</option><option value="25">25 v</option></select>
+                    <label>From:<input type="date" id="treasurerDashboardFrom"></label>
+                    <label>To:<input type="date" id="treasurerDashboardTo"></label>
+                    <button type="button" id="treasurerDashboardFilter"><i class="bi bi-funnel-fill"></i> Filter</button>
+                    <button type="button" id="treasurerDashboardReload"><i class="bi bi-arrow-clockwise"></i> Reload</button>
+                    <label class="treasurer-dashboard-search">Search:<input type="search" id="treasurerDashboardSearch"></label>
+                </div>
+                <div class="table-wrap">
+                    <table id="treasurerDashboardTable" class="treasurer-dashboard-table">
+                        <thead>
+                            <tr><th>NO.</th><th>APPLICATION</th><th>TENANT / BUSINESS</th><th>SECTION</th><th>STALL</th><th>STATUS</th><th>DATE SUBMITTED</th></tr>
+                        </thead>
+                        <tbody>
+                            @forelse ($rows as $row)
+                                <tr data-submitted-date="{{ $row->created_at->toDateString() }}">
+                                    <td>{{ $loop->iteration }}</td>
+                                    <td>{{ $row->application_number }}</td>
+                                    <td><strong>{{ $row->tenant?->full_name ?? $row->business_owner }}</strong><br><small>{{ $row->business_name }}</small></td>
+                                    <td>{{ str($row->preferred_section)->title() }} Section</td>
+                                    <td>{{ $row->stall?->stall_number ?? $row->preferred_stall_number ?? 'Unassigned' }}</td>
+                                    <td><span class="status status-{{ strtolower($row->status) }}">{{ str($row->status)->title() }}</span></td>
+                                    <td>{{ $row->created_at->format('F d, Y') }}</td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="7" class="empty-state">No stall rental applications yet.</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="treasurer-dashboard-chart">
+                <header>
+                    <h2>{{ $chartTitle }}</h2>
+                    <div>
+                        <span>All Months <i class="bi bi-caret-down-fill"></i></span>
+                        <span>{{ ($chartYears ?? collect([now()->year]))->first() }} <i class="bi bi-caret-down-fill"></i></span>
+                    </div>
+                </header>
+                <div class="treasurer-chart-plot">
+                    @foreach (($chartValues ?? collect(array_fill(0, 12, 6))) as $height)
+                        <div>
+                            <span style="height: {{ $height }}%" title="P{{ number_format((float) ($chartTotals[$loop->index] ?? 0), 2) }}"></span>
+                            <small>{{ now()->startOfYear()->addMonths($loop->index)->format('F') }}</small>
+                        </div>
+                    @endforeach
+                </div>
+            </section>
+        </section>
     @else
         <div class="stat-grid">
             @foreach ($stats as $stat)
@@ -129,5 +314,104 @@
 @push('scripts')
     @if (auth()->user()->isRole('TENANT'))
         @include('market.tenant.dashboard.js.dashboard')
+    @elseif (auth()->user()->isRole('CLERK'))
+        <script>
+            $(function () {
+                const table = $('#clerkDashboardTable').DataTable({
+                    pageLength: 10,
+                    lengthMenu: [5, 10, 25],
+                    order: [],
+                    dom: 'rtip'
+                });
+
+                $('#clerkDashboardLength').on('change', function () {
+                    table.page.len(Number(this.value)).draw();
+                });
+
+                $('#clerkDashboardSearch').on('input', function () {
+                    table.search(this.value).draw();
+                });
+
+                $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
+                    if (settings.nTable.id !== 'clerkDashboardTable') return true;
+                    const row = table.row(dataIndex).node();
+                    const paymentDate = row?.dataset.paymentDate || '';
+                    const from = $('#clerkDashboardFrom').val();
+                    const to = $('#clerkDashboardTo').val();
+
+                    return (!from || paymentDate >= from) && (!to || paymentDate <= to);
+                });
+
+                $('#clerkDashboardFilter').on('click', function () {
+                    table.draw();
+                });
+
+                $('#clerkDashboardReload').on('click', function () {
+                    $('#clerkDashboardFrom, #clerkDashboardTo, #clerkDashboardSearch').val('');
+                    table.search('').draw();
+                });
+
+                const chart = document.querySelector('.clerk-chart-plot');
+                const series = JSON.parse(chart?.dataset.clerkChartSeries || '{}');
+
+                function renderClerkChart() {
+                    if (!chart) return;
+                    const category = $('#clerkChartCategory').val() || 'ALL';
+                    const month = $('#clerkChartMonth').val() || 'ALL';
+                    const values = series[category] || series.ALL || [];
+                    const visibleValues = month === 'ALL'
+                        ? values
+                        : values.map((value, index) => index + 1 === Number(month) ? value : 0);
+                    const maximum = Math.max(...visibleValues.map(Number), 1);
+
+                    chart.querySelectorAll('span').forEach((bar, index) => {
+                        const value = Number(visibleValues[index] || 0);
+                        bar.style.height = Math.max(value > 0 ? 6 : 0, Math.round((value / maximum) * 100)) + '%';
+                        bar.title = 'P' + value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                    });
+                }
+
+                $('#clerkChartCategory, #clerkChartMonth, #clerkChartYear').on('change', renderClerkChart);
+                renderClerkChart();
+            });
+        </script>
+    @elseif (auth()->user()->isRole('TREASURER'))
+        <script>
+            $(function () {
+                const table = $('#treasurerDashboardTable').DataTable({
+                    pageLength: 10,
+                    lengthMenu: [5, 10, 25],
+                    order: [],
+                    dom: 'rtip'
+                });
+
+                $('#treasurerDashboardLength').on('change', function () {
+                    table.page.len(Number(this.value)).draw();
+                });
+
+                $('#treasurerDashboardSearch').on('input', function () {
+                    table.search(this.value).draw();
+                });
+
+                $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
+                    if (settings.nTable.id !== 'treasurerDashboardTable') return true;
+                    const row = table.row(dataIndex).node();
+                    const submittedDate = row?.dataset.submittedDate || '';
+                    const from = $('#treasurerDashboardFrom').val();
+                    const to = $('#treasurerDashboardTo').val();
+
+                    return (!from || submittedDate >= from) && (!to || submittedDate <= to);
+                });
+
+                $('#treasurerDashboardFilter').on('click', function () {
+                    table.draw();
+                });
+
+                $('#treasurerDashboardReload').on('click', function () {
+                    $('#treasurerDashboardFrom, #treasurerDashboardTo, #treasurerDashboardSearch').val('');
+                    table.search('').draw();
+                });
+            });
+        </script>
     @endif
 @endpush

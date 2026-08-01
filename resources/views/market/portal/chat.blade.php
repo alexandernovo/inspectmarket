@@ -17,8 +17,7 @@
             @foreach ($contacts as $contact)
                 <a href="{{ route('chat.index', ['user' => $contact->id]) }}"
                     class="{{ $selected?->id === $contact->id ? 'active' : '' }}">
-                    <span
-                        class="contact-avatar">{{ strtoupper(substr($contact->firstname, 0, 1) . substr($contact->lastname, 0, 1)) }}</span>
+                    <img class="contact-avatar" src="{{ market_role_avatar($contact->usertype, $contact->profile) }}" alt="{{ $contact->full_name }}">
                     <span><strong>{{ $contact->full_name }}</strong><small>{{ ucfirst($contact->role_slug) }}</small></span>
                 </a>
             @endforeach
@@ -31,7 +30,7 @@
                         <article class="{{ $message->sender_id === auth()->id() ? 'mine' : 'theirs' }}">
                             <p>{{ $message->body }}</p>
                             @if ($message->attachment_path)
-                                <a href="{{ asset('storage/' . $message->attachment_path) }}" target="_blank"><i
+                                <a href="{{ route('chat.attachment', $message) }}" target="_blank"><i
                                         class="bi bi-paperclip"></i> {{ $message->attachment_name }}</a>
                             @endif
                             <small>{{ $message->created_at->format('M d, g:i A') }}</small>

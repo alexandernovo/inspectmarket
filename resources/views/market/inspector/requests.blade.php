@@ -34,27 +34,22 @@
     <dialog id="inspectorRequestDialog" class="inspector-request-dialog">
         <form id="inspectorRequestForm">
             <button type="button" class="inspector-dialog-close" data-close-inspector-request aria-label="Close"><i class="bi bi-x-circle-fill"></i></button>
-            <section class="inspector-request-calendar">
+            <section class="inspector-request-calendar" data-inspector-reservations='@json($reservations)'>
                 <header>
-                    <strong>{{ $inspectionMonth->format('n') }}</strong>
-                    <span>{{ strtoupper($inspectionMonth->format('F')) }}</span>
-                    <strong>{{ $inspectionMonth->format('Y') }}</strong>
+                    <strong data-inspector-calendar-month-number>{{ $inspectionMonth->format('n') }}</strong>
+                    <select data-inspector-calendar-month aria-label="Calendar month">
+                        @foreach (range(1, 12) as $month)
+                            <option value="{{ $month }}" @selected($month === $inspectionMonth->month)>{{ strtoupper(\Carbon\Carbon::create()->month($month)->format('F')) }}</option>
+                        @endforeach
+                    </select>
+                    <select data-inspector-calendar-year aria-label="Calendar year">
+                        @foreach ($calendarYears as $year)
+                            <option value="{{ $year }}" @selected($year === $inspectionMonth->year)>{{ $year }}</option>
+                        @endforeach
+                    </select>
                 </header>
                 <div class="inspector-calendar-week">@foreach(['SUN','MON','TUE','WED','THU','FRI','SAT'] as $day)<span>{{ $day }}</span>@endforeach</div>
-                <div class="inspector-calendar-days">
-                    @for ($blank = 0; $blank < $inspectionMonth->dayOfWeek; $blank++)<span class="blank"></span>@endfor
-                    @for ($day = 1; $day <= $inspectionMonth->daysInMonth; $day++)
-                        @php
-                            $date = $inspectionMonth->copy()->day($day);
-                            $dayReservations = $reservations->get((string) $day, collect());
-                            $reserved = $dayReservations->isNotEmpty();
-                            $weekend = $date->isWeekend();
-                        @endphp
-                        <button type="button" @class(['reserved' => $reserved, 'weekend' => $weekend, 'available' => ! $weekend]) data-calendar-day="{{ $day }}" data-reservations='@json($dayReservations)'>
-                            {{ $day }}@if($reserved)<small>RESERVED</small>@endif
-                        </button>
-                    @endfor
-                </div>
+                <div class="inspector-calendar-days" data-inspector-calendar-days></div>
                 <aside class="inspector-reserved-time" hidden>
                     <strong>RESERVED TIME</strong>
                     <div data-reserved-list></div>
@@ -129,6 +124,12 @@
             const requestDialog = document.getElementById('inspectorRequestDialog');
             const decisionDialog = document.getElementById('inspectorDecisionDialog');
             const decisionForm = document.getElementById('inspectorDecisionForm');
+            const calendarPanel = document.querySelector('.inspector-request-calendar');
+            const reservationData = JSON.parse(calendarPanel.dataset.inspectorReservations || '{}');
+            const calendarDays = document.querySelector('[data-inspector-calendar-days]');
+            const calendarMonth = document.querySelector('[data-inspector-calendar-month]');
+            const calendarYear = document.querySelector('[data-inspector-calendar-year]');
+            const calendarMonthNumber = document.querySelector('[data-inspector-calendar-month-number]');
 
             const table = $('#inspectorRequestsTable').DataTable({
                 processing: true,
@@ -179,6 +180,41 @@
                 return [parts[0] || '', parts[1] || 'Pandan', parts.slice(2).join(', ') || 'Antique'];
             }
 
+            function reservationKey(year, month) {
+                return year + '-' + String(month).padStart(2, '0');
+            }
+
+            function renderInspectorCalendar(selectedDate = '') {
+                const year = Number(calendarYear.value);
+                const month = Number(calendarMonth.value);
+                const firstDay = new Date(year, month - 1, 1);
+                const daysInMonth = new Date(year, month, 0).getDate();
+                const monthReservations = reservationData[reservationKey(year, month)] || {};
+                calendarMonthNumber.textContent = month;
+                calendarDays.innerHTML = '';
+
+                for (let blank = 0; blank < firstDay.getDay(); blank++) {
+                    const spacer = document.createElement('span');
+                    spacer.className = 'blank';
+                    calendarDays.appendChild(spacer);
+                }
+
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const date = new Date(year, month - 1, day);
+                    const reservations = monthReservations[String(day)] || [];
+                    const button = document.createElement('button');
+                    button.type = 'button';
+                    button.dataset.calendarDay = day;
+                    button.dataset.reservations = JSON.stringify(reservations);
+                    button.classList.toggle('reserved', reservations.length > 0);
+                    button.classList.toggle('weekend', date.getDay() === 0 || date.getDay() === 6);
+                    button.classList.toggle('available', date.getDay() !== 0 && date.getDay() !== 6);
+                    button.classList.toggle('selected', selectedDate === year + '-' + String(month).padStart(2, '0') + '-' + String(day).padStart(2, '0'));
+                    button.innerHTML = day + (reservations.length ? '<small>RESERVED</small>' : '');
+                    calendarDays.appendChild(button);
+                }
+            }
+
             function openRequest(record) {
                 activeRecord = record;
                 const names = splitName(record.owner_name);
@@ -196,8 +232,9 @@
                 $('[data-request-status-select]').val('');
                 $('[data-request-type-label]').text('(' + record.livestock_type.charAt(0) + record.livestock_type.slice(1).toLowerCase() + ' Slaughtered Livestock)');
                 $('[data-request-type-icon]').attr('class', 'bi ' + (record.livestock_type === 'POULTRY' ? 'bi-egg-fried' : record.livestock_type === 'PORK' ? 'bi-piggy-bank-fill' : 'bi-heart-pulse-fill'));
-                $('[data-calendar-day]').removeClass('selected');
-                $('[data-calendar-day="' + Number(record.scheduled_date.slice(-2)) + '"]').addClass('selected');
+                calendarYear.value = record.scheduled_date.slice(0, 4);
+                calendarMonth.value = Number(record.scheduled_date.slice(5, 7));
+                renderInspectorCalendar(record.scheduled_date);
                 requestDialog.showModal();
             }
 
@@ -205,7 +242,7 @@
             $('[data-close-inspector-request]').on('click', function () { requestDialog.close(); });
             $('[data-close-decision]').on('click', function () { decisionDialog.close(); });
 
-            $('[data-calendar-day]').on('click', function () {
+            $(document).on('click', '[data-calendar-day]', function () {
                 const reservations = JSON.parse(this.dataset.reservations || '[]');
                 const note = document.querySelector('.inspector-reserved-time');
                 if (reservations.length) {
@@ -215,12 +252,17 @@
                     note.hidden = true;
                 }
             });
+            $('[data-inspector-calendar-month], [data-inspector-calendar-year]').on('change', function () {
+                document.querySelector('.inspector-reserved-time').hidden = true;
+                renderInspectorCalendar(activeRecord?.scheduled_date || '');
+            });
 
-            $('[data-request-status-select]').on('change', function () {
-                if (!this.value || !activeRecord) return;
-                const approved = this.value === 'APPROVED';
+            function openDecision(record, selectedStatus) {
+                if (!selectedStatus || !record) return;
+                activeRecord = record;
+                const approved = selectedStatus === 'APPROVED';
                 decisionForm.action = activeRecord.update_url;
-                $('[data-decision-status]').val(this.value);
+                $('[data-decision-status]').val(selectedStatus);
                 $('[data-decision-title]').text(approved ? 'APPROVED REQUEST' : 'DISAPPROVED REQUEST');
                 $('[data-decision-type]').text(activeRecord.livestock_type + ' SLAUGHTERED INSPECTION');
                 $('[data-decision-icon]').attr('class', 'bi ' + (approved ? 'bi-check-circle' : 'bi-x-circle'));
@@ -231,6 +273,15 @@
                 $('[data-decision-remarks-label]').text(approved ? 'Remarks:' : 'State the Reason of Request Denial:');
                 decisionForm.classList.toggle('disapproved', !approved);
                 decisionDialog.showModal();
+            }
+
+            $('[data-request-status-select]').on('change', function () {
+                openDecision(activeRecord, this.value);
+            });
+
+            $(document).on('click', '.js-request-decision', function () {
+                const record = JSON.parse($(this).attr('data-record'));
+                openDecision(record, this.dataset.status);
             });
 
             $(decisionForm).on('submit', function (event) {
@@ -274,6 +325,7 @@
                 $('[data-inspector-status]').toggleClass('active', status !== 'ALL' && this.dataset.inspectorStatus === status);
                 table.ajax.reload();
             });
+            renderInspectorCalendar();
         });
     </script>
 @endpush

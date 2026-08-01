@@ -29,8 +29,8 @@ class PortalAuthController extends Controller
         ]);
 
         if (! Auth::attempt($credentials, $request->boolean('remember'))) {
-            return back()->withErrors([
-                'username' => 'The username or password is incorrect.',
+            return $this->redirectToRoleLogin($role, [
+                'login_'.strtolower($role) => 'Username or password is invalid.',
             ])->onlyInput('username');
         }
 
@@ -40,16 +40,16 @@ class PortalAuthController extends Controller
         if (! $user->isRole($role)) {
             Auth::logout();
 
-            return back()->withErrors([
-                'username' => "This account belongs to the {$user->role_slug} portal.",
+            return $this->redirectToRoleLogin($role, [
+                'login_'.strtolower($role) => "This account belongs to the {$user->role_slug} portal.",
             ])->onlyInput('username');
         }
 
         if (strtoupper((string) $user->status) !== 'ACTIVE') {
             Auth::logout();
 
-            return back()->withErrors([
-                'username' => 'This account is not active. Contact the administrator.',
+            return $this->redirectToRoleLogin($role, [
+                'login_'.strtolower($role) => 'This account is not active. Contact the administrator.',
             ]);
         }
 
@@ -83,5 +83,13 @@ class PortalAuthController extends Controller
             User::ROLE_INSPECTOR,
             User::ROLE_TENANT,
         ];
+    }
+
+    private function redirectToRoleLogin(string $role, array $errors)
+    {
+        $slug = strtolower($role);
+
+        return redirect()->to(route('public.roles', ['mode' => 'login']).'#login-'.$slug)
+            ->withErrors($errors);
     }
 }

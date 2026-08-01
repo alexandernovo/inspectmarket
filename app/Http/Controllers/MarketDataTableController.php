@@ -85,6 +85,9 @@ class MarketDataTableController extends Controller
             ['reference_number', 'tenant_id', 'amount', 'period_month', 'due_date', 'paid_at', 'status'],
             function (Payment $payment) use ($request) {
                 $action = '<a class="table-action" target="_blank" href="'.route('payments.receipt', $payment).'" title="Receipt"><i class="bi bi-receipt"></i></a>';
+                if ($payment->receipt_path) {
+                    $action .= ' <a class="table-action" target="_blank" href="'.route('payments.receipt-file', $payment).'" title="Uploaded receipt"><i class="bi bi-paperclip"></i></a>';
+                }
                 if ($request->user()->isRole(User::ROLE_TREASURER) && $payment->status === 'SUBMITTED') {
                     $action .= ' <button type="button" class="table-action approve js-verify-payment" data-id="'.$payment->id.'" data-reference="'.e($payment->reference_number).'"><i class="bi bi-check-lg"></i></button>';
                 }

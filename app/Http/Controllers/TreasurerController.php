@@ -12,6 +12,7 @@ use App\Models\StallApplication;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
@@ -19,13 +20,49 @@ class TreasurerController extends Controller
 {
     public function dashboard()
     {
+        $year = now()->year;
+        $cashTicketMonthly = CashTicketCollection::query()
+            ->whereYear('collection_date', $year)
+            ->get(['collection_date', 'amount'])
+            ->groupBy(fn ($collection) => $collection->collection_date->month)
+            ->map(fn ($rows) => $rows->sum('amount'));
+        $stallRentalMonthly = Payment::query()
+            ->where('status', 'PAID')
+            ->whereYear('paid_at', $year)
+            ->get(['paid_at', 'amount'])
+            ->groupBy(fn ($payment) => $payment->paid_at->month)
+            ->map(fn ($rows) => $rows->sum('amount'));
+        $chartTotals = collect(range(1, 12))->map(fn ($month) => (float) ($cashTicketMonthly[$month] ?? 0) + (float) ($stallRentalMonthly[$month] ?? 0));
+        $maxTotal = max(1, $chartTotals->max());
+
+        return view('market.portal.dashboard', [
+            'pageTitle' => 'Treasurer Dashboard',
+            'stats' => [
+                ['label' => 'Cash Tickets', 'sublabel' => 'Total Collection', 'value' => 'P'.number_format(CashTicketCollection::sum('amount'), 2), 'tone' => 'blue', 'icon' => 'bi-ticket-perforated-fill'],
+                ['label' => 'Stall Rental', 'sublabel' => 'Total Payment', 'value' => 'P'.number_format(Payment::where('status', 'PAID')->sum('amount'), 2), 'tone' => 'green', 'icon' => 'bi-shop-window'],
+                ['label' => 'Unpaid Rentals', 'sublabel' => 'Pending Payment', 'value' => Payment::where('status', 'PENDING')->count(), 'tone' => 'red', 'icon' => 'bi-wallet2'],
+                ['label' => 'Active Stalls', 'sublabel' => 'Approved Tenants', 'value' => StallApplication::where('status', 'APPROVED')->count(), 'tone' => 'gold', 'icon' => 'bi-grid-3x3-gap-fill'],
+            ],
+            'rows' => StallApplication::with(['tenant', 'stall'])->latest()->limit(8)->get(),
+            'rowType' => 'applications',
+            'chartTitle' => 'Revenue and stall activity',
+            'chartTotals' => $chartTotals,
+            'chartValues' => $chartTotals->map(fn ($value) => max(4, round(($value / $maxTotal) * 100))),
+            'chartYears' => collect([$year])
+                ->merge(CashTicketCollection::query()->get(['collection_date'])->map(fn ($row) => $row->collection_date->year))
+                ->merge(Payment::query()->whereNotNull('paid_at')->get(['paid_at'])->map(fn ($row) => $row->paid_at->year))
+                ->unique()
+                ->sortDesc()
+                ->values(),
+        ]);
+
         return view('market.portal.dashboard', [
             'pageTitle' => 'Treasurer Dashboard',
             'stats' => [
                 ['label' => 'Cash Tickets', 'value' => '₱'.number_format(CashTicketCollection::sum('amount'), 2), 'icon' => 'bi-ticket-perforated'],
                 ['label' => 'Stall Rental', 'value' => '₱'.number_format(Payment::where('status', 'PAID')->sum('amount'), 2), 'icon' => 'bi-shop'],
-                ['label' => 'Unpaid Rentals', 'value' => Payment::where('status', 'PENDING')->count(), 'icon' => 'bi-wallet2'],
-                ['label' => 'Active Stalls', 'value' => StallApplication::where('status', 'APPROVED')->count(), 'icon' => 'bi-grid-3x3-gap'],
+                ['label' => 'Unpaid Rentals', 'sublabel' => 'Pending Payment', 'value' => Payment::where('status', 'PENDING')->count(), 'tone' => 'red', 'icon' => 'bi-wallet2'],
+                ['label' => 'Active Stalls', 'sublabel' => 'Approved Tenants', 'value' => StallApplication::where('status', 'APPROVED')->count(), 'tone' => 'gold', 'icon' => 'bi-grid-3x3-gap-fill'],
             ],
             'rows' => StallApplication::with(['tenant', 'stall'])->latest()->limit(8)->get(),
             'rowType' => 'applications',
@@ -81,6 +118,37 @@ class TreasurerController extends Controller
             });
 
         return back()->with('success', 'Announcement published.');
+    }
+
+    public function updateAnnouncement(Request $request, Announcement $announcement)
+    {
+        $data = $request->validate([
+            'category' => ['required', 'in:SLAUGHTERED INSPECT,STALL RENTAL,BIDDING,MARKET ADVISORY,OTHERS'],
+            'title' => ['required', 'string', 'max:255'],
+            'content' => ['required', 'string', 'max:5000'],
+            'published_at' => ['nullable', 'date'],
+            'attachment' => ['nullable', 'file', 'max:10240'],
+        ]);
+
+        $attachment = $data['attachment'] ?? null;
+        unset($data['attachment']);
+
+        $announcement->update([
+            ...$data,
+            'published_at' => $data['published_at'] ?? $announcement->published_at ?? now(),
+        ]);
+
+        if ($attachment) {
+            if ($announcement->attachment_path) {
+                Storage::disk('public')->delete($announcement->attachment_path);
+            }
+            $announcement->update([
+                'attachment_path' => $attachment->store('announcements', 'public'),
+                'attachment_name' => $attachment->getClientOriginalName(),
+            ]);
+        }
+
+        return back()->with('success', 'Announcement updated.');
     }
 
     public function rentals()
@@ -223,6 +291,7 @@ class TreasurerController extends Controller
         return view('market.portal.assignments', [
             'pageTitle' => 'Cash Ticket Assignments',
             'assignments' => CashTicketAssignment::with('collector')->latest('assigned_date')->get(),
+            'collections' => CashTicketCollection::with(['collector', 'assignment'])->latest('collection_date')->get(),
             'collectors' => User::where('usertype', User::ROLE_CLERK)->where('status', 'ACTIVE')->orderBy('firstname')->get(),
         ]);
     }

@@ -99,6 +99,88 @@ class ReportExportController extends Controller
         ]);
     }
 
+    public function office(Request $request, string $report, string $format)
+    {
+        abort_unless(in_array($format, ['doc', 'xls'], true), 404);
+
+        [$title, $headers, $rows] = $this->exportRows($request, $report);
+        $contentType = $format === 'doc' ? 'application/msword' : 'application/vnd.ms-excel';
+        $filename = 'einspect-'.$report.'-'.now()->format('Ymd').'.'.$format;
+
+        return response()
+            ->view('market.print.report-export', compact('title', 'headers', 'rows'))
+            ->header('Content-Type', $contentType)
+            ->header('Content-Disposition', 'attachment; filename="'.$filename.'"');
+    }
+
+    private function exportRows(Request $request, string $report): array
+    {
+        $user = $request->user();
+        $month = $request->date('month')?->startOfMonth();
+        $section = strtoupper($request->string('section')->toString());
+
+        return match ($report) {
+            'cash-ticket' => [
+                'Cash Ticket Collection Report',
+                ['Reference', 'Collector', 'Section', 'Tickets', 'Amount', 'Date', 'Status'],
+                tap(CashTicketCollection::with('collector'), function ($query) use ($user, $month, $section) {
+                    abort_unless($user->isRole(User::ROLE_ADMINISTRATOR) || $user->isRole(User::ROLE_TREASURER) || $user->isRole(User::ROLE_CLERK), 403);
+                    if ($user->isRole(User::ROLE_CLERK)) {
+                        $query->where(fn ($nested) => $nested->where('collector_id', $user->id)->orWhere('recorded_by', $user->id));
+                    }
+                    if ($month) {
+                        $query->whereBetween('collection_date', [$month, $month->copy()->endOfMonth()]);
+                    }
+                    if ($section) {
+                        $query->where('stall_section', $section);
+                    }
+                })->latest('collection_date')->get()->map(fn ($row) => [
+                    $row->collection_number,
+                    $row->collector?->full_name,
+                    $row->stall_section,
+                    $row->ticket_quantity,
+                    number_format((float) $row->amount, 2),
+                    $row->collection_date->toDateString(),
+                    $row->status,
+                ]),
+            ],
+            'stall-rental' => [
+                'Stall Rental Collection Report',
+                ['Tenant ID', 'Tenant', 'Stall Section', 'Stall Number', 'Stall Fee', 'Date of Payment', 'Payment Status', 'Short Charge/s'],
+                tap(Payment::with(['tenant', 'stallApplication.stall']), function ($query) use ($user, $month, $section) {
+                    abort_unless(! $user->isRole(User::ROLE_INSPECTOR), 403);
+                    if ($user->isRole(User::ROLE_TENANT)) {
+                        $query->where('tenant_id', $user->id);
+                    }
+                    if ($month) {
+                        $query->whereBetween('period_month', [$month, $month->copy()->endOfMonth()]);
+                    }
+                    if ($section) {
+                        $query->whereHas('stallApplication', fn ($application) => $application
+                            ->where('preferred_section', $section)
+                            ->orWhereHas('stall', fn ($stall) => $stall->where('section', $section)));
+                    }
+                })->latest('due_date')->get()->map(function ($row) {
+                    $tenant = $row->tenant;
+                    $application = $row->stallApplication;
+                    $stall = $application?->stall;
+
+                    return [
+                        'TEN-'.($tenant?->created_at?->format('Y') ?? now()->year).'-'.str_pad($tenant?->id ?? $row->tenant_id, 5, '0', STR_PAD_LEFT),
+                        $tenant?->full_name ?? $application?->business_owner ?? 'Tenant',
+                        str($stall?->section ?? $application?->preferred_section ?? 'Unassigned')->title().' Section',
+                        $stall?->stall_number ?? $application?->preferred_stall_number ?? 'Unassigned',
+                        number_format((float) $row->amount, 2),
+                        ($row->paid_at ?? $row->due_date)->toDateString(),
+                        $row->status,
+                        (float) $row->shortage_amount > 0 ? number_format((float) $row->shortage_amount, 2) : 'None',
+                    ];
+                }),
+            ],
+            default => abort(404),
+        };
+    }
+
     public function paymentReceipt(Request $request, Payment $payment)
     {
         abort_unless(

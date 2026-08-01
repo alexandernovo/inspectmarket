@@ -2,34 +2,35 @@
     $user = auth()->user();
     $role = $user->role_slug;
     $unreadNotifications = $user->marketNotifications()->whereNull('read_at')->count();
+    $unreadMessages = \App\Models\MarketMessage::where('recipient_id', $user->id)->whereNull('read_at')->count();
+    $messagePreviews = \App\Models\User::whereKeyNot($user->id)
+        ->where('status', 'ACTIVE')
+        ->orderBy('usertype')
+        ->orderBy('firstname')
+        ->get()
+        ->map(function ($contact) use ($user) {
+            $latestMessage = \App\Models\MarketMessage::query()
+                ->where(fn ($query) => $query->where('sender_id', $user->id)->where('recipient_id', $contact->id))
+                ->orWhere(fn ($query) => $query->where('sender_id', $contact->id)->where('recipient_id', $user->id))
+                ->latest()
+                ->first();
+            $contact->latest_market_message = $latestMessage;
+            $contact->unread_market_messages = \App\Models\MarketMessage::where('sender_id', $contact->id)
+                ->where('recipient_id', $user->id)
+                ->whereNull('read_at')
+                ->count();
+
+            return $contact;
+        })
+        ->sortByDesc(fn ($contact) => optional($contact->latest_market_message)->created_at?->timestamp ?? 0)
+        ->values();
     $pendingInspectionCount = $role === 'inspector'
         ? \App\Models\LivestockInspection::where('status', 'PENDING')->where('request_source', '!=', 'INSPECTOR')->count()
         : 0;
-    $inspectorChatContact = null;
-    $inspectorChatMessages = collect();
-    if ($role === 'inspector') {
-        $inspectorChatContact = \App\Models\User::where('usertype', \App\Models\User::ROLE_TENANT)
-            ->where('status', 'ACTIVE')
-            ->orderBy('firstname')
-            ->first();
-        if ($inspectorChatContact) {
-            $inspectorChatMessages = \App\Models\MarketMessage::query()
-                ->where(fn ($query) => $query->where('sender_id', $user->id)->where('recipient_id', $inspectorChatContact->id))
-                ->orWhere(fn ($query) => $query->where('sender_id', $inspectorChatContact->id)->where('recipient_id', $user->id))
-                ->latest()
-                ->limit(8)
-                ->get()
-                ->reverse()
-                ->values();
-        }
-    }
-    $avatar = match ($role) {
-        'administrator' => 'A-Administrator.png',
-        'treasurer' => 'B-Treasurer.png',
-        'clerk' => 'C-Clerk.png',
-        'inspector' => 'D-Inspector.png',
-        default => '5-Tenants.png',
-    };
+    $portalAvatar = $role === 'clerk'
+        ? asset('assets/einspect/USERS/3-Collector Clerk.png')
+        : market_role_avatar($user->usertype, $user->profile);
+    $portalRoleLabel = $role === 'clerk' ? 'RC Clerk' : ucfirst($role);
     $menus = [
         'administrator' => [
             ['label' => 'Dashboard', 'route' => 'administrator.dashboard', 'icon' => 'bi-grid'],
@@ -45,19 +46,15 @@
         'treasurer' => [
             ['label' => 'Dashboard', 'route' => 'treasurer.dashboard', 'icon' => 'bi-grid'],
             ['label' => 'Announcement', 'route' => 'treasurer.announcements', 'icon' => 'bi-megaphone'],
-            ['label' => 'Cash Ticket', 'route' => 'treasurer.assignments', 'icon' => 'bi-ticket-perforated'],
-            ['label' => 'Collectors', 'route' => 'treasurer.collectors', 'icon' => 'bi-people'],
-            ['label' => 'Assign Collectors', 'route' => 'treasurer.assignments', 'icon' => 'bi-person-check'],
             ['label' => 'Stall Rental', 'route' => 'treasurer.rentals', 'icon' => 'bi-shop'],
-            ['label' => 'Stall Map', 'route' => 'treasurer.stall-map', 'icon' => 'bi-pin-map'],
+            ['label' => 'Cash Ticket', 'route' => 'treasurer.assignments', 'icon' => 'bi-ticket-perforated'],
             ['label' => 'Report', 'route' => 'treasurer.reports', 'icon' => 'bi-file-earmark-bar-graph'],
-            ['label' => 'Settings', 'route' => 'profile', 'icon' => 'bi-gear'],
         ],
         'clerk' => [
-            ['label' => 'Dashboard', 'route' => 'clerk.dashboard', 'icon' => 'bi-grid'],
-            ['label' => 'Cash Ticket', 'route' => 'clerk.collections', 'icon' => 'bi-ticket-perforated'],
-            ['label' => 'Stall Rental', 'route' => 'clerk.rentals', 'icon' => 'bi-shop'],
-            ['label' => 'Report', 'route' => 'clerk.reports', 'icon' => 'bi-file-earmark-bar-graph'],
+            ['label' => 'Dashboard', 'route' => 'clerk.dashboard', 'icon' => 'bi-grid-fill', 'group' => null],
+            ['label' => 'Cash Ticket', 'route' => 'clerk.collections', 'icon' => 'bi-ticket-perforated-fill', 'group' => 'COLLECTOR'],
+            ['label' => 'Stall Rental', 'route' => 'clerk.rentals', 'icon' => 'bi-shop-window', 'group' => 'TENANT'],
+            ['label' => 'Report', 'route' => 'clerk.reports', 'icon' => 'bi-file-earmark-text', 'group' => 'TENANT'],
         ],
         'inspector' => [
             ['label' => 'Dashboard', 'route' => 'inspector.dashboard', 'icon' => 'bi-grid-fill', 'group' => null],
@@ -87,6 +84,7 @@
     <link rel="stylesheet" href="{{ asset('assets/bootstrap-icons/font/bootstrap-icons.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/twitterbootstrap.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/datatablesbootstrap.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/select2.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/einspect/css/market.css') }}">
 </head>
 <body class="portal-page portal-role-{{ $role }}">
@@ -97,7 +95,7 @@
                 <span>E-INSPECT</span>
             </a>
             <div class="portal-user">
-                <img src="{{ $user->profile ? asset('storage/'.$user->profile) : asset('assets/einspect/USERS/'.$avatar) }}" alt="{{ $user->full_name }}">
+                <img src="{{ $portalAvatar }}" alt="{{ $user->full_name }}">
                 <span>Welcome {{ ucfirst($role) }}!</span>
             </div>
             <nav class="portal-menu" aria-label="Portal navigation">
@@ -142,16 +140,18 @@
                     <span class="breadcrumb">Dashboard / {{ $pageTitle ?? 'Overview' }}</span>
                 </div>
                 <div class="topbar-actions">
-                    <a href="{{ route('home') }}" class="icon-button" title="Homepage"><i class="bi bi-house"></i></a>
+                    @if ($role === 'tenant')
+                        <a href="{{ route('home') }}" class="icon-button" title="Homepage"><i class="bi bi-house"></i></a>
+                    @endif
                     <button type="button" class="icon-button message-button" title="Messages" data-toggle-drawer="messageDrawer">
                         <i class="bi bi-chat-dots"></i>
-                        @if ($role === 'inspector' && $unreadNotifications)<b>{{ $unreadNotifications }}</b>@endif
+                        @if ($unreadMessages)<b>{{ $unreadMessages }}</b>@endif
                     </button>
                     <button type="button" class="icon-button notification-button" title="Notifications" data-toggle-drawer="notificationDrawer">
                         <i class="bi bi-bell"></i>
                         @if ($unreadNotifications)<b>{{ $unreadNotifications }}</b>@endif
                     </button>
-                    <a href="{{ route('profile') }}" class="role-chip">{{ ucfirst($role) }}</a>
+                    <a href="{{ route('profile') }}" class="role-chip">{{ $portalRoleLabel }}</a>
                 </div>
             </header>
 
@@ -173,54 +173,53 @@
             </section>
 
             <footer class="portal-footer">
-                © {{ date('Y') }} Pandan Public Market. All rights reserved.
+                &copy; Copyright {{ date('Y') }}. Pandan Public Market. All Rights Reserved
             </footer>
         </main>
     </div>
     <aside class="portal-drawer" id="notificationDrawer">
         <div class="drawer-heading"><div><span>Market Updates</span><h2>Notifications</h2></div><button type="button" data-toggle-drawer="notificationDrawer">×</button></div>
         @forelse ($user->marketNotifications()->latest()->limit(8)->get() as $notification)
-            <a href="{{ route('notifications.read', $notification) }}"><strong>{{ $notification->title }}</strong><span>{{ $notification->message }}</span><small>{{ $notification->created_at->diffForHumans() }}</small></a>
+            <a href="{{ route('notifications.read', $notification) }}" class="drawer-preview">
+                <img src="{{ market_notification_avatar($notification->type) }}" alt="">
+                <span><strong>{{ $notification->title }}</strong><em>{{ $notification->message }}</em><small>{{ $notification->created_at->diffForHumans() }}</small></span>
+            </a>
         @empty
             <p class="empty-state">No notifications.</p>
         @endforelse
         <a class="button button-primary" href="{{ route('notifications.index') }}">View all notifications</a>
     </aside>
     <aside class="portal-drawer message-drawer" id="messageDrawer">
-        @if ($role === 'inspector' && $inspectorChatContact)
-            <div class="inspector-drawer-heading">
-                <button type="button" data-toggle-drawer="messageDrawer" aria-label="Close messages"><i class="bi bi-arrow-left-circle-fill"></i></button>
-                <img src="{{ $inspectorChatContact->profile ? asset('storage/'.$inspectorChatContact->profile) : asset('assets/einspect/USERS/E-Male Tenant.png') }}" alt="">
-                <div><strong>{{ $inspectorChatContact->full_name }}</strong><span>Tenant</span></div>
-                <a href="tel:{{ $inspectorChatContact->phone_num }}" title="Call tenant"><i class="bi bi-telephone-fill"></i></a>
-            </div>
-            <div class="inspector-drawer-messages">
-                @forelse ($inspectorChatMessages as $message)
-                    <article class="{{ $message->sender_id === $user->id ? 'mine' : 'theirs' }}">
-                        <p>{{ $message->body }}</p>
-                        @if ($message->attachment_path)<a href="{{ asset('storage/'.$message->attachment_path) }}" target="_blank"><i class="bi bi-paperclip"></i> {{ $message->attachment_name }}</a>@endif
-                        <small>{{ $message->created_at->format('M d, g:i A') }}</small>
-                    </article>
-                @empty
-                    <p class="empty-state">Start a conversation with {{ $inspectorChatContact->firstname }}.</p>
-                @endforelse
-            </div>
-            <form action="{{ route('chat.store') }}" method="POST" class="inspector-drawer-compose">
-                @csrf
-                <input type="hidden" name="recipient_id" value="{{ $inspectorChatContact->id }}">
-                <input name="body" aria-label="Message" required>
-                <button type="submit" title="Send message"><i class="bi bi-send-fill"></i></button>
-            </form>
-        @else
-            <div class="drawer-heading"><div><span>E-Inspect</span><h2>Messages</h2></div><button type="button" data-toggle-drawer="messageDrawer">&times;</button></div>
-            <p>Open the secure conversation screen to message another market user and attach documents.</p>
-            <a class="button button-primary" href="{{ route('chat.index') }}">Open messages</a>
-        @endif
+        <div class="drawer-heading"><div><span>E-Inspect</span><h2>Messages</h2></div><button type="button" data-toggle-drawer="messageDrawer">&times;</button></div>
+        <div class="drawer-preview-list">
+            @forelse ($messagePreviews as $contact)
+                @php $latestMessage = $contact->latest_market_message; @endphp
+                <a href="{{ route('chat.index', ['user' => $contact->id]) }}" class="drawer-preview {{ $contact->unread_market_messages ? 'unread' : '' }}">
+                    <img src="{{ market_role_avatar($contact->usertype, $contact->profile) }}" alt="">
+                    <span>
+                        <strong>{{ $contact->full_name }}</strong>
+                        <em>
+                            @if ($latestMessage)
+                                {{ $latestMessage->sender_id === $user->id ? 'You: ' : '' }}{{ \Illuminate\Support\Str::limit($latestMessage->body ?: 'Sent an attachment.', 54) }}
+                            @else
+                                No messages yet.
+                            @endif
+                        </em>
+                        <small>{{ $latestMessage?->created_at?->diffForHumans() ?? ucfirst($contact->role_slug) }}</small>
+                    </span>
+                    @if ($contact->unread_market_messages)<b>{{ $contact->unread_market_messages }}</b>@endif
+                </a>
+            @empty
+                <p class="empty-state">No contacts are available.</p>
+            @endforelse
+        </div>
+        <a class="button button-primary" href="{{ route('chat.index') }}">Open messages</a>
     </aside>
     <form id="logoutForm" action="{{ route('auth.logout') }}" method="POST" hidden>@csrf</form>
     <script src="{{ asset('assets/js/jquery.js') }}"></script>
     <script src="{{ asset('assets/js/datatables.js') }}"></script>
     <script src="{{ asset('assets/js/datatablesbootstrap.js') }}"></script>
+    <script src="{{ asset('assets/js/select2.js') }}"></script>
     <script src="{{ asset('assets/js/sweetalert2.js') }}"></script>
     <script>
         document.querySelector('.sidebar-toggle')?.addEventListener('click', () => {

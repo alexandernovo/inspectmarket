@@ -29,10 +29,12 @@
                         ? route($slug.'.dashboard')
                         : '#'.($mode === 'register' ? 'register' : 'login').'-'.$slug;
                 @endphp
-                <a href="{{ $roleHref }}" class="wireframe-role role-{{ $slug }}">
-                    <img src="{{ asset('assets/einspect/USERS/'.$image) }}" alt="{{ $label }}">
-                    <span>{{ $label }}</span>
-                </a>
+                <div class="wireframe-role-column role-{{ $slug }}">
+                    <a href="{{ $roleHref }}" class="wireframe-role">
+                        <img src="{{ asset('assets/einspect/USERS/'.$image) }}" alt="{{ $label }}">
+                        <span>{{ $label }}</span>
+                    </a>
+                </div>
             @endforeach
         </div>
 
@@ -47,13 +49,16 @@
                             <h1>{{ $label }}</h1>
                             <p>Enter your username and password to log in your account</p>
                         </div>
-                        <form action="{{ route('portal.login.store', ['role' => $slug]) }}" method="POST">
+                        <form action="{{ route('portal.login.store', ['role' => $slug]) }}" method="POST" @class(['has-login-error' => $errors->has('login_'.$slug)])>
                             @csrf
                             <label>Username:
-                                <span><i class="bi bi-person-fill"></i><input type="text" name="username" placeholder="Enter username" required></span>
+                                <span><i class="bi bi-person-fill"></i><input type="text" name="username" value="{{ old('username') }}" placeholder="Enter username" required></span>
                             </label>
                             <label>Password:
                                 <span><i class="bi bi-lock-fill"></i><input type="password" name="password" placeholder="Enter password" required><button type="button" class="password-toggle" aria-label="Show password"><i class="bi bi-eye-fill"></i></button></span>
+                                @error('login_'.$slug)
+                                    <small class="login-field-error">{{ $message }}</small>
+                                @enderror
                             </label>
                             <a class="forgot-link" href="{{ route('account.forgot') }}">Forgot Password?</a>
                             <button type="submit" class="button button-primary">Login</button>

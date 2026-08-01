@@ -43,9 +43,16 @@ class MarketReportController extends Controller
             'payments' => Payment::with('tenant')
                 ->when($month, fn (Builder $query) => $query->whereBetween('period_month', [$month, $month->copy()->endOfMonth()]))
                 ->latest('due_date')->get(),
-            default => StallApplication::with(['tenant', 'stall'])
-                ->when($section, fn (Builder $query) => $query->where('preferred_section', $section))
-                ->latest()->get(),
+            default => $user->isRole(User::ROLE_CLERK)
+                ? Payment::with(['tenant', 'stallApplication.stall'])
+                    ->when($month, fn (Builder $query) => $query->whereBetween('period_month', [$month, $month->copy()->endOfMonth()]))
+                    ->when($section, fn (Builder $query) => $query->whereHas('stallApplication', fn (Builder $application) => $application
+                        ->where('preferred_section', $section)
+                        ->orWhereHas('stall', fn (Builder $stall) => $stall->where('section', $section))))
+                    ->latest('due_date')->get()
+                : StallApplication::with(['tenant', 'stall'])
+                    ->when($section, fn (Builder $query) => $query->where('preferred_section', $section))
+                    ->latest()->get(),
         };
 
         return view($user->isRole(User::ROLE_INSPECTOR) ? 'market.inspector.reports' : 'market.portal.reports', [
