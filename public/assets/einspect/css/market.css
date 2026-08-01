@@ -198,7 +198,7 @@ img { max-width: 100%; }
 .portal-topbar strong { font-size: .95rem; }
 .breadcrumb { color: #ead8bf; font-size: .68rem; }
 .topbar-actions { display: flex; align-items: center; gap: .5rem; margin-left: auto; }
-.icon-button { display: grid; place-items: center; width: 35px; height: 35px; border: 1px solid rgba(255,255,255,.25); border-radius: 50%; color: #fff; background: transparent; }
+.icon-button { position: relative; display: grid; place-items: center; width: 35px; height: 35px; border: 1px solid rgba(255,255,255,.25); border-radius: 50%; color: #fff; background: transparent; }
 .sidebar-toggle { display: none; }
 .role-chip { padding: .38rem .65rem; border: 1px solid #fff; border-radius: 4px; font-size: .7rem; }
 .portal-content { flex: 1; padding: 1.15rem; }
@@ -358,6 +358,21 @@ td small { color: var(--muted); }
 .portal-role-tenant .breadcrumb { font-size: .7rem; }
 .portal-role-tenant .sidebar-toggle { display: grid; width: 42px; height: 42px; border: 0; border-radius: 0; font-size: 1.55rem; }
 .portal-role-tenant .icon-button { width: 39px; height: 39px; border: 0; font-size: 1.15rem; }
+.portal-role-tenant .icon-button b {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    display: grid;
+    place-items: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 4px;
+    border-radius: 99px;
+    color: #fff;
+    background: #d3242a;
+    font-size: .6rem;
+    line-height: 1;
+}
 .portal-role-tenant .role-chip { display: flex; align-items: center; gap: 7px; min-height: 42px; padding: .42rem .75rem; border: 2px solid #fff; font-size: .9rem; }
 .portal-role-tenant .role-chip::before { content: "\F4D7"; font-family: bootstrap-icons; font-size: 1.35rem; }
 .portal-role-tenant .portal-content { padding: 0; background: #d3d3d3; }
@@ -475,19 +490,63 @@ td small { color: var(--muted); }
 .tenant-chart-plot span { display: block; width: 70%; min-height: 5px; margin: 0 auto; background: #7d7d7d; }
 .tenant-chart-plot small { align-self: center; overflow: hidden; font-size: .58rem; text-align: center; white-space: nowrap; }
 
-.portal-role-treasurer .portal-shell { grid-template-columns: 280px minmax(0, 1fr); transition: .2s ease; }
-.portal-role-treasurer .portal-sidebar { background: #650006; }
+.portal-role-treasurer .portal-shell { grid-template-columns: 300px minmax(0, 1fr); transition: .2s ease; }
+.portal-role-treasurer .portal-sidebar { background: #5d0004; border-right: 1px solid rgba(255,255,255,.45); }
 .portal-role-treasurer .portal-brand { display: none; }
-.portal-role-treasurer .portal-user { min-height: 265px; padding: 18px 12px 14px; border-bottom: 1px solid rgba(255,255,255,.7); }
-.portal-role-treasurer .portal-user img { width: 190px; height: 190px; border: 5px solid #fff; border-radius: 50%; object-fit: contain; background: #4a0004; }
-.portal-role-treasurer .portal-user span { margin-top: 14px; font-family: "Segoe UI", Arial, sans-serif; font-size: 1.35rem; font-weight: 400; }
+.portal-role-treasurer .portal-user { min-height: 255px; padding: 16px 10px 12px; border-bottom: 1px solid rgba(255,255,255,.65); }
+.portal-role-treasurer .portal-user img { width: 188px; height: 188px; border: 5px solid #fff; border-radius: 50%; object-fit: contain; object-position: center bottom; background: #fff; box-shadow: 0 0 0 3px #5d0004; }
+.portal-role-treasurer .portal-user span { margin-top: 13px; font-family: "Segoe UI", Arial, sans-serif; font-size: 1.48rem; font-weight: 400; line-height: 1; }
 .portal-role-treasurer .portal-menu { flex: 0 1 auto; padding: 0; overflow: visible; }
-.portal-role-treasurer .portal-menu a { gap: .8rem; min-height: 52px; padding: .72rem 1rem; border-left: 0; font-size: 1.05rem; }
+.portal-role-treasurer .portal-menu-secondary { display: none; }
+.portal-role-treasurer .portal-menu a {
+    gap: .62rem;
+    min-height: 48px;
+    padding: .58rem .9rem;
+    border-top: 0;
+    border-left: 0;
+    border-radius: 0;
+    color: #fff;
+    font-size: 1.02rem;
+}
+.portal-role-treasurer .portal-menu > a {
+    border-bottom: 1px solid rgba(255,255,255,.42);
+}
+.portal-role-treasurer .portal-menu > a.portal-menu-item-grouped {
+    border-bottom: 0;
+}
+.portal-role-treasurer .portal-menu > a.portal-menu-item-group-end {
+    border-bottom: 1px solid rgba(255,255,255,.42);
+}
 .portal-role-treasurer .portal-menu a:hover,
-.portal-role-treasurer .portal-menu a.active { border-left: 0; border-radius: 4px; }
-.portal-role-treasurer .portal-menu i { width: 26px; font-size: 1.35rem; }
+.portal-role-treasurer .portal-menu a.active {
+    color: #2a0a0a;
+    border-left: 0;
+    border-radius: 4px;
+    background: #fff;
+}
+.portal-role-treasurer .portal-menu i { width: 28px; font-size: 1.45rem; }
+.portal-role-treasurer .portal-menu-group {
+    display: flex;
+    align-items: center;
+    min-height: 30px;
+    padding: 7px 13px 0;
+    border-top: 0;
+    color: #fff;
+    font-size: 1.18rem;
+    font-weight: 400;
+    letter-spacing: 0;
+}
 .portal-role-treasurer .portal-logout { margin-top: auto; border-top: 1px solid rgba(255,255,255,.5); }
-.portal-role-treasurer .portal-logout button { min-height: 52px; padding: .82rem 1rem; font-size: .9rem !important; }
+.portal-role-treasurer .portal-logout button {
+    justify-content: flex-start;
+    min-height: 48px;
+    padding: .58rem .9rem;
+    border-radius: 0;
+    color: #fff;
+    background: transparent;
+    font-size: 1.02rem !important;
+}
+.portal-role-treasurer .portal-logout button i { font-size: 1.45rem; }
 .portal-role-treasurer .portal-topbar { min-height: 72px; padding: .55rem 1.2rem; background: #6b3905; }
 .portal-role-treasurer .portal-topbar > div:nth-child(2) { display: none; }
 .portal-role-treasurer .sidebar-toggle { display: grid; width: 42px; height: 42px; border: 0; border-radius: 0; font-size: 1.55rem; }
@@ -1847,6 +1906,82 @@ td small { color: var(--muted); }
 .tenant-profile-seal { display: grid; place-items: center; background: #fff; }
 .tenant-profile-seal img { width: 270px; height: 270px; object-fit: contain; }
 .tenant-profile-form { border-top: 12px solid #720006; }
+.portal-role-tenant .inspector-profile-page {
+    padding: 12px 28px 26px;
+    background: #d3d3d3;
+}
+.portal-role-tenant .inspector-profile-layout {
+    grid-template-columns: 40% 60%;
+    width: 100%;
+    max-width: none;
+    min-height: 470px;
+    margin: 28px 0 0;
+}
+.portal-role-tenant .inspector-profile-card {
+    min-height: 470px;
+    padding: 18px 42px;
+    border-radius: 8px 0 0 8px;
+    background: #720006;
+}
+.portal-role-tenant .inspector-profile-avatar img {
+    width: 150px;
+    height: 150px;
+    box-shadow: 0 0 0 3px #720006;
+}
+.portal-role-tenant .inspector-profile-card h2 {
+    margin-top: 12px;
+    font-size: 2rem;
+    white-space: nowrap;
+}
+.portal-role-tenant .inspector-profile-card > p {
+    padding: 8px 10px;
+    font-size: 1.15rem;
+}
+.tenant-profile-details {
+    display: grid;
+    gap: 7px;
+    width: 100%;
+    margin: 10px 0 4px;
+}
+.tenant-profile-details span {
+    display: grid;
+    grid-template-columns: 94px minmax(0, 1fr);
+    gap: 8px;
+    align-items: center;
+    min-height: 34px;
+    padding: 6px 9px;
+    border-radius: 4px;
+    color: #111;
+    background: #fff;
+    font-size: .78rem;
+}
+.tenant-profile-details b {
+    color: #720006;
+}
+.tenant-profile-details em {
+    overflow: hidden;
+    font-style: normal;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.portal-role-tenant .inspector-profile-card > label:not(.inspector-profile-avatar) {
+    min-height: 42px;
+    margin-top: 10px;
+}
+.portal-role-tenant .inspector-profile-card > label i {
+    font-size: 1.3rem;
+}
+.portal-role-tenant .inspector-profile-card > label input {
+    height: 42px;
+}
+.portal-role-tenant .inspector-profile-card > button {
+    min-height: 42px;
+    margin-top: 12px;
+}
+.portal-role-tenant .inspector-profile-seal img {
+    width: 72%;
+    max-width: 560px;
+}
 .filter-row { display: flex; flex-wrap: wrap; gap: .4rem; padding: .65rem 1rem; background: #faf7f4; }
 .filter-row span { padding: .3rem .55rem; border: 1px solid #b79981; border-radius: 4px; color: var(--wine-900); font-size: .65rem; font-weight: 800; }
 
@@ -2000,7 +2135,7 @@ dialog.market-dialog.clerk-rental-detail-dialog {
 }
 .treasurer-announcement-rows article {
     display: grid;
-    grid-template-columns: 88px minmax(0, 1fr) 154px;
+    grid-template-columns: 88px minmax(0, 1fr) 224px;
     align-items: center;
     gap: 10px;
     min-height: 130px;
@@ -2032,8 +2167,7 @@ dialog.market-dialog.clerk-rental-detail-dialog {
 }
 .treasurer-announcement-actions {
     align-self: end;
-    display: grid;
-    grid-template-columns: 1fr 38px;
+    display: flex;
     gap: 7px;
     align-items: end;
 }
@@ -2046,10 +2180,12 @@ dialog.market-dialog.clerk-rental-detail-dialog {
     color: #fff;
     background: #780008;
     font-size: .84rem;
+    white-space: nowrap;
 }
 .treasurer-announcement-actions button:last-child {
     display: grid;
     place-items: center;
+    flex: 0 0 38px;
     width: 38px;
     padding: 0;
     background: #a45c00;
@@ -5948,6 +6084,55 @@ button.login-close {
 .inspector-profile-card > button { width: 100%; min-height: 48px; margin-top: 14px; border: 3px solid #fff; border-radius: 4px; color: #fff; background: transparent; font-size: 1.1rem; }
 .inspector-profile-seal { display: grid; place-items: center; border-radius: 0 10px 10px 0; background: #fff; }
 .inspector-profile-seal img { width: 70%; max-width: 430px; }
+.portal-role-treasurer .inspector-profile-page {
+    padding: 12px 28px 26px;
+    background: #d3d3d3;
+}
+.portal-role-treasurer .inspector-profile-layout {
+    grid-template-columns: 40% 60%;
+    width: 100%;
+    max-width: none;
+    min-height: 470px;
+    margin: 28px 0 0;
+}
+.portal-role-treasurer .inspector-profile-card {
+    min-height: 470px;
+    padding: 18px 42px;
+    border-radius: 8px 0 0 8px;
+    background: #720006;
+}
+.portal-role-treasurer .inspector-profile-avatar img {
+    width: 150px;
+    height: 150px;
+    box-shadow: 0 0 0 3px #720006;
+}
+.portal-role-treasurer .inspector-profile-card h2 {
+    margin-top: 12px;
+    font-size: 2rem;
+    white-space: nowrap;
+}
+.portal-role-treasurer .inspector-profile-card > p {
+    padding: 8px 10px;
+    font-size: 1.15rem;
+}
+.portal-role-treasurer .inspector-profile-card > label:not(.inspector-profile-avatar) {
+    min-height: 42px;
+    margin-top: 10px;
+}
+.portal-role-treasurer .inspector-profile-card > label i {
+    font-size: 1.3rem;
+}
+.portal-role-treasurer .inspector-profile-card > label input {
+    height: 42px;
+}
+.portal-role-treasurer .inspector-profile-card > button {
+    min-height: 42px;
+    margin-top: 12px;
+}
+.portal-role-treasurer .inspector-profile-seal img {
+    width: 72%;
+    max-width: 560px;
+}
 .portal-role-inspector .message-drawer {
     display: flex;
     flex-direction: column;

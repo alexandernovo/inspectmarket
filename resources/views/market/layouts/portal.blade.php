@@ -46,9 +46,11 @@
         'treasurer' => [
             ['label' => 'Dashboard', 'route' => 'treasurer.dashboard', 'icon' => 'bi-grid'],
             ['label' => 'Announcement', 'route' => 'treasurer.announcements', 'icon' => 'bi-megaphone'],
-            ['label' => 'Stall Rental', 'route' => 'treasurer.rentals', 'icon' => 'bi-shop'],
-            ['label' => 'Cash Ticket', 'route' => 'treasurer.assignments', 'icon' => 'bi-ticket-perforated'],
-            ['label' => 'Report', 'route' => 'treasurer.reports', 'icon' => 'bi-file-earmark-bar-graph'],
+            ['label' => 'Cash Ticket', 'route' => 'treasurer.assignments', 'icon' => 'bi-ticket-perforated-fill', 'group' => 'CLERK'],
+            ['label' => 'Stall Rental', 'route' => 'treasurer.rentals', 'icon' => 'bi-shop-window', 'group' => 'CLERK'],
+            ['label' => 'Stall Rental', 'route' => 'treasurer.payments', 'icon' => 'bi-shop-window', 'group' => 'TENANT'],
+            ['label' => 'Report', 'route' => 'treasurer.reports', 'icon' => 'bi-file-earmark-text'],
+            ['label' => 'Settings', 'route' => 'profile', 'icon' => 'bi-gear-fill'],
         ],
         'clerk' => [
             ['label' => 'Dashboard', 'route' => 'clerk.dashboard', 'icon' => 'bi-grid-fill', 'group' => null],
@@ -106,14 +108,23 @@
                         <strong class="portal-menu-group">{{ $currentGroup }}</strong>
                     @endif
                     @php
+                        $menuGroup = $menu['group'] ?? null;
+                        $nextGroup = $menus[$role][$loop->index + 1]['group'] ?? null;
                         $isActive = request()->routeIs($menu['route']);
+                        if ($menu['route'] === 'profile') {
+                            $isActive = request()->routeIs('profile*');
+                        }
                         if ($role === 'inspector' && $menu['route'] === 'inspector.inspections') {
                             $menuType = strtoupper($menu['params']['type'] ?? '');
                             $isActive = request()->routeIs('inspector.inspections')
                                 && $menuType === strtoupper(request('type', ''));
                         }
                     @endphp
-                    <a href="{{ route($menu['route'], $menu['params'] ?? []) }}" class="{{ $isActive ? 'active' : '' }}">
+                    <a href="{{ route($menu['route'], $menu['params'] ?? []) }}" @class([
+                        'active' => $isActive,
+                        'portal-menu-item-grouped' => $menuGroup,
+                        'portal-menu-item-group-end' => $menuGroup && $menuGroup !== $nextGroup,
+                    ])>
                         <i class="bi {{ $menu['icon'] }}"></i>
                         <span>{{ $menu['label'] }}</span>
                         @if (!empty($menu['badge']))<b class="portal-menu-badge">{{ $menu['badge'] }}</b>@endif

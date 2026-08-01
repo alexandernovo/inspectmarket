@@ -1,7 +1,19 @@
 @extends('market.layouts.portal')
 
 @section('content')
-    @if ($user->isRole('INSPECTOR'))
+    @if ($user->isRole('INSPECTOR') || $user->isRole('TREASURER') || $user->isRole('TENANT'))
+        @php
+            $profileDefaultAvatar = match (true) {
+                $user->isRole('TREASURER') => asset('assets/einspect/USERS/B-Treasurer.png'),
+                $user->isRole('TENANT') => asset('assets/einspect/USERS/5-Tenants.png'),
+                default => asset('assets/einspect/USERS/D-Inspector.png'),
+            };
+            $profileRoleTitle = $user->designation ?: match (true) {
+                $user->isRole('TREASURER') => 'Municipal Treasurer',
+                $user->isRole('TENANT') => 'Tenant',
+                default => 'Inspector',
+            };
+        @endphp
         <section class="inspector-page inspector-profile-page">
             <header class="inspector-page-title">
                 <i class="bi bi-person-circle"></i>
@@ -18,11 +30,19 @@
                     <input type="hidden" name="address" value="{{ $user->address }}">
                     <input type="hidden" name="password_confirmation" data-inspector-password-confirmation>
                     <label class="inspector-profile-avatar" title="Change profile image">
-                        <img src="{{ $user->profile ? asset('storage/'.$user->profile) : asset('assets/einspect/USERS/D-Inspector.png') }}" alt="{{ $user->full_name }}">
+                        <img src="{{ $user->profile ? asset('storage/'.$user->profile) : $profileDefaultAvatar }}" alt="{{ $user->full_name }}">
                         <input type="file" name="profile_image" accept="image/*" hidden>
                     </label>
                     <h2>{{ strtoupper($user->full_name) }}</h2>
-                    <p>{{ $user->designation }}</p>
+                    <p>{{ $profileRoleTitle }}</p>
+                    @if ($user->isRole('TENANT'))
+                        <div class="tenant-profile-details">
+                            <span><b>Tenant ID</b><em>TEN - {{ $user->created_at->format('Y') }} - {{ str_pad($user->id, 5, '0', STR_PAD_LEFT) }}</em></span>
+                            <span><b>Email</b><em>{{ $user->email ?: 'Not provided' }}</em></span>
+                            <span><b>Contact No.</b><em>{{ $user->phone_num }}</em></span>
+                            <span><b>Address</b><em>{{ $user->address }}</em></span>
+                        </div>
+                    @endif
                     <label><i class="bi bi-person-circle"></i><input name="username" value="{{ old('username', $user->username) }}" required></label>
                     <label><i class="bi bi-lock-fill"></i><input type="password" name="password" placeholder="New password"></label>
                     <button type="submit">Save</button>
