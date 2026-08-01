@@ -39,13 +39,14 @@
                         <p class="empty-state">Start your conversation with {{ $selected->firstname }}.</p>
                     @endforelse
                 </div>
-                <form action="{{ route('chat.store') }}" method="POST" enctype="multipart/form-data" class="chat-compose">
+                <form action="{{ route('chat.store') }}" method="POST" enctype="multipart/form-data" class="chat-compose" data-chat-compose>
                     @csrf
                     <input type="hidden" name="recipient_id" value="{{ $selected->id }}">
                     <input name="body" placeholder="Write a message…">
                     <label title="Attach file"><i class="bi bi-paperclip"></i><input type="file" name="attachment"
-                            hidden></label>
-                    <button><i class="bi bi-send-fill"></i></button>
+                            hidden data-chat-attachment></label>
+                    <button data-chat-send><i class="bi bi-send-fill"></i></button>
+                    <div class="chat-compose-files" data-chat-file-list></div>
                 </form>
             @else
                 <p class="empty-state">No contacts are available.</p>
@@ -53,3 +54,25 @@
         </div>
     </section>
 @endsection
+
+@push('scripts')
+    <script>
+        document.querySelectorAll('[data-chat-attachment]').forEach((input) => {
+            input.addEventListener('change', () => {
+                const form = input.closest('[data-chat-compose]');
+                const list = form?.querySelector('[data-chat-file-list]');
+                if (!list || !form) return;
+
+                list.innerHTML = '';
+                Array.from(input.files || []).forEach((file) => {
+                    const item = document.createElement('span');
+                    const typeIcon = file.type.startsWith('image/') ? 'bi-image-fill' : 'bi-paperclip';
+                    item.innerHTML = `<i class="bi ${typeIcon}"></i><b>${file.name}</b><small>${Math.ceil(file.size / 1024)} KB - click Send to upload</small>`;
+                    list.appendChild(item);
+                });
+
+                form.classList.toggle('has-file', (input.files || []).length > 0);
+            });
+        });
+    </script>
+@endpush

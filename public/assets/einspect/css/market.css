@@ -3581,6 +3581,45 @@ dialog.market-dialog.clerk-rental-detail-dialog {
 .chat-compose { display: grid; grid-template-columns: 1fr auto auto; gap: .5rem; padding: .75rem; border-top: 1px solid var(--line); }
 .chat-compose input { min-width: 0; padding: .6rem; border: 1px solid #cfc4bd; border-radius: 99px; }
 .chat-compose label, .chat-compose button { display: grid; place-items: center; width: 38px; height: 38px; border: 0; border-radius: 50%; color: #fff; background: var(--wine-800); }
+.chat-compose.has-file button {
+    background: #a45c00;
+    box-shadow: 0 0 0 3px rgba(164, 92, 0, .2);
+}
+.chat-compose-files {
+    grid-column: 1 / -1;
+    display: grid;
+    gap: 6px;
+}
+.chat-compose-files:empty {
+    display: none;
+}
+.chat-compose-files span {
+    display: grid;
+    grid-template-columns: 28px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 8px;
+    min-height: 38px;
+    padding: 6px 10px;
+    border: 1px solid #dac7bf;
+    border-radius: 6px;
+    color: #111;
+    background: #fff;
+}
+.chat-compose-files i {
+    color: #760008;
+    font-size: 1rem;
+}
+.chat-compose-files b {
+    overflow: hidden;
+    font-size: .82rem;
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.chat-compose-files small {
+    color: #6c5b55;
+    font-size: .72rem;
+}
 .contact-message-list article.unread { padding-left: 1rem; border-left: 4px solid var(--gold-500); background: #fff8e9; }
 .contact-message-list form { margin-top: .7rem; }
 .print-page { padding: 2rem; background: #ddd; }
