@@ -1,6 +1,61 @@
 <script>
+    function clearBiddingValidation() {
+        $('#biddingForm [aria-invalid="true"]')
+            .removeAttr('aria-invalid')
+            .removeAttr('aria-describedby');
+        $('#biddingForm .tenant-field-error').remove();
+    }
+
+    function showBiddingValidation(errors) {
+        clearBiddingValidation();
+
+        let firstInvalidField = null;
+
+        $.each(errors, function(fieldName, messages) {
+            const inputName = fieldName.replace(/\.(\d+)(?=\.|$)/g, '[$1]');
+            const $field = $('#biddingForm [name="' + inputName + '"]').first();
+
+            if (!$field.length) {
+                return;
+            }
+
+            const errorId = 'bidding-error-' + fieldName.replace(/[^a-zA-Z0-9_-]/g, '-');
+            const message = Array.isArray(messages) ? messages[0] : messages;
+
+            $('<div>', {
+                id: errorId,
+                class: 'tenant-field-error',
+                text: message
+            }).insertAfter($field);
+
+            $field.attr({
+                'aria-invalid': 'true',
+                'aria-describedby': errorId
+            });
+
+            if (!firstInvalidField) {
+                firstInvalidField = $field;
+            }
+        });
+
+        if (firstInvalidField) {
+            firstInvalidField.trigger('focus');
+        }
+    }
+
+    $(document).on('input change', '#biddingForm :input', function() {
+        const errorId = $(this).attr('aria-describedby');
+
+        if (errorId) {
+            $('#' + errorId).remove();
+            $(this).removeAttr('aria-invalid').removeAttr('aria-describedby');
+        }
+    });
+
     $(document).on('submit', '#biddingForm', function(e) {
         e.preventDefault();
+
+        clearBiddingValidation();
 
         Swal.fire({
             title: 'Submit Application?',
@@ -41,6 +96,12 @@
 
                     },
                     error: function(xhr) {
+
+                        if (xhr.status === 422 && xhr.responseJSON && xhr.responseJSON.errors) {
+                            Swal.close();
+                            showBiddingValidation(xhr.responseJSON.errors);
+                            return;
+                        }
 
                         let message = 'Something went wrong.';
 

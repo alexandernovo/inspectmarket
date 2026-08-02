@@ -12,6 +12,15 @@
         height: 35px;
     }
 
+    .tenant-field-error {
+        display: block;
+        margin-top: 4px;
+        color: #b00000;
+        font-size: 13px;
+        line-height: 1.25;
+        text-align: left;
+    }
+
     label {
         font-size: 18px;
     }
