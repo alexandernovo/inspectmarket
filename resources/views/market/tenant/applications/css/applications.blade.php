@@ -58,6 +58,9 @@
     .tenant-form-grid label { display: grid; gap: 5px; color: #382a25; font-size: .72rem; font-weight: 800; }
     .tenant-form-grid input,
     .tenant-form-grid select { width: 100%; min-height: 36px; padding: 7px; border: 1px solid #b8ada7; border-radius: 3px; background: #fff; }
+    .tenant-field-error { display: block; margin-top: 2px; color: #b00000; font-size: .68rem; font-weight: 700; line-height: 1.25; }
+    .tenant-form-grid [aria-invalid="true"] { border-color: #b00000; }
+    .tenant-upload-panel > .tenant-field-error { margin: 0 6px 8px; text-align: center; }
     .tenant-create-actions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 14px; padding-top: 12px; border-top: 1px solid #d2c8c2; }
     .tenant-submit-application { color: #fff; background: #a45c00; }
     .tenant-cancel-application { color: #fff; background: #760008; }

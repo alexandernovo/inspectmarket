@@ -10,7 +10,7 @@
     @endphp
 
     <section class="tenant-application-create">
-        <form id="tenantApplicationForm" action="{{ $editing ? route('tenant.applications.update', $application) : route('tenant.applications.store') }}" method="POST" enctype="multipart/form-data">
+        <form id="tenantApplicationForm" action="{{ $editing ? route('tenant.applications.update', $application) : route('tenant.applications.store') }}" method="POST" enctype="multipart/form-data" @if ($modal) novalidate @endif>
             @csrf
             @if ($editing)
                 @method('PUT')

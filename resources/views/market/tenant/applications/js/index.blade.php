@@ -150,10 +150,77 @@
         if (event.target === this) this.close();
     });
 
+    function clearTenantApplicationErrors(form) {
+        $(form).find('.tenant-field-error').remove();
+        $(form).find('[aria-invalid="true"]')
+            .removeAttr('aria-invalid')
+            .removeAttr('aria-describedby');
+    }
+
+    function findTenantApplicationField(form, fieldName) {
+        const rootName = fieldName.split('.')[0];
+
+        return $(form).find('[name]').filter(function () {
+            return this.name === fieldName || this.name === rootName || this.name === rootName + '[]';
+        }).first();
+    }
+
+    function showTenantApplicationErrors(form, errors) {
+        clearTenantApplicationErrors(form);
+
+        let firstInvalidField = null;
+
+        $.each(errors, function (fieldName, messages) {
+            const field = findTenantApplicationField(form, fieldName);
+            if (!field.length) return;
+            if (field.attr('aria-invalid') === 'true') return;
+
+            const errorId = 'tenant-application-error-' + fieldName.replace(/[^a-zA-Z0-9_-]/g, '-');
+            const error = $('<small>', {
+                id: errorId,
+                class: 'tenant-field-error',
+                text: Array.isArray(messages) ? messages[0] : messages
+            });
+
+            if (field.attr('type') === 'file') {
+                error.insertAfter($(form).find('label[for="' + field.attr('id') + '"]'));
+            } else {
+                error.insertAfter(field);
+            }
+
+            field.attr({
+                'aria-invalid': 'true',
+                'aria-describedby': errorId
+            });
+
+            if (!firstInvalidField) firstInvalidField = field;
+        });
+
+        if (firstInvalidField) {
+            const focusTarget = firstInvalidField.attr('type') === 'file'
+                ? $(form).find('label[for="' + firstInvalidField.attr('id') + '"]')
+                : firstInvalidField;
+
+            focusTarget.get(0)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            if (firstInvalidField.attr('type') !== 'file') firstInvalidField.trigger('focus');
+        }
+    }
+
+    $(document).on('input change', '#tenantApplicationCreateDialog #tenantApplicationForm [name]', function () {
+        const field = $(this);
+        const errorId = field.attr('aria-describedby');
+
+        if (!errorId) return;
+
+        $('#' + errorId).remove();
+        field.removeAttr('aria-invalid').removeAttr('aria-describedby');
+    });
+
     $(document).on('submit', '#tenantApplicationCreateDialog #tenantApplicationForm', function (event) {
         event.preventDefault();
 
         const form = this;
+        clearTenantApplicationErrors(form);
         const submitButton = $(form).find('[type="submit"]');
         const originalText = submitButton.text();
         submitButton.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> Submitting');
@@ -175,13 +242,15 @@
             },
             error: function (xhr) {
                 const errors = xhr.responseJSON?.errors;
-                const message = errors
-                    ? Object.values(errors).flat().join(' ')
-                    : (xhr.responseJSON?.message || 'The application could not be submitted.');
+
+                if (xhr.status === 422 && errors) {
+                    showTenantApplicationErrors(form, errors);
+                    return;
+                }
 
                 Swal.fire({
                     title: 'Please Check the Form',
-                    text: message,
+                    text: xhr.responseJSON?.message || 'The application could not be submitted.',
                     icon: 'error',
                     confirmButtonColor: '#760008',
                     customClass: { popup: 'einspect-swal' }
