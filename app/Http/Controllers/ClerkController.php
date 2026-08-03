@@ -8,6 +8,7 @@ use App\Models\Payment;
 use App\Models\StallApplication;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class ClerkController extends Controller
@@ -138,7 +139,7 @@ class ClerkController extends Controller
                 $remarks = collect([
                     'RCC II: '.$request->user()->full_name,
                     $slipRemarks,
-                    filled($assignment['remarks'] ?? null) ? $assignment['remarks'] : null,
+                    filled($assignment['remarks'] ?? null) ? 'Remarks: '.$assignment['remarks'] : null,
                 ])->filter()->implode(' | ');
 
                 CashTicketAssignment::create([
@@ -175,6 +176,53 @@ class ClerkController extends Controller
         return back()->with('success', $data['step'] === 'FINAL'
             ? 'Final cash ticket report submitted to treasurer.'
             : 'Cash ticket collection report saved.');
+    }
+
+    public function destroyWorkflow(Request $request)
+    {
+        $data = $request->validate([
+            'month' => ['required', 'date'],
+            'step' => ['required', 'integer', 'between:1,5'],
+        ]);
+
+        $month = \Illuminate\Support\Carbon::parse($data['month'])->startOfMonth();
+        $monthEnd = $month->copy()->endOfMonth();
+
+        DB::transaction(function () use ($data, $month, $monthEnd) {
+            $collections = CashTicketCollection::query()
+                ->whereBetween('collection_date', [$month, $monthEnd])
+                ->where(fn ($query) => $query->whereNull('collection_number')->orWhere('collection_number', 'not like', 'CT-DEMO-%'));
+
+            $assignments = CashTicketAssignment::query()
+                ->whereBetween('assigned_date', [$month, $monthEnd])
+                ->where(fn ($query) => $query->whereNull('assignment_number')->orWhere('assignment_number', 'not like', 'CTA-DEMO-%'));
+
+            switch ((int) $data['step']) {
+                case 1:
+                    $collections->delete();
+                    $assignments->delete();
+                    break;
+                case 2:
+                    $collections->delete();
+                    $assignments->whereIn('status', ['ASSIGNED', 'COMPLETED'])->delete();
+                    break;
+                case 3:
+                    $collections->delete();
+                    $assignments->where('status', 'COMPLETED')->update(['status' => 'ASSIGNED']);
+                    break;
+                case 4:
+                    $collections->whereIn('status', ['REPORTED', 'SUBMITTED'])->update(['status' => 'RECORDED']);
+                    break;
+                case 5:
+                    $collections->where('status', 'SUBMITTED')->update(['status' => 'REPORTED']);
+                    break;
+            }
+        });
+
+        return redirect()->route('clerk.collections', [
+            'collection_month' => $month->month,
+            'collection_year' => $month->year,
+        ])->with('success', 'Cash ticket step '.$data['step'].' request deleted.');
     }
 
     public function storeCollection(Request $request)

@@ -4,15 +4,8 @@
     @php
         $collections = $collections ?? collect();
         $assignments = $assignments ?? collect();
-        $latestCashTicketDate = $collections
-            ->pluck('collection_date')
-            ->merge($assignments->pluck('assigned_date'))
-            ->filter()
-            ->sortDesc()
-            ->first();
-        $defaultCalendarDate = $latestCashTicketDate ?: now();
-        $selectedCalendarMonth = (int) request('collection_month', $defaultCalendarDate->month);
-        $selectedCalendarYear = (int) request('collection_year', $defaultCalendarDate->year);
+        $selectedCalendarMonth = (int) request('collection_month', now()->month);
+        $selectedCalendarYear = (int) request('collection_year', now()->year);
         $calendarMonth = \Carbon\Carbon::create($selectedCalendarYear, $selectedCalendarMonth, 1)->startOfMonth();
         $sections = [
             'FISH' => ['label' => 'Fish Section', 'image' => 'Fish Section.png', 'collector_image' => 'I-Clerk.png'],
@@ -76,6 +69,21 @@
             }
 
             return trim($matches[1]);
+        };
+        $readSlipUserRemark = function ($remarks) {
+            if (! $remarks) {
+                return '';
+            }
+
+            if (preg_match('/(?:^|\|\s*)Remarks:\s*([^|]+)/', $remarks, $matches)) {
+                return trim($matches[1]);
+            }
+
+            return collect(preg_split('/\s*\|\s*/', $remarks))
+                ->map(fn ($part) => trim($part))
+                ->filter()
+                ->reject(fn ($part) => collect(['RCC II:', 'Unit:', 'Description:', 'Stub:', 'Pcs:'])->contains(fn ($prefix) => str_starts_with($part, $prefix)))
+                ->last() ?: '';
         };
         $workflowSteps = [
             ['label' => 'Request Requisition and Issue Slip', 'icon' => 'bi-card-checklist', 'done' => $requestedAssignments->isNotEmpty() || $assignedTickets->isNotEmpty(), 'dialog' => 'treasurerCashStep1'],
@@ -197,7 +205,7 @@
                     </tr>
                 </tbody>
             </table>
-            <div class="cash-slip-remarks"><label>Remarks:<input value="{{ $workflowAssignments->first()?->remarks ?: 'No remarks' }}" readonly></label></div>
+            <div class="cash-slip-remarks"><label>Remarks:<input value="{{ $readSlipUserRemark($workflowAssignments->first()?->remarks) ?: 'No remarks' }}" readonly></label></div>
             <footer class="dialog-actions cash-ticket-sticky-actions"><button type="button" class="button button-muted" data-close-dialog>Close</button></footer>
         </section>
     </dialog>
@@ -282,9 +290,17 @@
                 </table>
                 <div class="cash-fee-calendar">
                     <header>
-                        <strong>{{ $calendarMonth->day }}</strong>
-                        <select disabled><option>{{ strtoupper($calendarMonth->format('F')) }}</option></select>
-                        <strong>{{ $calendarMonth->year }}</strong>
+                        <select name="collection_month" data-treasurer-collection-month>
+                            @foreach (range(1, 12) as $month)
+                                <option value="{{ $month }}" @selected($month === $selectedCalendarMonth)>{{ strtoupper(\Carbon\Carbon::create(2000, $month, 1)->format('F')) }}</option>
+                            @endforeach
+                        </select>
+                        <strong>{{ strtoupper($calendarMonth->format('F')) }}</strong>
+                        <select name="collection_year" data-treasurer-collection-year>
+                            @foreach (range(now()->year - 1, now()->year + 1) as $year)
+                                <option value="{{ $year }}" @selected($year === $selectedCalendarYear)>{{ $year }}</option>
+                            @endforeach
+                        </select>
                     </header>
                     <div class="cash-fee-weekdays">
                         @foreach (['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'] as $weekday)
@@ -537,6 +553,13 @@
         const treasurerCollectionTotalsByDate = @json($collectionTotalsByDate);
         const treasurerCollectionMonth = @json($calendarMonth->format('m'));
         const treasurerCollectionYear = @json($calendarMonth->format('Y'));
+
+        $('[data-treasurer-collection-month], [data-treasurer-collection-year]').on('change', function () {
+            const url = new URL(window.location.href);
+            url.searchParams.set('collection_month', $('[data-treasurer-collection-month]').val());
+            url.searchParams.set('collection_year', $('[data-treasurer-collection-year]').val());
+            window.location.href = url.toString();
+        });
 
         $(document).on('click', '[data-treasurer-collection-day]', function () {
             const day = String($(this).data('treasurer-collection-day')).padStart(2, '0');

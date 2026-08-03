@@ -61,6 +61,21 @@
 
             return trim($matches[1]);
         };
+        $readSlipUserRemark = function ($remarks) {
+            if (! $remarks) {
+                return '';
+            }
+
+            if (preg_match('/(?:^|\|\s*)Remarks:\s*([^|]+)/', $remarks, $matches)) {
+                return trim($matches[1]);
+            }
+
+            return collect(preg_split('/\s*\|\s*/', $remarks))
+                ->map(fn ($part) => trim($part))
+                ->filter()
+                ->reject(fn ($part) => collect(['RCC II:', 'Unit:', 'Description:', 'Stub:', 'Pcs:'])->contains(fn ($prefix) => str_starts_with($part, $prefix)))
+                ->last() ?: '';
+        };
         $sectionOptions = collect($sections)->map(fn ($details, $section) => [
             'key' => $section,
             'label' => $details['label'],
@@ -96,14 +111,23 @@
         <div class="workflow-steps">
             @foreach ($workflowSteps as $index => $step)
                 <div class="workflow-step-item {{ $step['done'] ? 'complete' : '' }}" style="--step-line-color: {{ $step['done'] ? '#075d16' : '#760008' }};">
-                    <button type="button" class="workflow-step-card {{ $step['done'] ? 'complete' : '' }}" data-open-dialog="{{ $step['dialog'] }}">
+                    <div class="workflow-step-card {{ $step['done'] ? 'complete' : '' }}">
                         <b>{{ $index + 1 }}</b>
-                        <i class="bi {{ $step['icon'] }}"></i>
-                        <span>{{ $step['label'] }}</span>
+                        <button type="button" class="workflow-step-main" data-open-dialog="{{ $step['dialog'] }}">
+                            <i class="bi {{ $step['icon'] }}"></i>
+                            <span>{{ $step['label'] }}</span>
+                        </button>
                         @if ($step['done'])
-                            <em>View Request</em>
+                            <button type="button" class="workflow-view-request" data-open-dialog="{{ $step['dialog'] }}">View Request</button>
+                            <form class="cash-ticket-reset-form" action="{{ route('clerk.cash-ticket.reset') }}" method="POST">
+                                @csrf
+                                @method('DELETE')
+                                <input type="hidden" name="month" value="{{ $calendarMonth->toDateString() }}">
+                                <input type="hidden" name="step" value="{{ $index + 1 }}">
+                                <button type="button" data-reset-cash-ticket><i class="bi bi-trash-fill"></i> Delete Request</button>
+                            </form>
                         @endif
-                    </button>
+                    </div>
                 </div>
             @endforeach
         </div>
@@ -151,23 +175,19 @@
                             $rowIndex = $assignmentInputIndex++;
                             $savedSlip = $slipAssignments->get($slipRow);
                             $savedRemarks = $savedSlip?->remarks;
-                            $defaultUnit = $slipRow === 0 && ! $savedSlip ? 'Cash Ticket' : '';
-                            $defaultDescription = $slipRow === 0 && ! $savedSlip ? 'Cash Ticket for Public Market Collection' : '';
-                            $defaultStub = $slipRow === 0 && ! $savedSlip ? '1' : '';
-                            $defaultPcs = $slipRow === 0 && ! $savedSlip ? '20' : '';
                         @endphp
                         <tr>
                             <td>
                                 <input type="hidden" name="assignments[{{ $rowIndex }}][collector_id]" value="{{ auth()->id() }}">
                                 <input type="hidden" name="assignments[{{ $rowIndex }}][stall_section]" value="MIXED">
                                 <input type="hidden" name="assignments[{{ $rowIndex }}][assigned_date]" value="{{ old('assignments.'.$rowIndex.'.assigned_date', optional($savedSlip?->assigned_date)->toDateString() ?: $slipDate) }}" data-slip-date-target>
-                                <input name="cash_slip[{{ $rowIndex }}][unit]" value="{{ old('cash_slip.'.$rowIndex.'.unit', $readSlipRemark($savedRemarks, 'Unit') ?: $defaultUnit) }}">
+                                <input name="cash_slip[{{ $rowIndex }}][unit]" value="{{ old('cash_slip.'.$rowIndex.'.unit', $readSlipRemark($savedRemarks, 'Unit')) }}">
                             </td>
-                            <td><input name="cash_slip[{{ $rowIndex }}][description]" value="{{ old('cash_slip.'.$rowIndex.'.description', $readSlipRemark($savedRemarks, 'Description') ?: $defaultDescription) }}"></td>
-                            <td><input type="number" name="cash_slip[{{ $rowIndex }}][stub]" value="{{ old('cash_slip.'.$rowIndex.'.stub', $readSlipRemark($savedRemarks, 'Stub') ?: $defaultStub) }}" min="1"></td>
-                            <td><input type="number" name="cash_slip[{{ $rowIndex }}][pcs]" value="{{ old('cash_slip.'.$rowIndex.'.pcs', $readSlipRemark($savedRemarks, 'Pcs') ?: $defaultPcs) }}" min="1"></td>
-                            <td><input type="number" name="assignments[{{ $rowIndex }}][ticket_start]" value="{{ old('assignments.'.$rowIndex.'.ticket_start', $savedSlip?->ticket_start ?: ($slipRow === 0 ? '1' : '')) }}" min="1"></td>
-                            <td><input type="number" name="assignments[{{ $rowIndex }}][ticket_end]" value="{{ old('assignments.'.$rowIndex.'.ticket_end', $savedSlip?->ticket_end ?: ($slipRow === 0 ? '20' : '')) }}" min="1"></td>
+                            <td><input name="cash_slip[{{ $rowIndex }}][description]" value="{{ old('cash_slip.'.$rowIndex.'.description', $readSlipRemark($savedRemarks, 'Description')) }}"></td>
+                            <td><input type="number" name="cash_slip[{{ $rowIndex }}][stub]" value="{{ old('cash_slip.'.$rowIndex.'.stub', $readSlipRemark($savedRemarks, 'Stub')) }}" min="1"></td>
+                            <td><input type="number" name="cash_slip[{{ $rowIndex }}][pcs]" value="{{ old('cash_slip.'.$rowIndex.'.pcs', $readSlipRemark($savedRemarks, 'Pcs')) }}" min="1"></td>
+                            <td><input type="number" name="assignments[{{ $rowIndex }}][ticket_start]" value="{{ old('assignments.'.$rowIndex.'.ticket_start', $savedSlip?->ticket_start ?: '') }}" min="1"></td>
+                            <td><input type="number" name="assignments[{{ $rowIndex }}][ticket_end]" value="{{ old('assignments.'.$rowIndex.'.ticket_end', $savedSlip?->ticket_end ?: '') }}" min="1"></td>
                         </tr>
                     @endfor
                     <tr>
@@ -201,7 +221,7 @@
                     </tr>
                 </tbody>
             </table>
-            <div class="cash-slip-remarks"><label>Remarks:<input name="assignments[0][remarks]" placeholder="Enter remarks (Optional)"></label></div>
+            <div class="cash-slip-remarks"><label>Remarks:<input name="assignments[0][remarks]" value="{{ old('assignments.0.remarks', $readSlipUserRemark($slipAssignments->first()?->remarks)) }}" placeholder="Enter remarks (Optional)"></label></div>
             <div class="dialog-actions"><button class="button button-primary">Submit</button><button type="button" class="button button-muted" data-close-dialog>Cancel</button></div>
         </form>
     </dialog>
@@ -628,7 +648,9 @@
 
             if (message) {
                 event.preventDefault();
+                const activeDialog = this.closest('dialog');
                 Swal.fire({
+                    target: activeDialog || document.body,
                     title: 'Please check your entry',
                     text: message,
                     icon: 'warning',
@@ -637,6 +659,19 @@
                     customClass: { popup: 'einspect-swal' }
                 });
             }
+        });
+
+        $('[data-reset-cash-ticket]').on('click', function () {
+            const form = this.closest('form');
+
+            einspectConfirm({
+                title: 'Delete Request?',
+                message: 'Delete this cash ticket request and reset its submitted progress?',
+                confirmText: 'Yes, Delete',
+                cancelText: 'No, Keep It'
+            }).then(function (result) {
+                if (result.isConfirmed) form?.submit();
+            });
         });
 
         let cashTicketAssignmentIndex = {{ $assignmentInputIndex }};

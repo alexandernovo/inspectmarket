@@ -105,6 +105,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/cash-ticket-assignments', [ClerkController::class, 'storeAssignment'])->name('assignments.store');
         Route::post('/cash-ticket-progress', [ClerkController::class, 'storeProgress'])->name('cash-ticket.progress');
         Route::post('/cash-ticket-collections', [ClerkController::class, 'storeCollection'])->name('collections.store');
+        Route::delete('/cash-ticket-request', [ClerkController::class, 'destroyWorkflow'])->name('cash-ticket.reset');
         Route::get('/stall-rentals', [ClerkController::class, 'rentals'])->name('rentals');
         Route::put('/stall-rentals/{payment}/history', [ClerkController::class, 'updateRentalHistory'])->name('rentals.history.update');
         Route::get('/reports', [MarketReportController::class, 'index'])->name('reports');

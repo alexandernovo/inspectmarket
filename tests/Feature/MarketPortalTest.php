@@ -331,6 +331,145 @@ it('supports the clerk inspector and treasurer write workflows', function () {
         ->and(Payment::where('tenant_id', $tenant->id)->where('status', 'PAID')->count())->toBeGreaterThan(0);
 });
 
+it('shows the same clerk step one cash ticket remarks in the treasurer view', function () {
+    $clerk = User::where('usertype', User::ROLE_CLERK)->firstOrFail();
+    $treasurer = User::where('usertype', User::ROLE_TREASURER)->firstOrFail();
+    $note = 'Treasurer should see this exact step one note.';
+
+    $this->actingAs($clerk)->post(route('clerk.assignments.store'), [
+        'workflow_status' => 'REQUESTED',
+        'assignments' => [
+            [
+                'collector_id' => $clerk->id,
+                'stall_section' => 'MIXED',
+                'ticket_start' => 1,
+                'ticket_end' => 20,
+                'assigned_date' => now()->toDateString(),
+                'remarks' => $note,
+            ],
+        ],
+        'cash_slip' => [
+            [
+                'unit' => 'Cash Ticket',
+                'description' => 'Cash Ticket for Public Market Collection',
+                'stub' => 1,
+                'pcs' => 20,
+            ],
+        ],
+    ])->assertRedirect();
+
+    $assignment = CashTicketAssignment::where('remarks', 'like', '%'.$note.'%')->firstOrFail();
+
+    expect($assignment->remarks)->toContain('Remarks: '.$note);
+
+    $this->actingAs($treasurer)
+        ->get(route('treasurer.assignments'))
+        ->assertOk()
+        ->assertSee($note)
+        ->assertDontSee('RCC II: '.$clerk->full_name);
+});
+
+it('lets the clerk delete each cash ticket request step to reset card progress', function () {
+    $clerk = User::where('usertype', User::ROLE_CLERK)->firstOrFail();
+    $month = now()->startOfMonth();
+
+    $requested = CashTicketAssignment::create([
+        'assignment_number' => 'CTA-RESET-REQUESTED',
+        'collector_id' => $clerk->id,
+        'assigned_by' => $clerk->id,
+        'stall_section' => 'FISH',
+        'ticket_start' => 1,
+        'ticket_end' => 20,
+        'ticket_quantity' => 20,
+        'assigned_date' => $month,
+        'status' => 'REQUESTED',
+    ]);
+    $assigned = CashTicketAssignment::create([
+        'assignment_number' => 'CTA-RESET-ASSIGNED',
+        'collector_id' => $clerk->id,
+        'assigned_by' => $clerk->id,
+        'stall_section' => 'PORK',
+        'ticket_start' => 21,
+        'ticket_end' => 40,
+        'ticket_quantity' => 20,
+        'assigned_date' => $month,
+        'status' => 'COMPLETED',
+    ]);
+    $collection = CashTicketCollection::create([
+        'collection_number' => 'CT-RESET-WORKFLOW',
+        'collector_id' => $clerk->id,
+        'recorded_by' => $clerk->id,
+        'stall_section' => 'PORK',
+        'ticket_quantity' => 20,
+        'amount' => 200,
+        'collection_date' => $month,
+        'status' => 'SUBMITTED',
+        'cash_ticket_assignment_id' => $assigned->id,
+    ]);
+
+    $reset = fn (int $step) => $this->actingAs($clerk)->delete(route('clerk.cash-ticket.reset'), [
+        'month' => $month->toDateString(),
+        'step' => $step,
+    ])->assertRedirect(route('clerk.collections', [
+        'collection_month' => $month->month,
+        'collection_year' => $month->year,
+    ]));
+
+    $reset(5);
+    expect($collection->fresh()->status)->toBe('REPORTED');
+
+    $reset(4);
+    expect($collection->fresh()->status)->toBe('RECORDED');
+
+    $reset(3);
+    expect($collection->fresh())->toBeNull()
+        ->and($assigned->fresh()->status)->toBe('ASSIGNED')
+        ->and($requested->fresh())->not->toBeNull();
+
+    $replacementCollection = CashTicketCollection::create([
+        'collection_number' => 'CT-RESET-REPLACEMENT',
+        'collector_id' => $clerk->id,
+        'recorded_by' => $clerk->id,
+        'stall_section' => 'PORK',
+        'ticket_quantity' => 20,
+        'amount' => 200,
+        'collection_date' => $month,
+        'status' => 'RECORDED',
+        'cash_ticket_assignment_id' => $assigned->id,
+    ]);
+    $assigned->update(['status' => 'COMPLETED']);
+
+    $reset(2);
+    expect($replacementCollection->fresh())->toBeNull()
+        ->and($assigned->fresh())->toBeNull()
+        ->and($requested->fresh())->not->toBeNull();
+
+    $reset(1);
+    expect($requested->fresh())->toBeNull();
+});
+
+it('prepares inspector add forms with current date and inspection number preview', function () {
+    $inspector = User::where('usertype', User::ROLE_INSPECTOR)->firstOrFail();
+
+    $this->actingAs($inspector)
+        ->get(route('inspector.inspections', ['type' => 'poultry']))
+        ->assertOk()
+        ->assertSee('function currentDateTimeLocal', false)
+        ->assertSee('function previewInspectionNumber', false)
+        ->assertSee('INSP-${date}-${suffix}', false);
+});
+
+it('renders the clerk profile with the inspector style profile layout', function () {
+    $clerk = User::where('usertype', User::ROLE_CLERK)->firstOrFail();
+
+    $this->actingAs($clerk)
+        ->get(route('profile'))
+        ->assertOk()
+        ->assertSee('inspector-profile-layout')
+        ->assertSee($clerk->designation)
+        ->assertSee('C-Clerk.png');
+});
+
 it('completes tenant phone verification and account registration', function () {
     $this->post(route('account.register.code', ['role' => 'tenant']), [
         'phone_num' => '09990001111',

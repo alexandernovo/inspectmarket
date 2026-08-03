@@ -178,11 +178,30 @@
             const dialog = document.getElementById('inspectorRecordDialog');
             const form = document.getElementById('inspectorRecordForm');
 
+            function currentDateTimeLocal() {
+                const now = new Date();
+                now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+                return now.toISOString().slice(0, 16);
+            }
+
+            function previewInspectionNumber() {
+                const now = new Date();
+                const date = [
+                    now.getFullYear(),
+                    String(now.getMonth() + 1).padStart(2, '0'),
+                    String(now.getDate()).padStart(2, '0')
+                ].join('');
+                const suffix = Math.random().toString(36).slice(2, 8).toUpperCase().padEnd(6, '0');
+
+                return `INSP-${date}-${suffix}`;
+            }
+
             function resetForm() {
                 form.reset();
                 form.action = form.dataset.storeUrl;
                 form.querySelector('[data-method]').value = 'POST';
-                form.querySelector('[data-request-number]').value = '';
+                form.querySelector('[data-request-number]').value = previewInspectionNumber();
+                form.querySelector('[name="scheduled_at"]').value = currentDateTimeLocal();
                 form.querySelectorAll('input, select, textarea').forEach((field) => field.disabled = false);
                 form.querySelectorAll('input[readonly]').forEach((field) => field.readOnly = true);
                 form.querySelector('[type="submit"]').hidden = false;

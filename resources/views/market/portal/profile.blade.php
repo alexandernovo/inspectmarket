@@ -1,15 +1,17 @@
 @extends('market.layouts.portal')
 
 @section('content')
-    @if ($user->isRole('INSPECTOR') || $user->isRole('TREASURER') || $user->isRole('TENANT'))
+    @if ($user->isRole('INSPECTOR') || $user->isRole('TREASURER') || $user->isRole('CLERK') || $user->isRole('TENANT'))
         @php
             $profileDefaultAvatar = match (true) {
                 $user->isRole('TREASURER') => asset('assets/einspect/USERS/B-Treasurer.png'),
+                $user->isRole('CLERK') => asset('assets/einspect/USERS/C-Clerk.png'),
                 $user->isRole('TENANT') => asset('assets/einspect/USERS/5-Tenants.png'),
                 default => asset('assets/einspect/USERS/D-Inspector.png'),
             };
             $profileRoleTitle = $user->designation ?: match (true) {
                 $user->isRole('TREASURER') => 'Municipal Treasurer',
+                $user->isRole('CLERK') => 'Revenue Collector Clerk',
                 $user->isRole('TENANT') => 'Tenant',
                 default => 'Inspector',
             };
@@ -103,7 +105,7 @@
 @endsection
 
 @push('scripts')
-    @if ($user->isRole('INSPECTOR'))
+    @if ($user->isRole('INSPECTOR') || $user->isRole('TREASURER') || $user->isRole('CLERK') || $user->isRole('TENANT'))
         <script>
             document.querySelector('.inspector-profile-card [name="password"]')?.addEventListener('input', function () {
                 document.querySelector('[data-inspector-password-confirmation]').value = this.value;

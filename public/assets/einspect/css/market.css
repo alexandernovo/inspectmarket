@@ -551,6 +551,22 @@ td small { color: var(--muted); }
 .portal-role-treasurer .portal-topbar > div:nth-child(2) { display: none; }
 .portal-role-treasurer .sidebar-toggle { display: grid; width: 42px; height: 42px; border: 0; border-radius: 0; font-size: 1.55rem; }
 .portal-role-treasurer .icon-button { width: 39px; height: 39px; border: 0; font-size: 1.15rem; }
+.portal-role-treasurer .message-button { position: relative; }
+.portal-role-treasurer .message-button b {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    display: grid;
+    place-items: center;
+    width: 22px;
+    min-width: 22px;
+    height: 22px;
+    padding: 0;
+    border-radius: 50%;
+    color: #fff;
+    background: #a00008;
+    font-size: .7rem;
+}
 .portal-role-treasurer .role-chip { display: flex; align-items: center; gap: 7px; min-height: 42px; padding: .42rem .75rem; border: 2px solid #fff; font-size: .9rem; }
 .portal-role-treasurer .role-chip::before { content: "\F4D7"; font-family: bootstrap-icons; font-size: 1.35rem; }
 .portal-role-treasurer .portal-content { padding: 0; background: #d3d3d3; }
@@ -1682,17 +1698,18 @@ td small { color: var(--muted); }
 }
 .portal-role-clerk .message-button b {
     position: absolute;
-    top: -8px;
-    right: -8px;
+    top: -4px;
+    right: -4px;
     display: grid;
     place-items: center;
-    min-width: 28px;
-    height: 28px;
-    padding: 0 7px;
+    width: 22px;
+    min-width: 22px;
+    height: 22px;
+    padding: 0;
     border-radius: 50%;
     color: #fff;
-    background: #9a0009;
-    font-size: .9rem;
+    background: #a00008;
+    font-size: .7rem;
 }
 .portal-role-clerk .role-chip {
     display: flex;
@@ -3703,7 +3720,6 @@ dialog.market-dialog.clerk-rental-detail-dialog {
     color: #fff;
     text-align: center;
     background: #8c0009;
-    cursor: pointer;
 }
 .cash-ticket-workflow-shell .workflow-step-card::before {
     content: "";
@@ -3716,7 +3732,20 @@ dialog.market-dialog.clerk-rental-detail-dialog {
     transform: translateX(-50%);
 }
 .cash-ticket-workflow-shell .workflow-step-card.complete { border-color: #075d16; background: #075d16; }
-.cash-ticket-workflow-shell .workflow-step-card:hover,
+.cash-ticket-workflow-shell button.workflow-step-card { cursor: pointer; }
+.cash-ticket-workflow-shell .workflow-step-main,
+.cash-ticket-workflow-shell .workflow-view-request {
+    display: grid;
+    place-items: center;
+    gap: 9px;
+    border: 0;
+    color: inherit;
+    background: transparent;
+    text-align: center;
+}
+.cash-ticket-workflow-shell .workflow-step-main { width: 100%; }
+.cash-ticket-workflow-shell .workflow-step-main:hover,
+.cash-ticket-workflow-shell .workflow-view-request:hover,
 .cash-ticket-workflow-shell .workflow-step-card em:hover { filter: brightness(1.05); }
 .cash-ticket-workflow-shell .workflow-step-card b {
     position: absolute;
@@ -3734,8 +3763,11 @@ dialog.market-dialog.clerk-rental-detail-dialog {
     line-height: 1;
 }
 .cash-ticket-workflow-shell .workflow-step-card.complete b { border-color: #075d16; color: #075d16; }
-.cash-ticket-workflow-shell .workflow-step-card i { font-size: 42px; line-height: 1; }
-.cash-ticket-workflow-shell .workflow-step-card span { max-width: 170px; font-size: 14px; font-weight: 900; line-height: 1.15; text-transform: uppercase; }
+.cash-ticket-workflow-shell .workflow-step-main i,
+.cash-ticket-workflow-shell .workflow-step-card > i { font-size: 42px; line-height: 1; }
+.cash-ticket-workflow-shell .workflow-step-main span,
+.cash-ticket-workflow-shell .workflow-step-card > span { max-width: 170px; font-size: 14px; font-weight: 900; line-height: 1.15; text-transform: uppercase; }
+.cash-ticket-workflow-shell .workflow-view-request,
 .cash-ticket-workflow-shell .workflow-step-card em {
     display: grid;
     place-items: center;
@@ -3750,6 +3782,24 @@ dialog.market-dialog.clerk-rental-detail-dialog {
     font-weight: 500;
     text-transform: none;
 }
+.cash-ticket-reset-form { display: flex; justify-content: center; margin: 0; }
+.cash-ticket-reset-form button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 132px;
+    min-height: 36px;
+    padding: 6px 8px;
+    border: 2px solid #fff;
+    border-radius: 4px;
+    color: #fff;
+    background: #760008;
+    font-size: 12px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+.cash-ticket-reset-form button:hover { filter: brightness(1.08); }
 .cash-ticket-step-dialog {
     width: 1180px;
     max-width: 94vw;
@@ -6123,6 +6173,55 @@ button.login-close {
 .inspector-profile-card > button { width: 100%; min-height: 48px; margin-top: 14px; border: 3px solid #fff; border-radius: 4px; color: #fff; background: transparent; font-size: 1.1rem; }
 .inspector-profile-seal { display: grid; place-items: center; border-radius: 0 10px 10px 0; background: #fff; }
 .inspector-profile-seal img { width: 70%; max-width: 430px; }
+.portal-role-clerk .inspector-profile-page {
+    padding: 12px 28px 26px;
+    background: #d3d3d3;
+}
+.portal-role-clerk .inspector-profile-layout {
+    grid-template-columns: 40% 60%;
+    width: 100%;
+    max-width: none;
+    min-height: 470px;
+    margin: 28px 0 0;
+}
+.portal-role-clerk .inspector-profile-card {
+    min-height: 470px;
+    padding: 18px 42px;
+    border-radius: 8px 0 0 8px;
+    background: #720006;
+}
+.portal-role-clerk .inspector-profile-avatar img {
+    width: 150px;
+    height: 150px;
+    box-shadow: 0 0 0 3px #720006;
+}
+.portal-role-clerk .inspector-profile-card h2 {
+    margin-top: 12px;
+    font-size: 2rem;
+    white-space: nowrap;
+}
+.portal-role-clerk .inspector-profile-card > p {
+    padding: 8px 10px;
+    font-size: 1.15rem;
+}
+.portal-role-clerk .inspector-profile-card > label:not(.inspector-profile-avatar) {
+    min-height: 42px;
+    margin-top: 10px;
+}
+.portal-role-clerk .inspector-profile-card > label i {
+    font-size: 1.3rem;
+}
+.portal-role-clerk .inspector-profile-card > label input {
+    height: 42px;
+}
+.portal-role-clerk .inspector-profile-card > button {
+    min-height: 42px;
+    margin-top: 12px;
+}
+.portal-role-clerk .inspector-profile-seal img {
+    width: 72%;
+    max-width: 560px;
+}
 .portal-role-treasurer .inspector-profile-page {
     padding: 12px 28px 26px;
     background: #d3d3d3;
