@@ -15,13 +15,19 @@
             },
             success: function(response) {
                 if (response.status === 'success') {
-                    window.location = "{{ route('dashboard') }}";
-                } else {
-                    if (typeLogin == "STAFF") {
-                        $('#error_login_staff').removeClass('d-none').text(response.message);
+                    console.log(response.type);
+                    if (response.type == "TREASURER") {
+                        window.location = "{{ route('treasurer.dashboard.view') }}";
+                    } else if (response.type == "TENANT") {
+                        window.location = "{{ route('tenant.dashboard.view') }}";
                     } else {
+                        window.location = "{{ route('dashboard') }}";
+                    }
+                } else {
+                    if (typeLogin == "ADMIN") {
                         $('#error_login').removeClass('d-none').text(response.message);
                     }
+                    $('#error_login_staff').removeClass('d-none').text(response.message);
                 }
             },
             error: function(xhr) {

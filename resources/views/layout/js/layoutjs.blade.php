@@ -59,68 +59,68 @@
         });
     });
 
-    function getCountIncident() {
-        if (!isStaff) {
+    // function getCountIncident() {
+    //     if (!isStaff) {
 
-            postRequest("{{ route('sidebarCounts') }}", {}, (response) => {
-                if (response.status == "success") {
-                    $("#incidentCountId").append(
-                        `<p id="incidentCountIdBadge" class="notifCount mb-0 position-absolute d-flex justify-content-center align-items-center rounded-circle">${response.incidentReport}</p>`
-                    );
+    //         postRequest("{{ route('sidebarCounts') }}", {}, (response) => {
+    //             if (response.status == "success") {
+    //                 $("#incidentCountId").append(
+    //                     `<p id="incidentCountIdBadge" class="notifCount mb-0 position-absolute d-flex justify-content-center align-items-center rounded-circle">${response.incidentReport}</p>`
+    //                 );
 
-                    $("#situationalCountId").append(`
-                            <p id="situationalCountIdBadge" class="notifCount mb-0 position-absolute d-flex justify-content-center align-items-center rounded-circle">${response.situationReport}</p>
-                    `);
+    //                 $("#situationalCountId").append(`
+    //                         <p id="situationalCountIdBadge" class="notifCount mb-0 position-absolute d-flex justify-content-center align-items-center rounded-circle">${response.situationReport}</p>
+    //                 `);
 
-                    $("#progressCountId").append(`
-                            <p id="progressCountIdBadge" class="notifCount mb-0 position-absolute d-flex justify-content-center align-items-center rounded-circle">${response.progressReport}</p>
-                    `);
-                }
-            })
-        }
-    }
+    //                 $("#progressCountId").append(`
+    //                         <p id="progressCountIdBadge" class="notifCount mb-0 position-absolute d-flex justify-content-center align-items-center rounded-circle">${response.progressReport}</p>
+    //                 `);
+    //             }
+    //         })
+    //     }
+    // }
 
-    $(document).ready(function() {
-        if (!isStaff) {
-            updateCount0(() => {
-                getCountIncident(); // load counts AFTER updating DB
-            });
-        }
-        if ({{ !in_array(Route::currentRouteName(), $excludedRoutes) }}) {
-            getCountIncidentFunc(); // start the loop
-        }
-    });
+    // $(document).ready(function() {
+    //     if (!isStaff) {
+    //         updateCount0(() => {
+    //             getCountIncident(); // load counts AFTER updating DB
+    //         });
+    //     }
+    //     if ({{ !in_array(Route::currentRouteName(), $excludedRoutes) }}) {
+    //         getCountIncidentFunc(); // start the loop
+    //     }
+    // });
 
 
 
-    function getCountIncidentFunc() {
-        if (!isStaff) {
-            // setInterval(() => {
-                getCountIncident();
-            // }, 3000);
-        }
-    }
+    // function getCountIncidentFunc() {
+    //     if (!isStaff) {
+    //         // setInterval(() => {
+    //             getCountIncident();
+    //         // }, 3000);
+    //     }
+    // }
 
-    function updateCount0(callback) {
-        let routeName = "{{ Route::currentRouteName() }}";
+    // function updateCount0(callback) {
+    //     let routeName = "{{ Route::currentRouteName() }}";
 
-        if (!isStaff) {
+    //     if (!isStaff) {
 
-            let type = null;
+    //         let type = null;
 
-            if (routeName === "progressreport_view") type = "PROGRESSREPORT";
-            if (routeName === "incidentreport_view") type = "INCIDENTREPORT";
-            if (routeName === "situationalreport_view") type = "SITUATIONALREPORT";
+    //         if (routeName === "progressreport_view") type = "PROGRESSREPORT";
+    //         if (routeName === "incidentreport_view") type = "INCIDENTREPORT";
+    //         if (routeName === "situationalreport_view") type = "SITUATIONALREPORT";
 
-            if (type) {
-                postRequest("{{ route('updateCountsActive') }}", {
-                    type
-                }, (response) => {
-                    if (response.status == "success") {
-                        if (typeof callback == "function") callback();
-                    }
-                });
-            }
-        }
-    }
+    //         if (type) {
+    //             postRequest("{{ route('updateCountsActive') }}", {
+    //                 type
+    //             }, (response) => {
+    //                 if (response.status == "success") {
+    //                     if (typeof callback == "function") callback();
+    //                 }
+    //             });
+    //         }
+    //     }
+    // }
 </script>

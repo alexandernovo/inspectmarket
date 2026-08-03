@@ -395,6 +395,24 @@
     border: #3a0000 !important;
 }
 
+.btn-prime2,
+.btn-prime2:active,
+.btn-prime2:focus,
+.btn-prime2:hover {
+    background-color: #915004 !important;
+    color: white !important;
+    border: #915004 !important;
+}
+
+.btn-login1,
+.btn-login1:active,
+.btn-login1:focus,
+.btn-login1:hover {
+    background-color: #F7CB1E !important;
+    color: black !important;
+    border: #F7CB1E !important;
+}
+
 .btn-green2,
 .btn-green2:active,
 .btn-green2:focus,
@@ -705,25 +723,29 @@ textarea:focus {
 
 div.dt-container .dt-paging .dt-paging-button.active button {
     color: white !important;
-    background-color: #3a0000 !important;
+    background-color: #A46400 !important;
     border: none !important;
 }
 
 div.dt-container .dt-paging .dt-paging-button.active button:hover {
     color: white !important;
-    background-color: #3a0000 !important;
+    background-color: #A46400 !important;
 }
 
 div.dt-container .dt-paging .dt-paging-button:not(.active) button:hover {
     color: white !important;
-    background: #3a0000 !important;
+    background: #A46400 !important;
     /* padding: 5px 11px !important; */
     border: none !important;
 }
 
+.dt-length label {
+    font-size: 14px
+}
+
 .custom-icon-box {
-    background-color: #630F0F !important;
-    border: none !important;
+    background-color: white !important;
+    border: 1px solid #905004;
 }
 
 .custom-icon-box i {

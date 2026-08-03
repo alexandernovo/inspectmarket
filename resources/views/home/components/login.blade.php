@@ -1,4 +1,4 @@
-<div class="offcanvas offcanvas-end" style="background-color: #343434" data-bs-backdrop="static" tabindex="-1"
+<div class="offcanvas offcanvas-end" style="background-color: #2A2D30" data-bs-backdrop="static" tabindex="-1"
     id="staticBackdrop" aria-labelledby="staticBackdropLabel">
     <div class="d-flex justify-content-end mt-3 me-3">
         <button type="button" class="btn btn-closing" data-bs-dismiss="offcanvas" aria-label="Close">
@@ -12,9 +12,7 @@
             </h5>
             <div class="d-flex gap-2 mb-3">
                 <img src="{{ asset('assets/images/logo2.png') }}" class="rounded-circle" alt=""
-                    style="width: 120px; height: 120px">
-                <img src="{{ asset('assets/images/logo1.png') }}" class="rounded-circle" alt=""
-                    style="width: 120px; height: 120px">
+                    style="width: 150px; height: 150px">
             </div>
 
             <div class="w-100 px-3 mt-4">
@@ -43,7 +41,7 @@
                     </div>
                     <a href="{{ route('forgot.password') }}" class="text-white">Forgot Password?</a>
                     <div class="form-group mt-4">
-                        <button class="btn btn-prime w-100 text-white" style="font-size: 18px">Log in</button>
+                        <button class="btn btn-login1 w-100 text-dark" style="font-size: 18px;">Log in</button>
                     </div>
                 </form>
             </div>

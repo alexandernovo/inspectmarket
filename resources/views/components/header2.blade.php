@@ -3,8 +3,10 @@
         <ul class="navbar-nav">
             @if (!in_array(Route::currentRouteName(), $excludedRoutes))
                 <li class="nav-item">
-                    <a class="nav-link sidebartoggler nav-icon-hover" id="headerCollapse" href="javascript:void(0)">
-                        <i class="ti ti-menu-2 text-white"></i>
+                    <a class="nav-link sidebartoggler nav-icon-hover d-flex align-items-center gap-3" id="headerCollapse"
+                        href="javascript:void(0)">
+                        <i class="ti ti-menu-2 text-white" style="margin-top: -4px"></i>
+                        <p class="mb-0 text-white" style="font-size: 17px">E-INSPECT MARKET</p>
                     </a>
                 </li>
             @endif
@@ -12,7 +14,7 @@
                 <li class="nav-item dropdown">
                     <div class="brand-logo d-flex align-items-center justify-content-between ps-0">
                         <a href="#" class="text-nowrap logo-img d-flex align-items-center gap-2">
-                            <img src="{{ asset('assets/images/logo1.png') }}" class="bg-white rounded-circle"
+                            <img src="{{ asset('assets/images/logo2.png') }}" class="bg-white rounded-circle"
                                 width="" alt="" style="width: 43px; height: 43px" />
                             <span style="font-size: 28px; letter-spacing: 4px; font-weight: 600;"
                                 class="text-white title-sidebar">
@@ -43,14 +45,22 @@
                     <div class="d-flex gap align-items-center">
                         <div class="d-flex flex-column justify-content-center align-items-end border-end pe-2">
                             <p class="mb-0 fw-semibold text-white" style="font-size: 13px; line-height: 17px">
-                                Tibiao MDRRMO
-                                {{ auth()->user()->usertype && auth()->user()->usertype == 'ADMIN' ? 'Admin' : 'Staff' }}
+                                @if (auth()->user()->usertype && auth()->user()->usertype == 'ADMIN')
+                                    Admin
+                                @endif
+                                @if (auth()->user()->usertype && auth()->user()->usertype == 'TREASURER')
+                                    Treasurer
+                                @endif
+                                @if (auth()->user()->usertype && auth()->user()->usertype == 'TENANT')
+                                    Tenant
+                                @endif
                             </p>
                         </div>
                         <li class="nav-item dropdown">
                             <a class="nav-link nav-icon-hover px-2" href="javascript:void(0)" id="drop2"
                                 data-bs-toggle="dropdown" aria-expanded="false">
-                                <div class=" d-flex align-items-center overflow-hidden rounded-circle" style="width: 40px; height: 40px">
+                                <div class=" d-flex align-items-center overflow-hidden rounded-circle"
+                                    style="width: 40px; height: 40px">
                                     @if (auth()->user() && auth()->user()->profile)
                                         <img src="{{ asset(auth()->user()->profile) }}" alt=""
                                             class="w-100 h-100 object-fit-cover">
