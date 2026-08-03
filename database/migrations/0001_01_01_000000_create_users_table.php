@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('usertype')->nullable();
             $table->string('profile')->nullable();
             $table->string('background')->nullable();
+            $table->rememberToken();
             $table->timestamps();
         });
     }

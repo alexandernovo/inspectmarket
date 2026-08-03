@@ -24,9 +24,16 @@ class UserFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => fake()->name(),
+            'firstname' => fake()->firstName(),
+            'middlename' => fake()->optional()->firstName(),
+            'lastname' => fake()->lastName(),
+            'username' => fake()->unique()->userName(),
+            'designation' => 'Market Tenant',
             'email' => fake()->unique()->safeEmail(),
-            'email_verified_at' => now(),
+            'address' => fake()->address(),
+            'phone_num' => fake()->phoneNumber(),
+            'status' => 'ACTIVE',
+            'usertype' => \App\Models\User::ROLE_TENANT,
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
         ];
@@ -37,8 +44,6 @@ class UserFactory extends Factory
      */
     public function unverified(): static
     {
-        return $this->state(fn (array $attributes) => [
-            'email_verified_at' => null,
-        ]);
+        return $this;
     }
 }
