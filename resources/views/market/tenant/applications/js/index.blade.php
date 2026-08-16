@@ -12,7 +12,7 @@
             pageLength: 10,
             lengthMenu: [5, 10, 25, 50],
             ajax: {
-                url: "{{ route('tenant.datatable.applications') }}",
+                url: "{{ route($tenantApplicationDataTableRoute, $tenantApplicationDataTableRouteParams) }}",
                 type: 'GET',
                 data: function (data) {
                     data.dateFrom = tenantApplicationDateFrom;

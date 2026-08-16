@@ -122,15 +122,20 @@ Route::middleware('auth')->group(function () {
         Route::get('/stall-rentals', [TreasurerController::class, 'rentals'])->name('rentals');
         Route::get('/stall-map', [TreasurerController::class, 'stallMap'])->name('stall-map');
         Route::put('/stall-map/{stall}', [TreasurerController::class, 'updateStall'])->name('stall-map.update');
+        Route::put('/stall-map-sections', [TreasurerController::class, 'updateStallSections'])->name('stall-map.sections.update');
         Route::put('/stall-rentals/{application}', [TreasurerController::class, 'reviewApplication'])->name('rentals.review');
+        Route::put('/stall-rentals/{payment}/history', [TreasurerController::class, 'updateRentalHistory'])->name('rentals.history.update');
         Route::get('/payments', [TreasurerController::class, 'payments'])->name('payments');
         Route::post('/payments', [TreasurerController::class, 'recordPayment'])->name('payments.store');
         Route::put('/payments/{payment}/verify', [TreasurerController::class, 'verifyPayment'])->name('payments.verify');
+        Route::put('/tenant-stall-rentals/{application}', [TreasurerController::class, 'updateTenantStall'])->name('tenant-stalls.update');
+        Route::delete('/tenant-stall-rentals/{application}', [TreasurerController::class, 'destroyTenantStall'])->name('tenant-stalls.destroy');
         Route::get('/cash-ticket-assignments', [TreasurerController::class, 'assignments'])->name('assignments');
         Route::post('/cash-ticket-assignments', [TreasurerController::class, 'storeAssignment'])->name('assignments.store');
         Route::get('/collectors', [TreasurerController::class, 'collectors'])->name('collectors');
         Route::post('/collectors', [TreasurerController::class, 'storeCollector'])->name('collectors.store');
         Route::put('/collectors/{collector}', [TreasurerController::class, 'updateCollector'])->name('collectors.update');
+        Route::delete('/collectors/{collector}', [TreasurerController::class, 'destroyCollector'])->name('collectors.destroy');
         Route::get('/reports', [MarketReportController::class, 'index'])->name('reports');
         Route::get('/datatable/applications', [MarketDataTableController::class, 'applications'])->name('datatable.applications');
         Route::get('/datatable/payments', [MarketDataTableController::class, 'payments'])->name('datatable.payments');
@@ -146,6 +151,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/reports', [MarketReportController::class, 'index'])->name('reports');
         Route::get('/stall-map', [AdministratorController::class, 'stallMap'])->name('stall-map');
         Route::put('/stall-map/{stall}', [AdministratorController::class, 'updateStall'])->name('stall-map.update');
+        Route::put('/stall-map-sections', [AdministratorController::class, 'updateStallSections'])->name('stall-map.sections.update');
+        Route::put('/rentals/{payment}/history', [AdministratorController::class, 'updateRentalHistory'])->name('rentals.history.update');
+        Route::put('/inspections/{inspection}', [AdministratorController::class, 'updateInspection'])->name('inspections.update');
         Route::get('/contacts', [AdministratorController::class, 'contacts'])->name('contacts');
         Route::put('/contacts/{contact}', [AdministratorController::class, 'readContact'])->name('contacts.read');
         Route::get('/settings', [AdministratorController::class, 'settings'])->name('settings');
@@ -154,6 +162,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/datatable/applications', [MarketDataTableController::class, 'applications'])->name('datatable.applications');
         Route::get('/datatable/payments', [MarketDataTableController::class, 'payments'])->name('datatable.payments');
         Route::get('/datatable/inspections', [MarketDataTableController::class, 'inspections'])->name('datatable.inspections');
+        Route::get('/datatable/inspector-inspections', [AdministratorController::class, 'inspectionDataTable'])->name('datatable.inspector-inspections');
         Route::get('/datatable/collections', [MarketDataTableController::class, 'collections'])->name('datatable.collections');
     });
 });

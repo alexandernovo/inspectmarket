@@ -1,10 +1,18 @@
 @extends('market.layouts.portal')
 
 @section('content')
+    @php
+        $inspectorPageTitle = $inspectorPageTitle ?? 'REQUEST INSPECTION';
+        $inspectorPageBreadcrumb = $inspectorPageBreadcrumb ?? 'Dashboard | Request Inspection';
+        $inspectorDataTableRoute = $inspectorDataTableRoute ?? 'inspector.datatable.inspections';
+        $inspectorIndexRoute = $inspectorIndexRoute ?? 'inspector.inspections';
+        $inspectorIndexRouteParams = $inspectorIndexRouteParams ?? [];
+        $inspectorShowLivestockFilter = $inspectorShowLivestockFilter ?? false;
+    @endphp
     <section class="inspector-page inspector-requests-page">
         <header class="inspector-page-title">
             <i class="bi bi-people-fill"></i>
-            <div><h1>REQUEST INSPECTION</h1><p>Dashboard | Request Inspection</p></div>
+            <div><h1>{{ $inspectorPageTitle }}</h1><p>{{ $inspectorPageBreadcrumb }}</p></div>
         </header>
 
         <section class="inspector-table-panel">
@@ -21,6 +29,16 @@
                     <button type="button" data-inspector-status="APPROVED">Approved</button>
                     <button type="button" data-inspector-status="DISAPPROVED">Disapproved</button>
                 </div>
+                @if ($inspectorShowLivestockFilter)
+                    <label class="inspector-kind-filter">Kind of Meat:
+                        <select id="requestLivestockType">
+                            <option value="ALL">All</option>
+                            <option value="POULTRY">Poultry</option>
+                            <option value="PORK">Pork</option>
+                            <option value="BEEF">Beef</option>
+                        </select>
+                    </label>
+                @endif
             </div>
             <div class="table-wrap">
                 <table id="inspectorRequestsTable" class="inspector-data-table">
@@ -120,6 +138,7 @@
             let dateFrom = '';
             let dateTo = '';
             let status = 'ALL';
+            let livestockType = 'ALL';
             let activeRecord = null;
             const requestDialog = document.getElementById('inspectorRequestDialog');
             const decisionDialog = document.getElementById('inspectorDecisionDialog');
@@ -138,12 +157,13 @@
                 order: [],
                 pageLength: 10,
                 ajax: {
-                    url: "{{ route('inspector.datatable.inspections') }}",
+                    url: "{{ route($inspectorDataTableRoute) }}",
                     data: function (data) {
                         data.mode = 'requests';
                         data.dateFrom = dateFrom;
                         data.dateTo = dateTo;
                         data.status = status;
+                        data.type = livestockType;
                     }
                 },
                 columns: [
@@ -163,7 +183,7 @@
                         const record = JSON.parse($(this).attr('data-record'));
                         if (String(record.id) === focus) {
                             $(this).trigger('click');
-                            history.replaceState({}, '', "{{ route('inspector.inspections') }}");
+                            history.replaceState({}, '', "{{ route($inspectorIndexRoute, $inspectorIndexRouteParams) }}");
                             return false;
                         }
                     });
@@ -316,9 +336,15 @@
                 dateFrom = '';
                 dateTo = '';
                 status = 'ALL';
+                livestockType = 'ALL';
                 $('#requestFrom, #requestTo, #requestSearch').val('');
+                $('#requestLivestockType').val('ALL');
                 $('[data-inspector-status]').removeClass('active');
                 table.search('').ajax.reload();
+            });
+            $('#requestLivestockType').on('change', function () {
+                livestockType = this.value || 'ALL';
+                table.ajax.reload();
             });
             $('[data-inspector-status]').on('click', function () {
                 status = status === this.dataset.inspectorStatus ? 'ALL' : this.dataset.inspectorStatus;

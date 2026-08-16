@@ -1,6 +1,14 @@
 @extends('market.layouts.portal')
 
 @section('content')
+    @php
+        $tenantApplicationTitle = $tenantApplicationTitle ?? 'APPLICATION';
+        $tenantApplicationBreadcrumb = $tenantApplicationBreadcrumb ?? 'Dashboard | Application';
+        $tenantApplicationCanCreate = $tenantApplicationCanCreate ?? auth()->user()->isRole('TENANT');
+        $tenantApplicationCreateUrl = $tenantApplicationCreateUrl ?? route('tenant.applications.create');
+        $tenantApplicationDataTableRoute = $tenantApplicationDataTableRoute ?? 'tenant.datatable.applications';
+        $tenantApplicationDataTableRouteParams = $tenantApplicationDataTableRouteParams ?? [];
+    @endphp
     @include('market.tenant.applications.css.applications')
     @include('market.tenant.applications.css.detail')
 
@@ -8,11 +16,13 @@
         <header class="tenant-page-title">
             <div>
                 <i class="bi bi-shop-window"></i>
-                <div><h1>APPLICATION</h1><p>Dashboard | Application</p></div>
+                <div><h1>{{ $tenantApplicationTitle }}</h1><p>{{ $tenantApplicationBreadcrumb }}</p></div>
             </div>
-            <button type="button" class="button tenant-add-application" data-create-application-url="{{ route('tenant.applications.create') }}">
-                <i class="bi bi-plus-circle-fill"></i> Add Application
-            </button>
+            @if ($tenantApplicationCanCreate)
+                <button type="button" class="button tenant-add-application" data-create-application-url="{{ $tenantApplicationCreateUrl }}">
+                    <i class="bi bi-plus-circle-fill"></i> Add Application
+                </button>
+            @endif
         </header>
 
         <section class="tenant-table-card">

@@ -41,7 +41,7 @@ class MarketDataTableController extends Controller
             function (StallApplication $application) use ($request) {
                 $action = '<a class="table-action" href="'.route('stall-applications.show', $application).'" title="View"><i class="bi bi-eye-fill"></i></a>';
 
-                if ($request->user()->isRole(User::ROLE_TENANT)) {
+                if ($request->user()->isRole(User::ROLE_TENANT) || $request->user()->isRole(User::ROLE_ADMINISTRATOR)) {
                     $action = '<button type="button" class="table-action js-view-application" data-url="'.route('stall-applications.show', $application).'" title="View"><i class="bi bi-eye-fill"></i></button>';
                 }
 

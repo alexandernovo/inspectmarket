@@ -27,6 +27,7 @@ class MarketReportController extends Controller
         abort_unless(in_array($report, $allowed, true), 403);
         $month = $request->date('month')?->startOfMonth();
         $section = strtoupper($request->string('section')->toString());
+        $scope = strtolower($request->string('scope')->toString());
         $livestock = strtoupper($request->string('livestock')->toString());
 
         $rows = match ($report) {
@@ -40,10 +41,13 @@ class MarketReportController extends Controller
                 ->when($livestock, fn (Builder $query) => $query->where('livestock_type', $livestock))
                 ->when($user->isRole(User::ROLE_INSPECTOR), fn (Builder $query) => $query->where('status', 'COMPLETED'))
                 ->latest('scheduled_at')->get(),
-            'payments' => Payment::with('tenant')
+            'payments' => Payment::with(['tenant', 'stallApplication.stall'])
                 ->when($month, fn (Builder $query) => $query->whereBetween('period_month', [$month, $month->copy()->endOfMonth()]))
+                ->when($section, fn (Builder $query) => $query->whereHas('stallApplication', fn (Builder $application) => $application
+                    ->where('preferred_section', $section)
+                    ->orWhereHas('stall', fn (Builder $stall) => $stall->where('section', $section))))
                 ->latest('due_date')->get(),
-            default => $user->isRole(User::ROLE_CLERK)
+            default => $user->isRole(User::ROLE_CLERK) || ($user->isRole(User::ROLE_TREASURER) && $scope === 'clerk')
                 ? Payment::with(['tenant', 'stallApplication.stall'])
                     ->when($month, fn (Builder $query) => $query->whereBetween('period_month', [$month, $month->copy()->endOfMonth()]))
                     ->when($section, fn (Builder $query) => $query->whereHas('stallApplication', fn (Builder $application) => $application
@@ -51,6 +55,7 @@ class MarketReportController extends Controller
                         ->orWhereHas('stall', fn (Builder $stall) => $stall->where('section', $section))))
                     ->latest('due_date')->get()
                 : StallApplication::with(['tenant', 'stall'])
+                    ->when($month, fn (Builder $query) => $query->whereBetween('created_at', [$month, $month->copy()->endOfMonth()]))
                     ->when($section, fn (Builder $query) => $query->where('preferred_section', $section))
                     ->latest()->get(),
         };

@@ -118,6 +118,8 @@ class ReportExportController extends Controller
         $user = $request->user();
         $month = $request->date('month')?->startOfMonth();
         $section = strtoupper($request->string('section')->toString());
+        $scope = strtolower($request->string('scope')->toString());
+        $treasurerListReport = ($user->isRole(User::ROLE_TREASURER) || $user->isRole(User::ROLE_ADMINISTRATOR)) && $scope === 'treasurer';
 
         return match ($report) {
             'cash-ticket' => [
@@ -144,10 +146,56 @@ class ReportExportController extends Controller
                     $row->status,
                 ]),
             ],
+            'inspection' => [
+                'Slaughtered Livestock Inspection Report',
+                ['Inspection No.', 'Owner', 'Address', 'Type', 'Date of Inspection', 'Inspection Result', 'Status'],
+                tap(LivestockInspection::with(['tenant', 'inspector']), function ($query) use ($user, $month) {
+                    abort_unless($user->isRole(User::ROLE_ADMINISTRATOR) || $user->isRole(User::ROLE_INSPECTOR), 403);
+                    if ($user->isRole(User::ROLE_INSPECTOR)) {
+                        $query->where('status', 'COMPLETED');
+                    }
+                    if ($month) {
+                        $query->whereBetween('scheduled_at', [$month, $month->copy()->endOfMonth()]);
+                    }
+                })->latest('scheduled_at')->get()->map(fn ($row) => [
+                    $row->request_number,
+                    $row->owner_name,
+                    $row->address,
+                    $row->livestock_type,
+                    $row->scheduled_at->toDateTimeString(),
+                    $row->inspection_result ?: 'Pending Inspection',
+                    $row->status,
+                ]),
+            ],
             'stall-rental' => [
-                'Stall Rental Collection Report',
-                ['Tenant ID', 'Tenant', 'Stall Section', 'Stall Number', 'Stall Fee', 'Date of Payment', 'Payment Status', 'Short Charge/s'],
-                tap(Payment::with(['tenant', 'stallApplication.stall']), function ($query) use ($user, $month, $section) {
+                $treasurerListReport ? 'List of Tenants Report' : 'Stall Rental Collection Report',
+                $treasurerListReport
+                    ? ['Tenant ID', 'Tenant', 'Address', 'Contact Number', 'Stall Section', 'Stall Number', 'Status']
+                    : ['Tenant ID', 'Tenant', 'Stall Section', 'Stall Number', 'Stall Fee', 'Date of Payment', 'Payment Status', 'Short Charge/s'],
+                $treasurerListReport
+                    ? tap(StallApplication::with(['tenant', 'stall']), function ($query) use ($user, $month, $section) {
+                        abort_unless($user->isRole(User::ROLE_TREASURER) || $user->isRole(User::ROLE_ADMINISTRATOR), 403);
+                        if ($month) {
+                            $query->whereBetween('created_at', [$month, $month->copy()->endOfMonth()]);
+                        }
+                        if ($section) {
+                            $query->where('preferred_section', $section);
+                        }
+                    })->latest()->get()->map(function ($row) {
+                        $tenant = $row->tenant;
+                        $stall = $row->stall;
+
+                        return [
+                            'TEN-'.($tenant?->created_at?->format('Y') ?? now()->year).'-'.str_pad($tenant?->id ?? $row->tenant_id, 5, '0', STR_PAD_LEFT),
+                            $tenant?->full_name ?? $row->business_owner ?? 'Tenant',
+                            $tenant?->address ?? $row->business_address ?? 'Pandan, Antique',
+                            $tenant?->phone_num ?? $row->contact_number ?? '-',
+                            str($stall?->section ?? $row->preferred_section ?? 'Unassigned')->title().' Section',
+                            $stall?->stall_number ?? $row->preferred_stall_number ?? 'Unassigned',
+                            $tenant?->status ?? $row->status,
+                        ];
+                    })
+                    : tap(Payment::with(['tenant', 'stallApplication.stall']), function ($query) use ($user, $month, $section) {
                     abort_unless(! $user->isRole(User::ROLE_INSPECTOR), 403);
                     if ($user->isRole(User::ROLE_TENANT)) {
                         $query->where('tenant_id', $user->id);

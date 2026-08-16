@@ -27,6 +27,9 @@
     $pendingInspectionCount = $role === 'inspector'
         ? \App\Models\LivestockInspection::where('status', 'PENDING')->where('request_source', '!=', 'INSPECTOR')->count()
         : 0;
+    $tenantStallApplicationCount = $role === 'treasurer'
+        ? \App\Models\StallApplication::count()
+        : 0;
     $portalAvatar = $role === 'clerk'
         ? asset('assets/einspect/USERS/3-Collector Clerk.png')
         : market_role_avatar($user->usertype, $user->profile);
@@ -34,13 +37,11 @@
     $menus = [
         'administrator' => [
             ['label' => 'Dashboard', 'route' => 'administrator.dashboard', 'icon' => 'bi-grid'],
-            ['label' => 'Treasurer', 'route' => 'administrator.records', 'params' => ['role' => 'treasurer'], 'icon' => 'bi-person-badge'],
-            ['label' => 'Clerk', 'route' => 'administrator.records', 'params' => ['role' => 'clerk'], 'icon' => 'bi-person-vcard'],
-            ['label' => 'Inspector', 'route' => 'administrator.records', 'params' => ['role' => 'inspector'], 'icon' => 'bi-clipboard2-pulse'],
-            ['label' => 'Tenant', 'route' => 'administrator.records', 'params' => ['role' => 'tenant'], 'icon' => 'bi-people'],
-            ['label' => 'Stall Map', 'route' => 'administrator.stall-map', 'icon' => 'bi-pin-map'],
+            ['label' => 'Treasurer', 'route' => 'administrator.records', 'params' => ['role' => 'treasurer'], 'icon' => 'bi-person-badge', 'group' => 'MEMBERS'],
+            ['label' => 'Clerk', 'route' => 'administrator.records', 'params' => ['role' => 'clerk'], 'icon' => 'bi-person-vcard', 'group' => 'MEMBERS'],
+            ['label' => 'Inspector', 'route' => 'administrator.records', 'params' => ['role' => 'inspector'], 'icon' => 'bi-clipboard2-pulse', 'group' => 'MEMBERS'],
+            ['label' => 'Tenant', 'route' => 'administrator.records', 'params' => ['role' => 'tenant'], 'icon' => 'bi-people', 'group' => 'MEMBERS'],
             ['label' => 'Report', 'route' => 'administrator.reports', 'icon' => 'bi-file-earmark-bar-graph'],
-            ['label' => 'Contact Messages', 'route' => 'administrator.contacts', 'icon' => 'bi-envelope'],
             ['label' => 'Settings', 'route' => 'administrator.settings', 'icon' => 'bi-gear'],
         ],
         'treasurer' => [
@@ -48,7 +49,7 @@
             ['label' => 'Announcement', 'route' => 'treasurer.announcements', 'icon' => 'bi-megaphone'],
             ['label' => 'Cash Ticket', 'route' => 'treasurer.assignments', 'icon' => 'bi-ticket-perforated-fill', 'group' => 'CLERK'],
             ['label' => 'Stall Rental', 'route' => 'treasurer.rentals', 'icon' => 'bi-shop-window', 'group' => 'CLERK'],
-            ['label' => 'Stall Rental', 'route' => 'treasurer.payments', 'icon' => 'bi-shop-window', 'group' => 'TENANT'],
+            ['label' => 'Stall Rental', 'route' => 'treasurer.payments', 'icon' => 'bi-shop-window', 'group' => 'TENANT', 'badge' => $tenantStallApplicationCount],
             ['label' => 'Report', 'route' => 'treasurer.reports', 'icon' => 'bi-file-earmark-text'],
             ['label' => 'Settings', 'route' => 'profile', 'icon' => 'bi-gear-fill'],
         ],
@@ -87,7 +88,7 @@
     <link rel="stylesheet" href="{{ asset('assets/css/twitterbootstrap.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/datatablesbootstrap.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/select2.css') }}">
-    <link rel="stylesheet" href="{{ asset('assets/einspect/css/market.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/einspect/css/market.css') }}?v={{ filemtime(public_path('assets/einspect/css/market.css')) }}">
 </head>
 <body class="portal-page portal-role-{{ $role }}">
     <div class="portal-shell">
@@ -113,6 +114,10 @@
                         $isActive = request()->routeIs($menu['route']);
                         if ($menu['route'] === 'profile') {
                             $isActive = request()->routeIs('profile*');
+                        }
+                        if ($role === 'administrator' && $menu['route'] === 'administrator.records') {
+                            $isActive = request()->routeIs('administrator.records*')
+                                && strtolower((string) request()->route('role')) === strtolower((string) ($menu['params']['role'] ?? ''));
                         }
                         if ($role === 'inspector' && $menu['route'] === 'inspector.inspections') {
                             $menuType = strtoupper($menu['params']['type'] ?? '');

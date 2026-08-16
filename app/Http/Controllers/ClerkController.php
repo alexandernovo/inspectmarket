@@ -394,7 +394,15 @@ class ClerkController extends Controller
             });
         }
 
-        $payments = $query->get()->filter(function (Payment $payment) use ($request) {
+        $filteredPayments = $query->get();
+        $statusCounts = [
+            'ALL' => $filteredPayments->count(),
+            'OVERDUE' => $filteredPayments->filter(fn (Payment $payment) => $this->clerkRentalStatus($payment) === 'OVERDUE')->count(),
+            'PAID' => $filteredPayments->filter(fn (Payment $payment) => $this->clerkRentalStatus($payment) === 'PAID')->count(),
+            'UNPAID' => $filteredPayments->filter(fn (Payment $payment) => $this->clerkRentalStatus($payment) === 'UNPAID')->count(),
+        ];
+
+        $payments = $filteredPayments->filter(function (Payment $payment) use ($request) {
             if (! $request->filled('status') || strtoupper($request->string('status')->toString()) === 'ALL') {
                 return true;
             }
@@ -416,12 +424,7 @@ class ClerkController extends Controller
             'page' => $page,
             'lastPage' => $lastPage,
             'showTable' => $request->boolean('view'),
-            'statusCounts' => [
-                'ALL' => Payment::count(),
-                'OVERDUE' => Payment::where(fn ($builder) => $builder->where('status', 'OVERDUE')->orWhere(fn ($due) => $due->where('status', '!=', 'PAID')->whereDate('due_date', '<', now())))->count(),
-                'PAID' => Payment::where('status', 'PAID')->count(),
-                'UNPAID' => Payment::where(fn ($builder) => $builder->whereIn('status', ['PENDING', 'UNPAID'])->whereDate('due_date', '>=', now()))->count(),
-            ],
+            'statusCounts' => $statusCounts,
         ]);
     }
 

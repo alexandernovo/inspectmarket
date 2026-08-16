@@ -573,6 +573,327 @@ td small { color: var(--muted); }
 .portal-role-treasurer .portal-footer { min-height: 68px; background: #6b3905; font-size: 1.05rem; }
 .portal-role-treasurer.sidebar-collapsed .portal-shell { grid-template-columns: 0 minmax(0, 1fr); }
 .portal-role-treasurer.sidebar-collapsed .portal-sidebar { overflow: hidden; transform: translateX(-100%); }
+
+.portal-role-administrator .portal-shell { grid-template-columns: 300px minmax(0, 1fr); }
+.portal-role-administrator .portal-sidebar { background: #5d0004; border-right: 1px solid rgba(255,255,255,.45); }
+.portal-role-administrator .portal-brand { display: none; }
+.portal-role-administrator .portal-user { min-height: 250px; padding: 16px 10px 12px; border-bottom: 1px solid rgba(255,255,255,.65); }
+.portal-role-administrator .portal-user img { width: 184px; height: 184px; border: 5px solid #fff; border-radius: 50%; object-fit: contain; object-position: center bottom; background: #fff; box-shadow: 0 0 0 3px #5d0004; }
+.portal-role-administrator .portal-user span { margin-top: 13px; font-family: "Segoe UI", Arial, sans-serif; font-size: 1.45rem; font-weight: 400; line-height: 1; }
+.portal-role-administrator .portal-menu { flex: 0 1 auto; padding: 0; overflow: visible; }
+.portal-role-administrator .portal-menu-secondary { display: none; }
+.portal-role-administrator .portal-menu a {
+    gap: .62rem;
+    min-height: 48px;
+    padding: .58rem .9rem;
+    border-top: 0;
+    border-left: 0;
+    border-bottom: 1px solid rgba(255,255,255,.42);
+    border-radius: 0;
+    color: #fff;
+    font-size: 1.02rem;
+}
+.portal-role-administrator .portal-menu > a.portal-menu-item-grouped { border-bottom: 0; }
+.portal-role-administrator .portal-menu > a.portal-menu-item-group-end { border-bottom: 1px solid rgba(255,255,255,.42); }
+.portal-role-administrator .portal-menu a:hover,
+.portal-role-administrator .portal-menu a.active {
+    color: #2a0a0a;
+    border-left: 0;
+    border-radius: 4px;
+    background: #fff;
+}
+.portal-role-administrator .portal-menu i { width: 28px; font-size: 1.45rem; }
+.portal-role-administrator .portal-menu-group {
+    display: flex;
+    align-items: center;
+    min-height: 30px;
+    padding: 7px 13px 0;
+    color: #fff;
+    font-size: 1.18rem;
+    font-weight: 400;
+    letter-spacing: 0;
+}
+.portal-role-administrator .portal-logout { margin-top: auto; border-top: 1px solid rgba(255,255,255,.5); }
+.portal-role-administrator .portal-logout button {
+    justify-content: flex-start;
+    min-height: 48px;
+    padding: .58rem .9rem;
+    border-radius: 0;
+    color: #fff;
+    background: transparent;
+    font-size: 1.02rem !important;
+}
+.portal-role-administrator .portal-logout button i { font-size: 1.45rem; }
+.portal-role-administrator .portal-topbar { min-height: 72px; padding: .55rem 1.2rem; background: #6b3905; }
+.portal-role-administrator .portal-topbar > div:nth-child(2) { display: none; }
+.portal-role-administrator .sidebar-toggle { display: grid; width: 42px; height: 42px; border: 0; border-radius: 0; font-size: 1.55rem; }
+.portal-role-administrator .icon-button { width: 39px; height: 39px; border: 0; font-size: 1.15rem; }
+.portal-role-administrator .message-button { position: relative; }
+.portal-role-administrator .message-button b,
+.portal-role-administrator .notification-button b {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    display: grid;
+    place-items: center;
+    width: 22px;
+    min-width: 22px;
+    height: 22px;
+    padding: 0;
+    border-radius: 50%;
+    color: #fff;
+    background: #a00008;
+    font-size: .7rem;
+}
+.portal-role-administrator .role-chip { display: flex; align-items: center; gap: 7px; min-height: 42px; padding: .42rem .75rem; border: 2px solid #fff; font-size: .9rem; }
+.portal-role-administrator .role-chip::before { content: "\F4D7"; font-family: bootstrap-icons; font-size: 1.35rem; }
+.portal-role-administrator .portal-content { padding: 0; background: #d3d3d3; }
+.portal-role-administrator .portal-footer { min-height: 68px; background: #6b3905; font-size: 1.05rem; }
+.administrator-dashboard { min-height: 100%; padding: 14px 20px 18px; color: #111; }
+.administrator-dashboard-title,
+.administrator-page-heading { display: flex; align-items: center; gap: 12px; min-height: 72px; }
+.administrator-dashboard-title > i,
+.administrator-page-heading > i { color: #5d0005; font-size: 2.35rem; }
+.administrator-dashboard-title h1,
+.administrator-page-heading h1 { margin: 0; font-size: 1.85rem; font-weight: 500; }
+.administrator-dashboard-title p,
+.administrator-page-heading p { margin: 2px 0 0; font-size: 1.08rem; }
+.administrator-dashboard-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 12px; }
+.administrator-dashboard-stat { overflow: hidden; display: grid; grid-template-columns: 42% 58%; min-height: 112px; border-radius: 4px; color: #fff; }
+.administrator-dashboard-stat.blue { background: #0c2c82; }
+.administrator-dashboard-stat.green { background: #075c0c; }
+.administrator-dashboard-stat.gold { background: #a05c04; }
+.administrator-dashboard-stat.red { background: #8b0b10; }
+.administrator-stat-icon { display: grid; place-items: center; background: rgba(0,0,0,.15); }
+.administrator-stat-icon i { font-size: 4.2rem; }
+.administrator-dashboard-stat > div:last-child { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px; text-align: center; }
+.administrator-dashboard-stat span { font-size: 1.03rem; line-height: 1.12; }
+.administrator-dashboard-stat strong { margin-top: 10px; font-size: 1.72rem; line-height: 1; }
+.administrator-pie-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.administrator-pie-grid article { display: grid; grid-template-rows: auto 1fr auto; place-items: center; min-height: 190px; padding: 10px; background: #fff; }
+.administrator-pie-grid h2 { margin: 0; color: #650006; font-size: .9rem; text-align: center; }
+.administrator-pie-grid small { color: #333; font-size: .72rem; text-align: center; }
+.administrator-pie { width: 112px; height: 112px; border-radius: 50%; border: 1px solid #ddd; }
+.administrator-pie.blue { background: conic-gradient(#0c2c82 0 62%, #8b0b10 62% 82%, #a05c04 82% 100%); }
+.administrator-pie.green { background: conic-gradient(#075c0c 0 55%, #8b0b10 55% 78%, #a05c04 78% 100%); }
+.administrator-pie.gold { background: conic-gradient(#a05c04 0 45%, #0c2c82 45% 72%, #8b0b10 72% 100%); }
+.administrator-pie.red { background: conic-gradient(#8b0b10 0 40%, #0c2c82 40% 70%, #075c0c 70% 100%); }
+.administrator-dashboard-chart { margin-top: 12px; padding: 12px; background: #fff; }
+.administrator-dashboard-chart header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 10px; background: #650006; color: #fff; }
+.administrator-dashboard-chart h2 { margin: 0; font-size: 1rem; }
+.administrator-dashboard-chart select { min-height: 32px; border: 2px solid #fff; background: #650006; color: #fff; }
+.administrator-chart-plot { display: grid; grid-template-columns: repeat(12, 1fr); align-items: end; gap: 8px; height: 220px; margin-top: 10px; padding: 12px 10px 0; border-left: 1px solid #777; border-bottom: 1px solid #777; background: repeating-linear-gradient(to bottom, transparent 0, transparent 42px, #bbb 43px); }
+.administrator-chart-plot div { display: grid; grid-template-rows: 170px 30px; align-items: end; }
+.administrator-chart-plot span { width: 70%; min-height: 8px; margin: 0 auto; background: #777; }
+.administrator-chart-plot small { align-self: center; text-align: center; font-size: .72rem; }
+.administrator-record-entry,
+.administrator-record-table-page { min-height: 100%; padding: 14px 20px 18px; color: #111; }
+.administrator-record-card {
+    display: grid;
+    gap: 18px;
+    width: 430px;
+    max-width: 94vw;
+    margin: 130px auto 0;
+    padding: 16px;
+    background: #fff;
+}
+.administrator-record-banner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    min-height: 104px;
+    padding: 12px;
+    color: #fff;
+    background: #760008;
+    text-align: center;
+}
+.administrator-record-banner img { width: 86px; height: 86px; border: 3px solid #fff; border-radius: 50%; object-fit: contain; background: #fff; }
+.administrator-record-banner > i { font-size: 54px; }
+.administrator-record-banner h2 { margin: 0; font-family: var(--display-font); font-size: 1.45rem; line-height: .95; }
+.administrator-record-banner p { margin: 4px 0 0; font-size: .75rem; }
+.administrator-direct-record-card {
+    width: 510px;
+    gap: 16px;
+    margin-top: 100px;
+    padding: 14px;
+}
+.administrator-direct-record-card .administrator-record-banner {
+    justify-content: flex-start;
+    min-height: 176px;
+    padding: 22px 24px;
+    text-align: left;
+}
+.administrator-direct-record-card .administrator-record-banner img {
+    width: 112px;
+    height: 112px;
+}
+.administrator-direct-record-card .administrator-record-banner h2 { font-size: 1.95rem; }
+.administrator-direct-record-card .administrator-record-banner p { font-size: 1rem; }
+.administrator-direct-record-card .administrator-record-view-button {
+    min-height: 56px;
+    font-size: 1.35rem;
+}
+.administrator-record-card label { display: grid; gap: 6px; margin: 0; font-size: .9rem; }
+.administrator-record-card label span,
+.administrator-member-search-form { display: grid; grid-template-columns: 45px 1fr; align-items: center; border: 1px solid #760008; }
+.administrator-record-card label i,
+.administrator-member-search-form button { display: grid; place-items: center; height: 40px; color: #fff; background: #760008; border: 0; }
+.administrator-record-card select,
+.administrator-member-search-form input { height: 40px; border: 0; padding: 7px 10px; }
+.administrator-record-view-button { min-height: 42px; border: 0; border-radius: 3px; color: #fff; background: #a45c00; font-size: 1rem; }
+.administrator-report-role-card { width: 540px; }
+.administrator-report-role-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+.administrator-report-role-grid a { display: grid; place-items: center; gap: 8px; min-height: 112px; color: #fff; background: #760008; text-decoration: none; }
+.administrator-report-role-grid i { font-size: 2rem; }
+.administrator-treasurer-map-entry {
+    display: grid;
+    grid-template-columns: 1fr 230px;
+    gap: 14px;
+    align-items: stretch;
+    margin-bottom: 12px;
+    padding: 10px;
+    border: 7px solid #fff;
+    background: #fff;
+}
+.administrator-treasurer-map-entry > div {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    min-height: 124px;
+    padding: 18px 24px;
+    color: #fff;
+    background: #760008;
+}
+.administrator-treasurer-map-entry img {
+    width: 92px;
+    height: 92px;
+    border: 4px solid #fff;
+    border-radius: 50%;
+    object-fit: contain;
+    background: #fff;
+}
+.administrator-treasurer-map-entry h2 {
+    margin: 0;
+    font-family: var(--display-font);
+    font-size: 2rem;
+    line-height: .95;
+}
+.administrator-treasurer-map-entry p { margin: 4px 0 0; color: #fff; font-size: 1.05rem; }
+.administrator-treasurer-map-entry button {
+    border: 0;
+    border-radius: 3px;
+    color: #fff;
+    background: #a45c00;
+    font-size: 1.35rem;
+}
+.administrator-treasurer-title-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: contain;
+    background: #fff;
+}
+.administrator-treasurer-title-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+}
+.administrator-treasurer-title-actions button,
+.administrator-treasurer-title-actions a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-width: 150px;
+    min-height: 48px;
+    padding: 8px 16px;
+    border: 0;
+    border-radius: 4px;
+    color: #fff;
+    font-size: 1.05rem;
+    text-decoration: none;
+}
+.administrator-treasurer-title-actions .stall-map { background: #075d16; }
+.administrator-treasurer-title-actions .all-tenants { background: #06267d; }
+.treasurer-tenant-stalls-page .tenant-page-title {
+    align-items: flex-start;
+}
+.treasurer-tenant-stalls-page .tenant-page-title:has(.administrator-treasurer-title-actions) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+.treasurer-tenant-stalls-page .clerk-section-tabs a {
+    position: relative;
+}
+.treasurer-tenant-stalls-page .clerk-section-tabs a b {
+    position: absolute;
+    top: -18px;
+    right: -11px;
+    display: grid;
+    place-items: center;
+    min-width: 28px;
+    height: 28px;
+    padding: 0 6px;
+    border-radius: 999px;
+    color: #fff;
+    background: #9b0009;
+    font-size: .8rem;
+}
+.treasurer-tenant-stalls-page .treasurer-application-status-filters .all { background: #06267d; }
+.treasurer-tenant-stalls-page .treasurer-application-status-filters .pending { background: #a45c00; }
+.treasurer-tenant-stalls-page .treasurer-application-status-filters .approved { background: #075d16; }
+.treasurer-tenant-stalls-page .treasurer-application-status-filters .disapproved { background: #8c0009; }
+.administrator-table-panel { padding: 10px; border: 8px solid #fff; background: #fff; }
+.administrator-table-toolbar { display: flex; align-items: center; gap: 7px; padding: 8px 10px; color: #fff; background: #650006; }
+.administrator-table-toolbar select,
+.administrator-table-toolbar input,
+.administrator-table-toolbar button,
+.administrator-table-toolbar a {
+    min-height: 34px;
+    border: 2px solid #fff;
+    border-radius: 3px;
+    color: #fff;
+    background: #650006;
+    font-size: .78rem;
+}
+.administrator-table-toolbar input { color: #111; background: #fff; }
+.administrator-table-toolbar label { display: flex; align-items: center; gap: 6px; margin: 0; font-size: .78rem; }
+.administrator-table-toolbar button,
+.administrator-table-toolbar a { display: inline-flex; align-items: center; justify-content: center; gap: 5px; padding: 5px 10px; text-decoration: none; }
+.administrator-table-toolbar nav { display: flex; gap: 6px; margin-left: auto; }
+.administrator-table-toolbar a.active { color: #650006; background: #fff; }
+.administrator-member-search-form { width: 210px; border: 0; grid-template-columns: 1fr 36px; }
+.administrator-member-search-form input { border: 0; height: 34px; }
+.administrator-member-search-form button { height: 34px; border: 2px solid #fff; }
+.administrator-table-search { display: flex; justify-content: flex-end; align-items: center; gap: 6px; margin: 8px 0; }
+.administrator-table-search input { width: 190px; min-height: 34px; border: 1px solid #c9c9c9; }
+.administrator-record-table { table-layout: fixed; width: 100%; border-collapse: collapse; font-size: .78rem; }
+.administrator-record-table th { padding: 9px 7px; color: #fff; background: #650006; text-align: center; white-space: normal; line-height: 1.08; }
+.administrator-record-table td { padding: 8px 7px; border: 1px solid #bcbcbc; text-align: center; overflow-wrap: anywhere; }
+.administrator-record-table tbody tr:nth-child(even) td { background: #ededed; }
+.administrator-record-table form { margin: 0; }
+.administrator-table-footer { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 2px 0; font-size: .82rem; }
+.administrator-table-footer .pagination { margin: 0; }
+.administrator-member-dialog { width: 900px; max-width: 94vw; border: 8px solid #fff; background: #f6f3f1; }
+.administrator-member-dialog form { margin: 0; }
+.administrator-member-heading { position: relative; display: flex; align-items: center; justify-content: center; gap: 18px; min-height: 112px; margin: 10px; color: #fff; background: #760008; }
+.administrator-member-heading > i { font-size: 66px; }
+.administrator-member-heading h2 { margin: 0; font-family: var(--display-font); font-size: 2.25rem; line-height: .95; }
+.administrator-member-heading p { margin: 3px 0 0; }
+.administrator-member-heading button { position: absolute; top: 12px; display: grid; place-items: center; width: 32px; height: 32px; border: 0; border-radius: 50%; color: #fff; background: transparent; font-size: 26px; }
+.administrator-member-heading button:first-child { left: 12px; }
+.administrator-member-heading button:last-child { right: 10px; font-size: 18px; }
+.administrator-member-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 12px 16px; background: #fff; }
+.administrator-member-grid label { display: grid; gap: 5px; margin: 0; }
+.administrator-member-grid input { min-height: 35px; border: 1px solid #aaa; padding: 6px 8px; }
+.administrator-member-grid .full { grid-column: 1 / -1; }
+.administrator-member-actions .button-primary { background: #a45c00; }
+.administrator-member-actions .button-muted { color: #fff; background: #760008; }
+
 .treasurer-dashboard { min-height: 100%; padding: 14px 20px 18px; color: #111; }
 .treasurer-dashboard-title { display: flex; align-items: center; gap: 12px; min-height: 72px; }
 .treasurer-dashboard-title > i { color: #5d0005; font-size: 2.35rem; }
@@ -847,8 +1168,24 @@ td small { color: var(--muted); }
     margin-left: auto;
 }
 .clerk-section-tabs a {
+    position: relative;
     min-width: 138px;
     font-size: 1.05rem;
+}
+.clerk-section-tabs a b {
+    position: absolute;
+    top: -14px;
+    right: -8px;
+    display: grid;
+    place-items: center;
+    min-width: 28px;
+    height: 28px;
+    padding: 0 6px;
+    border-radius: 999px;
+    color: #fff;
+    background: #a40b16;
+    font-size: .9rem;
+    line-height: 1;
 }
 .clerk-section-tabs a.active {
     color: #4b0003;
@@ -902,6 +1239,9 @@ td small { color: var(--muted); }
 .clerk-status-filter.overdue { background: #a45c00; }
 .clerk-status-filter.paid { background: #075d16; }
 .clerk-status-filter.unpaid { background: #8c0009; }
+.clerk-status-filter.pending { background: #a45c00; }
+.clerk-status-filter.approved { background: #075d16; }
+.clerk-status-filter.disapproved { background: #8c0009; }
 .clerk-status-filter.active {
     box-shadow: 0 0 0 2px #fff, inset 0 0 0 1px rgba(255,255,255,.7);
     outline: 1px solid rgba(0,0,0,.16);
@@ -960,6 +1300,569 @@ td small { color: var(--muted); }
 .clerk-rental-table th:nth-child(8) { width: 13%; }
 .clerk-rental-table th:nth-child(9) { width: 12%; }
 .clerk-rental-table th:nth-child(10) { width: 8%; }
+.clerk-rental-table.no-actions th:nth-child(1) { width: 5%; }
+.clerk-rental-table.no-actions th:nth-child(2) { width: 14%; }
+.clerk-rental-table.no-actions th:nth-child(3) { width: 14%; }
+.clerk-rental-table.no-actions th:nth-child(4) { width: 11%; }
+.clerk-rental-table.no-actions th:nth-child(5) { width: 11%; }
+.clerk-rental-table.no-actions th:nth-child(6) { width: 12%; }
+.clerk-rental-table.no-actions th:nth-child(7) { width: 12%; }
+.clerk-rental-table.no-actions th:nth-child(8) { width: 12%; }
+.clerk-rental-table.no-actions th:nth-child(9) { width: 9%; }
+.clerk-rental-table.no-short-charges:not(.no-actions) th:nth-child(1) { width: 5%; }
+.clerk-rental-table.no-short-charges:not(.no-actions) th:nth-child(2) { width: 14%; }
+.clerk-rental-table.no-short-charges:not(.no-actions) th:nth-child(3) { width: 14%; }
+.clerk-rental-table.no-short-charges:not(.no-actions) th:nth-child(4) { width: 11%; }
+.clerk-rental-table.no-short-charges:not(.no-actions) th:nth-child(5) { width: 11%; }
+.clerk-rental-table.no-short-charges:not(.no-actions) th:nth-child(6) { width: 12%; }
+.clerk-rental-table.no-short-charges:not(.no-actions) th:nth-child(7) { width: 12%; }
+.clerk-rental-table.no-short-charges:not(.no-actions) th:nth-child(8) { width: 12%; }
+.clerk-rental-table.no-short-charges:not(.no-actions) th:nth-child(9) { width: 9%; }
+.clerk-rental-table .table-action.view {
+    color: #fff;
+    border-color: #650006;
+    background: #650006;
+}
+.treasurer-tenant-stalls-table th:nth-child(1) { width: 5%; }
+.treasurer-tenant-stalls-table th:nth-child(2) { width: 13%; }
+.treasurer-tenant-stalls-table th:nth-child(3) { width: 17%; }
+.treasurer-tenant-stalls-table th:nth-child(4) { width: 14%; }
+.treasurer-tenant-stalls-table th:nth-child(5) { width: 12%; }
+.treasurer-tenant-stalls-table th:nth-child(6) { width: 14%; }
+.treasurer-tenant-stalls-table th:nth-child(7) { width: 13%; }
+.treasurer-tenant-stalls-table th:nth-child(8) { width: 12%; }
+.treasurer-tenant-stalls-table td:last-child .inline-actions {
+    justify-content: center;
+}
+.treasurer-tenant-total {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    color: #fff;
+    font-size: 1.2rem;
+}
+.treasurer-tenant-total strong {
+    display: inline-grid;
+    place-items: center;
+    min-width: 80px;
+    min-height: 46px;
+    padding: 4px 18px;
+    border-radius: 4px;
+    color: #650006;
+    background: #fff;
+    font-size: 1.8rem;
+}
+.treasurer-tenant-stalls-page .clerk-rental-detail-panels label {
+    display: grid;
+    gap: 6px;
+    margin: 8px 0;
+}
+.treasurer-tenant-application-dialog {
+    width: 94vw;
+    max-width: 1600px;
+    padding: 8px;
+}
+.treasurer-tenant-application-dialog .tenant-application-detail-grid {
+    grid-template-columns: minmax(520px, 1fr) minmax(620px, 1.08fr);
+    min-height: 780px;
+    border-width: 7px;
+}
+.treasurer-tenant-application-dialog .tenant-detail-form {
+    position: relative;
+}
+.treasurer-tenant-application-dialog .tenant-readonly-grid label {
+    display: grid;
+    gap: 4px;
+}
+.treasurer-tenant-application-dialog .tenant-readonly-grid label:has(select),
+.treasurer-tenant-application-dialog .tenant-readonly-grid label:has(textarea) {
+    padding: 8px;
+    border: 1px solid #cdbebe;
+    border-radius: 4px;
+    background: #fff8f8;
+}
+.treasurer-tenant-application-dialog .tenant-readonly-grid label > span {
+    color: #650006;
+    font-size: .75rem;
+    font-weight: 700;
+}
+.treasurer-tenant-application-dialog select,
+.treasurer-tenant-application-dialog input,
+.treasurer-tenant-application-dialog textarea {
+    width: 100%;
+    min-height: 38px;
+    border: 1px solid #b8aba5;
+    border-radius: 2px;
+    padding: 8px 10px;
+    background: #fff;
+    color: #111;
+    font: inherit;
+}
+.tenant-response-actions {
+    position: sticky;
+    bottom: 0;
+    z-index: 4;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 12px 4px 2px;
+    border-top: 1px solid #d2c8c2;
+    background: #fff;
+}
+.tenant-response-actions .button-muted,
+.tenant-response-dialog .button-muted {
+    color: #fff;
+    background: #760008;
+}
+.tenant-response-actions label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-right: auto;
+    font-size: 1rem;
+}
+.tenant-response-actions select {
+    width: 190px;
+}
+.tenant-response-legend {
+    padding-left: 20px;
+    border-left: 2px solid #111;
+    font-size: .78rem;
+    line-height: 1.25;
+}
+.tenant-stall-map-button {
+    color: #fff;
+    background: #075d16;
+}
+.tenant-response-dialog {
+    width: 620px;
+    max-width: 94vw;
+}
+.tenant-response-dialog form {
+    display: grid;
+    gap: 14px;
+    padding: 12px;
+    background: #fff;
+}
+.tenant-response-dialog header {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    min-height: 118px;
+    padding: 18px 24px;
+    border-radius: 5px;
+    color: #fff;
+    background: #5a0005;
+}
+.tenant-response-dialog.approved header { background: #064d13; }
+.tenant-response-dialog header > i {
+    font-size: 4rem;
+}
+.tenant-response-dialog header h2 {
+    margin: 0;
+    font-family: var(--display-font);
+    font-size: 2rem;
+    line-height: .9;
+}
+.tenant-response-dialog header p {
+    margin: 6px 0 0;
+    font-size: 1.1rem;
+}
+.tenant-response-dialog header button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    border: 0;
+    color: #fff;
+    background: transparent;
+}
+.tenant-response-dialog label {
+    display: grid;
+    gap: 6px;
+    font-size: 1rem;
+}
+.tenant-response-dialog label span {
+    display: grid;
+    grid-template-columns: 1fr 42px;
+    border: 1px solid #a9a9a9;
+}
+.tenant-response-dialog input,
+.tenant-response-dialog textarea {
+    width: 100%;
+    border: 0;
+    padding: 9px 12px;
+    font: inherit;
+}
+.tenant-response-dialog label span i {
+    display: grid;
+    place-items: center;
+    color: #650006;
+    font-size: 1.25rem;
+}
+.tenant-response-dialog.approved label span i { color: #075d16; }
+.tenant-response-two {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+}
+.tenant-response-dialog footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #cfcfcf;
+}
+.tenant-stall-map-dialog {
+    width: 96vw;
+    max-width: 1700px;
+}
+.tenant-stall-map-dialog > div {
+    position: relative;
+    overflow: hidden;
+    padding: 10px 12px 14px;
+    background:
+        linear-gradient(rgba(255,255,255,.74), rgba(255,255,255,.74)),
+        url("../HOMEPAGE/Map.jpg") center / cover no-repeat,
+        #f3f3eb;
+}
+.tenant-stall-map-dialog header {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    min-height: 112px;
+    border-radius: 5px;
+    color: #fff;
+    background: #5a0005;
+}
+.tenant-stall-map-header-actions {
+    position: absolute;
+    left: 22px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.tenant-stall-map-dialog header button {
+    border: 0;
+    color: #650006;
+    background: #fff;
+    border-radius: 50%;
+    width: 34px;
+    height: 34px;
+}
+.tenant-stall-map-dialog header > button:last-child {
+    position: absolute;
+    right: 22px;
+    color: #fff;
+    background: transparent;
+}
+.tenant-stall-map-dialog .tenant-stall-add-button,
+.tenant-stall-map-dialog .tenant-stall-save-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: auto;
+    min-width: 104px;
+    height: 42px;
+    padding: 7px 12px;
+    border: 2px solid #fff;
+    border-radius: 4px;
+    color: #fff;
+    background: #5a0005;
+    font-size: 1rem;
+    white-space: nowrap;
+}
+.tenant-stall-map-dialog .tenant-stall-save-button {
+    min-width: 68px;
+    border-color: #a45c00;
+    background: #a45c00;
+}
+.tenant-stall-map-dialog header > i {
+    font-size: 3rem;
+}
+.tenant-stall-map-dialog h2 {
+    margin: 0;
+    font-family: var(--display-font);
+    font-size: 2.9rem;
+    line-height: .9;
+}
+.tenant-stall-map-dialog p {
+    margin: 4px 0 0;
+    font-size: 1.12rem;
+}
+.tenant-stall-map-legend {
+    position: absolute;
+    z-index: 2;
+    top: 126px;
+    left: 50%;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    transform: translateX(-50%);
+    font-size: .9rem;
+}
+.tenant-stall-map-legend span {
+    padding: 5px 10px;
+    border-radius: 4px;
+    color: #fff;
+    font-size: .72rem;
+}
+.tenant-stall-map-legend .available { background: #075d16; }
+.tenant-stall-map-legend .occupied { background: #8c0009; }
+.tenant-stall-map-people {
+    position: absolute;
+    z-index: 1;
+    top: 170px;
+    left: 50%;
+    display: flex;
+    align-items: end;
+    justify-content: center;
+    width: 430px;
+    height: 260px;
+    transform: translateX(-50%);
+    pointer-events: none;
+}
+.tenant-stall-map-people img {
+    width: 160px;
+    height: 250px;
+    object-fit: contain;
+    margin: 0 -18px;
+}
+.tenant-stall-map-people img:nth-child(2) {
+    width: 172px;
+    height: 270px;
+}
+.tenant-stall-map-grid {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+        "fish pork"
+        "poultry beef"
+        "mixed mixed";
+    gap: 44px 300px;
+    padding: 32px 0 6px;
+}
+.tenant-stall-map-grid .section-fish { grid-area: fish; color: #06267d; }
+.tenant-stall-map-grid .section-pork { grid-area: pork; color: #875000; }
+.tenant-stall-map-grid .section-poultry { grid-area: poultry; color: #422000; }
+.tenant-stall-map-grid .section-beef { grid-area: beef; color: #8c0009; }
+.tenant-stall-map-grid .section-mixed { grid-area: mixed; color: #075d16; }
+.tenant-stall-map-grid h3 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 10px;
+    padding-bottom: 8px;
+    border-bottom: 5px solid currentColor;
+    font-size: 1.78rem;
+    text-transform: uppercase;
+}
+.tenant-stall-map-grid h3 img {
+    width: 62px;
+    height: 50px;
+    object-fit: contain;
+}
+.tenant-stall-map-grid section > div {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.tenant-stall-map-grid button {
+    width: 43px;
+    height: 43px;
+    border: 0;
+    border-radius: 5px;
+    color: #fff;
+    font-size: 1.05rem;
+}
+.tenant-stall-map-grid button.available { background: #075d16; }
+.tenant-stall-map-grid button.occupied { background: #8c0009; }
+.tenant-stall-section-dialog {
+    width: 980px;
+    max-width: 96vw;
+}
+.tenant-stall-section-dialog form {
+    display: grid;
+    gap: 12px;
+    padding: 10px;
+    background: #fff;
+}
+.tenant-stall-section-dialog header {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    min-height: 104px;
+    border-radius: 6px;
+    color: #fff;
+    background: #5a0005;
+}
+.tenant-stall-section-dialog header button {
+    position: absolute;
+    border: 0;
+    color: #fff;
+    background: transparent;
+    font-size: 1.35rem;
+}
+.tenant-stall-section-dialog header button:first-child {
+    left: 18px;
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    color: #650006;
+    background: #fff;
+}
+.tenant-stall-section-dialog header button:last-child {
+    top: 10px;
+    right: 12px;
+}
+.tenant-stall-section-dialog header > i {
+    font-size: 3rem;
+}
+.tenant-stall-section-dialog h2 {
+    margin: 0;
+    font-family: var(--display-font);
+    font-size: 2.4rem;
+    line-height: .9;
+}
+.tenant-stall-section-dialog p {
+    margin: 4px 0 0;
+    font-size: 1.15rem;
+}
+.tenant-stall-section-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    font-size: 1rem;
+}
+.tenant-stall-section-table th,
+.tenant-stall-section-table td {
+    height: 58px;
+    border: 1px solid #aaa;
+    text-align: center;
+}
+.tenant-stall-section-table thead th {
+    color: #fff;
+    background: #8c0009;
+    font-size: 1.05rem;
+    font-weight: 500;
+}
+.tenant-stall-section-table td:first-child {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 8px 14px;
+    text-align: left;
+}
+.tenant-stall-section-table td:first-child img {
+    width: 48px;
+    height: 42px;
+    object-fit: contain;
+}
+.tenant-stall-count-control {
+    display: grid;
+    grid-template-columns: 38px 1fr 38px;
+    align-items: center;
+    width: 140px;
+    margin: 0 auto;
+    border: 1px solid #aaa;
+    border-radius: 4px;
+    overflow: hidden;
+}
+.tenant-stall-count-control button,
+.tenant-stall-count-control input {
+    height: 38px;
+    border: 0;
+    background: #fff;
+    text-align: center;
+    font: inherit;
+}
+.tenant-stall-count-control button {
+    color: #650006;
+    font-size: 1.4rem;
+}
+.tenant-stall-count-control input {
+    font-weight: 900;
+    font-size: 1.25rem;
+}
+.tenant-stall-section-table .available,
+.tenant-stall-section-table tfoot th:nth-child(3) {
+    color: #075d16;
+    font-weight: 900;
+    font-size: 1.35rem;
+}
+.tenant-stall-section-table .occupied,
+.tenant-stall-section-table tfoot th:nth-child(4) {
+    color: #8c0009;
+    font-weight: 900;
+    font-size: 1.35rem;
+}
+.tenant-stall-section-table tfoot th {
+    background: #c8e2c8;
+    color: #111;
+    font-size: 1.25rem;
+}
+.tenant-stall-section-delete {
+    border: 0;
+    border-radius: 4px;
+    color: #fff;
+    background: #8c0009;
+    font-size: 1.15rem;
+}
+.tenant-stall-section-dialog footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding-top: 10px;
+}
+.tenant-stall-section-dialog .button-muted {
+    color: #fff;
+    background: #760008;
+}
+.treasurer-tenant-application-dialog textarea {
+    min-height: 58px;
+    resize: vertical;
+}
+.treasurer-tenant-application-dialog .tenant-detail-actions {
+    position: sticky;
+    bottom: 0;
+    gap: 10px;
+    background: #fff;
+    z-index: 3;
+}
+.treasurer-tenant-application-dialog .tenant-detail-actions .button {
+    min-width: 130px;
+    min-height: 48px;
+    font-size: 1rem;
+}
+.treasurer-application-status-filters {
+    margin-left: 0;
+}
+.treasurer-tenant-stalls-page .clerk-rental-detail-panels select,
+.treasurer-tenant-stall-remarks textarea {
+    width: 100%;
+    min-height: 40px;
+    border: 1px solid #9f9f9f;
+    border-radius: 4px;
+    padding: 8px 10px;
+    background: #fff;
+    color: #111;
+}
+.treasurer-tenant-stall-remarks {
+    display: grid;
+    gap: 6px;
+    margin: 12px 0;
+    font-size: .95rem;
+}
 .clerk-payment-pill {
     display: inline-grid;
     place-items: center;
@@ -1321,6 +2224,204 @@ td small { color: var(--muted); }
     display: grid;
     place-items: center;
     min-height: 680px;
+}
+.treasurer-report-entry {
+    display: grid;
+    place-items: center;
+    min-height: 650px;
+    padding: 26px 18px;
+}
+.treasurer-report-card-shell {
+    width: 86%;
+    max-width: 1180px;
+    padding: 24px 28px 28px;
+    border-radius: 8px;
+    background: #fff;
+}
+.treasurer-report-banner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    min-height: 150px;
+    border-radius: 6px;
+    color: #fff;
+    background: #650006;
+}
+.treasurer-report-banner i {
+    font-size: 5rem;
+}
+.treasurer-report-banner h2 {
+    margin: 0;
+    font-family: var(--display-font);
+    font-size: 3rem;
+    line-height: .9;
+}
+.treasurer-report-banner p {
+    margin: 8px 0 0;
+    font-size: 1.35rem;
+}
+.treasurer-report-choice-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 285px);
+    justify-content: center;
+    gap: 52px;
+    padding: 28px 0 2px;
+}
+.treasurer-report-choice {
+    display: grid;
+    justify-items: center;
+    gap: 18px;
+    padding: 18px 24px 20px;
+    border: 0;
+    border-radius: 8px;
+    color: #fff;
+}
+.treasurer-report-choice.treasurer { background: #06196d; }
+.treasurer-report-choice.clerk { background: #704000; }
+.treasurer-report-choice.inspector { background: #075d16; }
+.administrator-report-page .treasurer-report-choice-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.treasurer-report-choice img {
+    width: 166px;
+    height: 166px;
+    border: 5px solid #fff;
+    border-radius: 50%;
+    object-fit: cover;
+    background: #fff;
+}
+.treasurer-report-choice span {
+    width: 100%;
+    padding: 10px 12px;
+    border: 2px solid #fff;
+    border-radius: 6px;
+    font-size: 1.45rem;
+}
+.treasurer-report-selector-dialog {
+    width: 720px;
+    padding: 0;
+}
+.treasurer-report-selector-dialog form {
+    position: relative;
+    display: grid;
+    gap: 22px;
+    padding: 18px;
+}
+.treasurer-report-selector-hero {
+    display: grid;
+    grid-template-columns: 170px 1fr;
+    align-items: center;
+    gap: 22px;
+    min-height: 154px;
+    padding: 18px 26px;
+    border-radius: 7px;
+    color: #fff;
+    background: #650006;
+}
+.treasurer-report-selector-hero.clerk {
+    background: #650006;
+}
+.treasurer-report-selector-hero img {
+    width: 136px;
+    height: 136px;
+    border: 4px solid #fff;
+    border-radius: 50%;
+    object-fit: cover;
+    background: #fff;
+}
+.treasurer-report-selector-hero h2 {
+    margin: 0;
+    font-family: var(--display-font);
+    font-size: 2.75rem;
+    line-height: .9;
+}
+.treasurer-report-selector-hero p {
+    margin: 8px 0 0;
+    font-size: 1.05rem;
+    font-weight: 700;
+}
+.treasurer-report-selector-dialog label {
+    display: grid;
+    gap: 10px;
+    padding: 0 10px;
+    font-size: 1.25rem;
+}
+.treasurer-report-selector-dialog label span {
+    display: grid;
+    grid-template-columns: 68px 1fr;
+    min-height: 66px;
+    border: 2px solid #650006;
+    border-radius: 6px;
+    overflow: hidden;
+}
+.treasurer-report-selector-dialog label i {
+    display: grid;
+    place-items: center;
+    color: #fff;
+    background: #650006;
+    font-size: 2rem;
+}
+.treasurer-report-selector-dialog select,
+.treasurer-report-selector-dialog input {
+    width: 100%;
+    border: 0;
+    padding: 10px 14px;
+    font-size: 1.2rem;
+}
+.treasurer-report-selector-dialog .clerk-report-view-button {
+    margin: 30px 10px 0;
+    width: auto;
+}
+.treasurer-report-page .clerk-report-sheet {
+    border-color: #fff;
+    background: #fff;
+    box-shadow: 0 5px 18px rgba(0,0,0,.14);
+}
+.treasurer-report-page .clerk-report-toolbar {
+    min-height: 92px;
+    padding: 12px 14px;
+    border-radius: 0;
+}
+.treasurer-report-page .clerk-report-toolbar label {
+    width: 350px;
+}
+.treasurer-report-page .clerk-report-toolbar label span {
+    min-height: 48px;
+    grid-template-columns: 48px 1fr;
+}
+.treasurer-report-page .clerk-report-toolbar label i,
+.treasurer-report-page .clerk-report-downloads a {
+    font-size: 1.65rem;
+}
+.treasurer-report-page .clerk-report-toolbar input {
+    font-size: 1.05rem;
+}
+.treasurer-report-page .clerk-report-reload,
+.treasurer-report-page .clerk-report-downloads button {
+    min-height: 48px;
+    font-size: 1rem;
+}
+.treasurer-report-page .clerk-report-tabs {
+    margin-top: 0;
+    padding: 12px 14px;
+    justify-content: flex-end;
+}
+.treasurer-report-page .clerk-report-tabs span {
+    margin-right: auto;
+}
+.treasurer-report-page .clerk-report-tabs strong {
+    min-width: 82px;
+    min-height: 42px;
+    font-size: 1.55rem;
+}
+.treasurer-report-page .clerk-report-tabs a {
+    min-width: 128px;
+    min-height: 42px;
+    font-size: .98rem;
+}
+.treasurer-report-page .clerk-official-report h2 {
+    margin-top: 22px;
+    color: #650006;
+    font-size: 1.55rem;
 }
 .clerk-report-card {
     width: 610px;
@@ -2004,6 +3105,34 @@ td small { color: var(--muted); }
 
 .market-dialog { width: min(94vw, 760px); padding: 0; border: 0; border-radius: 10px; box-shadow: 0 24px 70px rgba(0,0,0,.35); }
 .market-dialog::backdrop { background: rgba(30,0,0,.72); }
+dialog.market-dialog.treasurer-tenant-application-dialog {
+    width: 94vw;
+    max-width: 1600px;
+}
+dialog.market-dialog.tenant-stall-map-dialog {
+    width: 96vw;
+    max-width: 1700px;
+}
+dialog.market-dialog.tenant-stall-section-dialog {
+    width: 980px;
+    max-width: 96vw;
+}
+dialog.market-dialog.tenant-stall-map-dialog .tenant-stall-map-header-actions {
+    display: flex;
+    gap: 10px;
+}
+dialog.market-dialog.tenant-stall-map-dialog .tenant-stall-add-button,
+dialog.market-dialog.tenant-stall-map-dialog .tenant-stall-save-button {
+    position: static;
+    display: inline-flex;
+    width: auto;
+    min-width: 104px;
+    height: 42px;
+    border-radius: 4px;
+}
+dialog.market-dialog.tenant-stall-map-dialog .tenant-stall-save-button {
+    min-width: 68px;
+}
 dialog.market-dialog.clerk-rental-detail-dialog {
     width: 98vw;
     max-width: 98vw;
@@ -2666,6 +3795,24 @@ dialog.market-dialog.clerk-rental-detail-dialog {
     .portal-shell { display: block; }
     .portal-content { padding: 0; }
     .panel { border: 0; box-shadow: none; }
+    body.print-report-only * {
+        visibility: hidden !important;
+    }
+    body.print-report-only .print-report-area,
+    body.print-report-only .print-report-area * {
+        visibility: visible !important;
+    }
+    body.print-report-only .print-report-area {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        padding: 0;
+        background: #fff;
+    }
+    body.print-report-only .clerk-report-table-wrap {
+        overflow: visible;
+    }
 }
 
 /* Complete slide-level public service screens */
@@ -3800,6 +4947,346 @@ dialog.market-dialog.clerk-rental-detail-dialog {
     white-space: nowrap;
 }
 .cash-ticket-reset-form button:hover { filter: brightness(1.08); }
+.portal-role-treasurer .treasurer-cash-page-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+}
+.treasurer-cash-collectors-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-width: 122px;
+    min-height: 40px;
+    margin-right: 32px;
+    padding: 8px 16px;
+    border-radius: 5px;
+    color: #fff;
+    background: #a45c00;
+    font-size: 15px;
+    text-decoration: none;
+}
+.treasurer-cash-collectors-button:hover { color: #fff; filter: brightness(1.04); }
+.treasurer-cash-collectors-shell {
+    width: auto;
+    max-width: none;
+    margin: 22px 28px 28px;
+    padding: 10px;
+    border: 8px solid #fff;
+    background: #fff;
+}
+.treasurer-cash-collectors-toolbar {
+    display: grid;
+    grid-template-columns: minmax(360px, 1fr) auto minmax(260px, 1fr);
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    background: #760008;
+}
+.collector-toolbar-filters,
+.collector-toolbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.collector-toolbar-filters label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin: 0;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+}
+.collector-toolbar-filters select,
+.collector-toolbar-filters input {
+    width: 54px;
+    height: 38px;
+    padding: 4px;
+    border: 2px solid #fff;
+    color: #111;
+    background: #fff;
+    font-size: 11px;
+}
+.collector-toolbar-filters input { width: 63px; }
+.collector-toolbar-filters button,
+.collector-toolbar-actions a,
+.collector-toolbar-actions button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    height: 40px;
+    padding: 0 10px;
+    border: 2px solid #fff;
+    border-radius: 4px;
+    color: #fff;
+    background: transparent;
+    font-size: 15px;
+    text-decoration: none;
+    white-space: nowrap;
+}
+.collector-toolbar-actions {
+    justify-content: flex-end;
+}
+.collector-toolbar-title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    color: #fff;
+    font-size: 20px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+.collector-toolbar-title i { font-size: 48px; }
+.treasurer-cash-collectors-table-wrap {
+    overflow-x: auto;
+    border-left: 1px solid #bcbcbc;
+    border-right: 1px solid #bcbcbc;
+}
+.treasurer-cash-collectors-table {
+    width: 100%;
+    border-collapse: collapse;
+    color: #111;
+    background: #fff;
+    font-size: 12px;
+}
+.treasurer-cash-collectors-table th {
+    height: 38px;
+    padding: 8px;
+    border: 1px solid #9d9d9d;
+    color: #fff;
+    background: #760008;
+    font-size: 12px;
+    text-align: center;
+}
+.treasurer-cash-collectors-table td {
+    height: 37px;
+    padding: 7px 8px;
+    border: 1px solid #c5c5c5;
+    text-align: center;
+}
+.treasurer-cash-collectors-table tbody tr:nth-child(even) td { background: #ededed; }
+.collector-name-cell {
+    text-align: center;
+}
+.collector-name-cell > span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+.collector-name-cell img {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: #fff;
+}
+.collector-name-cell b { font-weight: 400; }
+.collector-status-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 62px;
+    min-height: 23px;
+    padding: 4px 12px;
+    border-radius: 999px;
+    color: #fff;
+    background: #0b6515;
+    font-size: 11px;
+    font-weight: 800;
+}
+.collector-status-pill.inactive { background: #760008; }
+.collector-action-stack {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+.collector-action-stack form { margin: 0; }
+.collector-action-stack button {
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    border: 0;
+    border-radius: 2px;
+    color: #fff;
+}
+.collector-action-stack .view { background: #555; }
+.collector-action-stack .edit { background: #a45c00; }
+.collector-action-stack .delete { background: #760008; }
+.treasurer-cash-collectors-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 11px 4px 2px;
+    color: #111;
+    font-size: 13px;
+}
+.treasurer-cash-collectors-footer div {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.treasurer-cash-collectors-footer a,
+.treasurer-cash-collectors-footer b {
+    color: #111;
+    font-weight: 400;
+    text-decoration: none;
+}
+.treasurer-cash-collectors-footer b {
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border: 1px solid #999;
+    background: #fff;
+}
+.market-dialog.treasurer-add-collector-dialog {
+    width: 950px;
+    max-width: 94vw;
+    border: 8px solid #fff;
+    border-radius: 4px;
+    background: #f6f3f1;
+}
+.treasurer-add-collector-dialog form { margin: 0; }
+.treasurer-add-collector-heading {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    min-height: 112px;
+    margin: 10px;
+    border-radius: 3px;
+    color: #fff;
+    background: #760008;
+}
+.treasurer-add-collector-heading > i { font-size: 76px; }
+.treasurer-add-collector-heading h2 {
+    margin: 0;
+    font-family: var(--display-font);
+    font-size: 40px;
+    line-height: .9;
+    letter-spacing: 0;
+}
+.treasurer-add-collector-heading p {
+    margin: 4px 0 0;
+    font-size: 17px;
+    letter-spacing: .02em;
+}
+.treasurer-add-collector-heading button {
+    position: absolute;
+    top: 14px;
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border: 0;
+    border-radius: 50%;
+    color: #fff;
+    background: transparent;
+    font-size: 30px;
+}
+.treasurer-add-collector-heading button:first-child { left: 14px; }
+.treasurer-add-collector-heading button:last-child { right: 10px; font-size: 18px; }
+.treasurer-add-collector-body {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) 300px;
+    gap: 10px;
+    padding: 10px 10px 0;
+}
+.collector-form-panel,
+.collector-profile-panel {
+    border: 1px solid #ddd;
+    background: #fff;
+}
+.collector-form-panel h3,
+.collector-profile-panel h3 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 14px;
+    padding: 11px 12px;
+    border-radius: 3px;
+    color: #fff;
+    background: #760008;
+    font-size: 17px;
+    font-weight: 500;
+}
+.collector-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px 10px;
+    padding: 0 8px 10px;
+}
+.collector-form-grid label {
+    display: grid;
+    gap: 6px;
+    margin: 0;
+    color: #111;
+    font-size: 14px;
+}
+.collector-form-grid input,
+.collector-form-grid select {
+    width: 100%;
+    height: 34px;
+    padding: 6px 8px;
+    border: 1px solid #b9b9b9;
+    border-radius: 2px;
+    color: #111;
+    background: #fff;
+}
+.collector-address-field { grid-column: 1 / -1; }
+.collector-profile-panel { padding: 0 6px 8px; }
+.collector-profile-preview {
+    display: grid;
+    place-items: center;
+    height: 316px;
+    border: 1px solid #8b0007;
+    border-radius: 3px;
+    background: #fff;
+}
+.collector-profile-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center bottom;
+}
+.collector-upload-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 32px;
+    margin: 8px 0 0;
+    border-radius: 3px;
+    color: #fff;
+    background: #a45c00;
+    font-size: 13px;
+    cursor: pointer;
+}
+.collector-upload-file {
+    display: block;
+    margin-top: 5px;
+    color: #760008;
+    font-size: 12px;
+    text-align: center;
+    word-break: break-word;
+}
+.treasurer-add-collector-actions {
+    margin-top: 8px;
+    padding: 12px 10px 10px;
+    background: #f6f3f1;
+}
+.treasurer-add-collector-actions .button-primary { background: #a45c00; }
+.treasurer-add-collector-actions .button-muted { color: #fff; background: #760008; }
 .cash-ticket-step-dialog {
     width: 1180px;
     max-width: 94vw;
@@ -5497,8 +6984,38 @@ button.login-close {
     min-height: 82px;
 }
 .inspector-page-title > i { color: #5d0005; font-size: 2.35rem; }
+.administrator-role-title-avatar {
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    object-fit: contain;
+    background: #fff;
+}
 .inspector-page-title h1 { margin: 0; font-size: 1.75rem; font-weight: 500; }
 .inspector-page-title p { margin: 1px 0 0; font-size: 1rem; }
+.administrator-inspector-type-tabs {
+    display: flex;
+    gap: 8px;
+    margin-left: auto;
+}
+.administrator-inspector-type-tabs a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-width: 116px;
+    min-height: 48px;
+    padding: 8px 14px;
+    border-radius: 4px;
+    color: #fff;
+    background: #8a4f05;
+    font-size: 1.1rem;
+    text-decoration: none;
+}
+.administrator-inspector-type-tabs a.active {
+    color: #704000;
+    background: #fff;
+}
 .inspector-stat-grid {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -5589,6 +7106,12 @@ button.login-close {
 .inspector-request-toolbar input[type="date"] { width: 128px; }
 .inspector-toolbar-search { margin-left: auto !important; }
 .inspector-toolbar-search input { width: 190px; }
+.inspector-request-toolbar .inspector-kind-filter {
+    margin-left: auto;
+}
+.inspector-request-toolbar .inspector-kind-filter select {
+    min-width: 132px;
+}
 .inspector-data-table { table-layout: auto; font-size: .72rem; }
 .inspector-data-table th {
     padding: 9px 8px;
@@ -6314,4 +7837,36 @@ button.login-close {
     .portal-role-inspector .portal-content { background: #fff; }
     .portal-role-inspector .inspector-page { padding: 0; }
     .portal-role-inspector .inspector-report-sheet { border: 0; }
+}
+
+dialog.market-dialog.tenant-stall-map-dialog {
+    width: 96vw !important;
+    max-width: 1700px !important;
+}
+dialog.market-dialog.tenant-stall-section-dialog {
+    width: 1080px !important;
+    max-width: 96vw !important;
+}
+dialog.market-dialog.tenant-stall-map-dialog .tenant-stall-map-grid button {
+    width: 48px !important;
+    height: 48px !important;
+    font-size: 1.12rem !important;
+}
+dialog.market-dialog.tenant-stall-map-dialog .tenant-stall-map-grid h3 {
+    font-size: 1.95rem !important;
+}
+dialog.market-dialog.tenant-stall-map-dialog .tenant-stall-map-grid {
+    gap: 50px 330px !important;
+}
+dialog.market-dialog.tenant-stall-map-dialog .tenant-stall-map-people {
+    width: 470px !important;
+    height: 280px !important;
+}
+dialog.market-dialog.tenant-stall-map-dialog .tenant-stall-map-people img {
+    width: 175px !important;
+    height: 270px !important;
+}
+dialog.market-dialog.tenant-stall-map-dialog .tenant-stall-map-people img:nth-child(2) {
+    width: 188px !important;
+    height: 290px !important;
 }

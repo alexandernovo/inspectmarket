@@ -10,6 +10,17 @@
         $endRow = min($page * $perPage, $totalPayments);
         $queryWithoutPage = request()->except('page');
         $sectionTabs = ['MIXED' => 'Mixed Section', 'BEEF' => 'Beef Section', 'PORK' => 'Pork Section', 'POULTRY' => 'Poultry Section', 'FISH' => 'Fish Section'];
+        $rentalRoute = $rentalRoute ?? 'clerk.rentals';
+        $rentalRouteParams = $rentalRouteParams ?? [];
+        $rentalHistoryRoute = $rentalHistoryRoute ?? 'clerk.rentals.history.update';
+        $rentalPageTitle = $rentalPageTitle ?? 'STALL RENTAL';
+        $rentalBreadcrumb = $rentalBreadcrumb ?? 'Dashboard | Stall Rental';
+        $rentalTitleAvatar = $rentalTitleAvatar ?? null;
+        $rentalReadOnly = $rentalReadOnly ?? false;
+        $showRentalActions = $showRentalActions ?? true;
+        $showShortCharges = $showShortCharges ?? true;
+        $rentalTableColumns = 8 + ($showShortCharges ? 1 : 0) + ($showRentalActions ? 1 : 0);
+        $rentalUrl = fn (array $query = []) => route($rentalRoute, array_merge($rentalRouteParams, $query));
         $paymentHistories = \App\Models\Payment::with(['tenant', 'stallApplication.stall', 'stallApplication.documents'])
             ->whereIn('tenant_id', $payments->pluck('tenant_id')->filter()->unique())
             ->orderBy('period_month')
@@ -20,8 +31,12 @@
     <section class="clerk-rental-page">
         <header class="tenant-page-title clerk-rental-title">
             <div>
-                <i class="bi bi-shop-window"></i>
-                <div><h1>STALL RENTAL</h1><p>Dashboard | Stall Rental</p></div>
+                @if ($rentalTitleAvatar)
+                    <img class="administrator-role-title-avatar" src="{{ asset('assets/einspect/USERS/'.$rentalTitleAvatar) }}" alt="">
+                @else
+                    <i class="bi bi-shop-window"></i>
+                @endif
+                <div><h1>{{ $rentalPageTitle }}</h1><p>{{ $rentalBreadcrumb }}</p></div>
             </div>
         </header>
 
@@ -32,12 +47,12 @@
                         <i class="bi bi-shop-window"></i>
                         <div><h2>STALL RENTAL</h2><p>TENANT'S MONTHLY PAYMENT</p></div>
                     </div>
-                    <a class="button clerk-rental-view-button" href="{{ route('clerk.rentals', ['view' => 1, 'section' => 'FISH']) }}">View all Tenants</a>
+                    <a class="button clerk-rental-view-button" href="{{ $rentalUrl(['view' => 1, 'section' => 'FISH']) }}">View all Tenants</a>
                 </div>
             </section>
         @else
             <section class="clerk-rental-table-card">
-                <form class="clerk-rental-filters" method="GET" action="{{ route('clerk.rentals') }}">
+                <form class="clerk-rental-filters" method="GET" action="{{ $rentalUrl() }}">
                     <input type="hidden" name="view" value="1">
                     <div class="clerk-rental-filter-row top">
                         <select name="per_page" aria-label="Rows per page">
@@ -51,18 +66,18 @@
 
                         <nav class="clerk-section-tabs" aria-label="Stall section filter">
                             @foreach ($sectionTabs as $section => $label)
-                                <a class="{{ $currentSection === $section ? 'active' : '' }}" href="{{ route('clerk.rentals', array_merge($queryWithoutPage, ['view' => 1, 'section' => $section])) }}">{{ $label }}</a>
+                                <a class="{{ $currentSection === $section ? 'active' : '' }}" href="{{ $rentalUrl(array_merge($queryWithoutPage, ['view' => 1, 'section' => $section])) }}">{{ $label }}</a>
                             @endforeach
                         </nav>
                     </div>
 
                     <div class="clerk-rental-filter-row bottom">
-                        <a class="clerk-reload-button" href="{{ route('clerk.rentals', ['view' => 1]) }}"><i class="bi bi-arrow-clockwise"></i> Reload</a>
+                        <a class="clerk-reload-button" href="{{ $rentalUrl(['view' => 1]) }}"><i class="bi bi-arrow-clockwise"></i> Reload</a>
                         <label class="clerk-rental-search"><input type="search" name="search" value="{{ request('search') }}" placeholder="Search"><i class="bi bi-search"></i></label>
                         <span class="clerk-status-label">Status:</span>
                         <div class="clerk-status-filter-group">
                             @foreach (['ALL' => 'All', 'OVERDUE' => 'Overdue', 'PAID' => 'Paid', 'UNPAID' => 'Unpaid'] as $status => $label)
-                                <a class="clerk-status-filter {{ strtolower($status) }} {{ $currentStatus === $status ? 'active' : '' }}" href="{{ route('clerk.rentals', array_merge($queryWithoutPage, ['view' => 1, 'status' => $status])) }}">
+                                <a class="clerk-status-filter {{ strtolower($status) }} {{ $currentStatus === $status ? 'active' : '' }}" href="{{ $rentalUrl(array_merge($queryWithoutPage, ['view' => 1, 'status' => $status])) }}">
                                     {{ $label }}
                                     <b>{{ $statusCounts[$status] ?? 0 }}</b>
                                 </a>
@@ -72,7 +87,11 @@
                 </form>
 
                 <div class="clerk-rental-table-wrap">
-                    <table class="clerk-rental-table">
+                    <table @class([
+                        'clerk-rental-table',
+                        'no-actions' => ! $showRentalActions,
+                        'no-short-charges' => ! $showShortCharges,
+                    ])>
                         <thead>
                             <tr>
                                 <th>NO.</th>
@@ -83,8 +102,12 @@
                                 <th>STALL FEE</th>
                                 <th>DATE OF<br>PAYMENT</th>
                                 <th>PAYMENT<br>STATUS</th>
-                                <th>SHORT<br>CHARGE/S</th>
-                                <th>ACTION</th>
+                                @if ($showShortCharges)
+                                    <th>SHORT<br>CHARGE/S</th>
+                                @endif
+                                @if ($showRentalActions)
+                                    <th>ACTION</th>
+                                @endif
                             </tr>
                         </thead>
                         <tbody>
@@ -108,11 +131,15 @@
                                     <td>P{{ number_format((float) $payment->amount, 2) }}</td>
                                     <td>{{ ($payment->paid_at ?? $payment->due_date)->format('F d, Y') }}</td>
                                     <td><span class="clerk-payment-pill {{ strtolower($status) }}">{{ str($status)->title() }}</span></td>
-                                    <td>{{ (float) $payment->shortage_amount > 0 ? 'P'.number_format((float) $payment->shortage_amount, 2) : 'None' }}</td>
-                                    <td><button type="button" class="table-action view" data-open-dialog="clerkRentalPayment{{ $payment->id }}" title="View"><i class="bi bi-eye-fill"></i></button></td>
+                                    @if ($showShortCharges)
+                                        <td>{{ (float) $payment->shortage_amount > 0 ? 'P'.number_format((float) $payment->shortage_amount, 2) : 'None' }}</td>
+                                    @endif
+                                    @if ($showRentalActions)
+                                        <td><button type="button" class="table-action view" data-open-dialog="clerkRentalPayment{{ $payment->id }}" title="View"><i class="bi bi-eye-fill"></i></button></td>
+                                    @endif
                                 </tr>
                             @empty
-                                <tr><td colspan="10" class="empty-state">No tenant rental payments found.</td></tr>
+                                <tr><td colspan="{{ $rentalTableColumns }}" class="empty-state">No tenant rental payments found.</td></tr>
                             @endforelse
                         </tbody>
                     </table>
@@ -121,13 +148,14 @@
                 <footer class="clerk-rental-pagination">
                     <span>Showing {{ $startRow }} to {{ $endRow }} of {{ $totalPayments }} entries</span>
                     <nav>
-                        <a class="{{ $page <= 1 ? 'disabled' : '' }}" href="{{ $page <= 1 ? '#' : route('clerk.rentals', array_merge($queryWithoutPage, ['view' => 1, 'page' => $page - 1])) }}">&lt;</a>
+                        <a class="{{ $page <= 1 ? 'disabled' : '' }}" href="{{ $page <= 1 ? '#' : $rentalUrl(array_merge($queryWithoutPage, ['view' => 1, 'page' => $page - 1])) }}">&lt;</a>
                         <strong>{{ $page }}</strong>
-                        <a class="{{ $page >= $lastPage ? 'disabled' : '' }}" href="{{ $page >= $lastPage ? '#' : route('clerk.rentals', array_merge($queryWithoutPage, ['view' => 1, 'page' => $page + 1])) }}">&gt;</a>
+                        <a class="{{ $page >= $lastPage ? 'disabled' : '' }}" href="{{ $page >= $lastPage ? '#' : $rentalUrl(array_merge($queryWithoutPage, ['view' => 1, 'page' => $page + 1])) }}">&gt;</a>
                     </nav>
                 </footer>
             </section>
 
+            @if ($showRentalActions)
             @foreach ($payments as $payment)
                 @php
                     $tenant = $payment->tenant;
@@ -146,7 +174,7 @@
                     $historyYears = $historyRows->pluck('period_month')->filter()->map(fn ($date) => $date->format('Y'))->unique()->values();
                 @endphp
                 <dialog id="clerkRentalPayment{{ $payment->id }}" class="market-dialog clerk-rental-detail-dialog">
-                    <form class="clerk-rental-detail" method="POST" action="{{ route('clerk.rentals.history.update', $payment) }}">
+                    <form class="clerk-rental-detail" method="POST" action="{{ route($rentalHistoryRoute, $payment) }}">
                         @csrf
                         @method('PUT')
                         <header class="clerk-rental-detail-hero">
@@ -226,7 +254,7 @@
                                         <td>P{{ number_format((float) $history->amount, 2) }}</td>
                                         <td>
                                             <span class="clerk-edit-select status-{{ strtolower($historyStatus) }}">
-                                                <select name="payments[{{ $history->id }}][status]">
+                                                <select name="payments[{{ $history->id }}][status]" @disabled($rentalReadOnly)>
                                                     @foreach (['PAID' => 'Paid', 'OVERDUE' => 'Overdue', 'UNPAID' => 'Unpaid'] as $value => $label)
                                                         <option value="{{ $value }}" @selected(($historyStatus === $value) || ($value === 'UNPAID' && $history->status === 'PENDING'))>{{ $label }}</option>
                                                     @endforeach
@@ -237,7 +265,7 @@
                                         <td>{{ $history->due_date->format('F d, Y') }}</td>
                                         <td>
                                             <span class="clerk-edit-select short-charge">
-                                                <select name="payments[{{ $history->id }}][shortage_amount]">
+                                                <select name="payments[{{ $history->id }}][shortage_amount]" @disabled($rentalReadOnly)>
                                                     <option value="0" @selected((float) $history->shortage_amount <= 0)>None</option>
                                                     @foreach ([70, 140, 210, 280, 350] as $charge)
                                                         <option value="{{ $charge }}" @selected((float) $history->shortage_amount === (float) $charge)>P{{ number_format($charge, 2) }}</option>
@@ -254,12 +282,15 @@
                         </table>
 
                         <footer class="clerk-rental-detail-actions">
-                            <button class="button button-primary">Save</button>
-                            <button type="button" class="button button-muted" data-close-dialog>Cancel</button>
+                            @unless ($rentalReadOnly)
+                                <button class="button button-primary">Save</button>
+                            @endunless
+                            <button type="button" class="button button-muted" data-close-dialog>{{ $rentalReadOnly ? 'Close' : 'Cancel' }}</button>
                         </footer>
                     </form>
                 </dialog>
             @endforeach
+            @endif
         @endunless
     </section>
 @endsection

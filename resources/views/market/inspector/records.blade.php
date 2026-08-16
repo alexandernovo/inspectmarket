@@ -8,12 +8,32 @@
             'PORK' => 'bi-piggy-bank-fill',
             default => 'bi-heart-pulse-fill',
         };
+        $inspectorPageTitle = $inspectorPageTitle ?? strtoupper($typeLabel);
+        $inspectorPageBreadcrumb = $inspectorPageBreadcrumb ?? 'Dashboard | '.$typeLabel;
+        $inspectorShowTypeTabs = $inspectorShowTypeTabs ?? false;
+        $inspectorCanMutateRecords = $inspectorCanMutateRecords ?? true;
+        $inspectorDataTableRoute = $inspectorDataTableRoute ?? 'inspector.datatable.inspections';
+        $inspectorRecordRoute = $inspectorRecordRoute ?? 'inspector.inspections';
+        $inspectorRecordRouteParams = $inspectorRecordRouteParams ?? [];
+        $inspectorTitleAvatar = $inspectorTitleAvatar ?? null;
+        $inspectorRecordUrl = fn (string $type) => route($inspectorRecordRoute, array_merge($inspectorRecordRouteParams, ['type' => $type]));
     @endphp
 
     <section class="inspector-page inspector-records-page">
         <header class="inspector-page-title">
-            <i class="bi {{ $typeIcon }}"></i>
-            <div><h1>{{ strtoupper($typeLabel) }}</h1><p>Dashboard | {{ $typeLabel }}</p></div>
+            @if ($inspectorTitleAvatar)
+                <img class="administrator-role-title-avatar" src="{{ asset('assets/einspect/USERS/'.$inspectorTitleAvatar) }}" alt="">
+            @else
+                <i class="bi {{ $typeIcon }}"></i>
+            @endif
+            <div><h1>{{ $inspectorPageTitle }}</h1><p>{{ $inspectorPageBreadcrumb }}</p></div>
+            @if ($inspectorShowTypeTabs)
+                <nav class="administrator-inspector-type-tabs">
+                    <a class="{{ $livestockType === 'BEEF' ? 'active' : '' }}" href="{{ $inspectorRecordUrl('BEEF') }}"><i class="bi bi-heart-pulse-fill"></i> Beef</a>
+                    <a class="{{ $livestockType === 'PORK' ? 'active' : '' }}" href="{{ $inspectorRecordUrl('PORK') }}"><i class="bi bi-piggy-bank-fill"></i> Pork</a>
+                    <a class="{{ $livestockType === 'POULTRY' ? 'active' : '' }}" href="{{ $inspectorRecordUrl('POULTRY') }}"><i class="bi bi-egg-fried"></i> Poultry</a>
+                </nav>
+            @endif
         </header>
 
         <section class="inspector-table-panel">
@@ -24,7 +44,9 @@
                 <button type="button" id="recordFilter"><i class="bi bi-funnel-fill"></i> Filter</button>
                 <div class="inspector-record-title"><i class="bi {{ $typeIcon }}"></i><strong>{{ strtoupper($typeLabel) }} SLAUGHTERED</strong></div>
                 <label class="inspector-record-search"><input type="search" id="recordSearch" placeholder="Search"><i class="bi bi-search"></i></label>
-                <button type="button" class="inspector-add-button" id="addInspection"><i class="bi bi-plus-circle"></i> Add Inspect</button>
+                @if ($inspectorCanMutateRecords)
+                    <button type="button" class="inspector-add-button" id="addInspection"><i class="bi bi-plus-circle"></i> Add Inspect</button>
+                @endif
             </div>
             <div class="table-wrap">
                 <table id="inspectorRecordsTable" class="inspector-data-table">
@@ -164,7 +186,7 @@
                 order: [],
                 pageLength: 10,
                 ajax: {
-                    url: "{{ route('inspector.datatable.inspections') }}",
+                    url: "{{ route($inspectorDataTableRoute) }}",
                     data: function (data) {
                         data.mode = 'records';
                         data.type = livestockType;
@@ -251,7 +273,9 @@
                 dialog.showModal();
             }
 
-            $('#addInspection').on('click', function () { resetForm(); dialog.showModal(); });
+            @if ($inspectorCanMutateRecords)
+                $('#addInspection').on('click', function () { resetForm(); dialog.showModal(); });
+            @endif
             $(document).on('click', '[data-close-inspector-record]', function () { dialog.close(); });
             $(document).on('click', '.js-inspector-view', function () { fillForm(JSON.parse($(this).attr('data-record')), true); });
             $(document).on('click', '.js-inspector-edit', function () { fillForm(JSON.parse($(this).attr('data-record')), false); });

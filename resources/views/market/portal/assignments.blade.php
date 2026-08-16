@@ -4,6 +4,20 @@
     @php
         $collections = $collections ?? collect();
         $assignments = $assignments ?? collect();
+        $collectorRecords = ($collectorRecords ?? collect())->values();
+        $showCollectorAccess = $showCollectorAccess ?? true;
+        $showCollectors = $showCollectorAccess && request()->boolean('collectors');
+        $cashTicketTitle = $cashTicketTitle ?? 'CASH TICKET';
+        $cashTicketBreadcrumb = $cashTicketBreadcrumb ?? 'Dashboard | Cash Ticket';
+        $cashTicketTitleAvatar = $cashTicketTitleAvatar ?? null;
+        $collectorFrom = request('collector_from');
+        $collectorTo = request('collector_to');
+        $collectorPerPage = in_array((int) request('collector_per_page', 10), [5, 10, 25, 50], true) ? (int) request('collector_per_page', 10) : 10;
+        $filteredCollectorRecords = $collectorRecords
+            ->when($collectorFrom, fn ($rows) => $rows->filter(fn ($collector) => $collector->created_at && $collector->created_at->toDateString() >= $collectorFrom))
+            ->when($collectorTo, fn ($rows) => $rows->filter(fn ($collector) => $collector->created_at && $collector->created_at->toDateString() <= $collectorTo))
+            ->values();
+        $visibleCollectorRecords = $filteredCollectorRecords->take($collectorPerPage);
         $selectedCalendarMonth = (int) request('collection_month', now()->month);
         $selectedCalendarYear = (int) request('collection_year', now()->year);
         $calendarMonth = \Carbon\Carbon::create($selectedCalendarYear, $selectedCalendarMonth, 1)->startOfMonth();
@@ -95,16 +109,228 @@
     @endphp
 
     @include('market.tenant.applications.css.header')
-    <header class="tenant-page-title px-3 pt-3 pb-0">
+    <header class="tenant-page-title treasurer-cash-page-title px-3 pt-3 pb-0">
         <div>
-            <i class="bi bi-card-checklist"></i>
+            @if ($cashTicketTitleAvatar)
+                <img class="administrator-role-title-avatar" src="{{ asset('assets/einspect/USERS/'.$cashTicketTitleAvatar) }}" alt="">
+            @else
+                <i class="bi bi-card-checklist"></i>
+            @endif
             <div>
-                <h1>CASH TICKET</h1>
-                <p class="mb-0">Dashboard | Cash Ticket</p>
+                <h1>{{ $cashTicketTitle }}</h1>
+                <p class="mb-0">{{ $cashTicketBreadcrumb }}</p>
             </div>
         </div>
+        @if ($showCollectorAccess && ! $showCollectors)
+            <a class="treasurer-cash-collectors-button" href="{{ route('treasurer.assignments', ['collectors' => 1]) }}">
+                <i class="bi bi-people-fill"></i>
+                <span>Collectors</span>
+            </a>
+        @endif
     </header>
 
+    @if ($showCollectors)
+        <section class="treasurer-cash-collectors-shell">
+            <form method="GET" action="{{ route('treasurer.assignments') }}" class="treasurer-cash-collectors-toolbar">
+                <input type="hidden" name="collectors" value="1">
+                <div class="collector-toolbar-filters">
+                    <select name="collector_per_page">
+                        @foreach ([5, 10, 25, 50] as $option)
+                            <option value="{{ $option }}" @selected($collectorPerPage === $option)>{{ $option }} v</option>
+                        @endforeach
+                    </select>
+                    <label>From:<input type="date" name="collector_from" value="{{ $collectorFrom }}"></label>
+                    <label>To:<input type="date" name="collector_to" value="{{ $collectorTo }}"></label>
+                    <button type="submit">Filter</button>
+                </div>
+                <div class="collector-toolbar-title">
+                    <i class="bi bi-people-fill"></i>
+                    <span>CASH TICKET COLLECTORS</span>
+                </div>
+                <div class="collector-toolbar-actions">
+                    <a href="{{ route('treasurer.assignments', ['collectors' => 1]) }}"><i class="bi bi-arrow-clockwise"></i> Reload</a>
+                    <button type="button" data-open-dialog="treasurerAddCollector"><i class="bi bi-plus-circle"></i> Add Collector</button>
+                </div>
+            </form>
+            <div class="treasurer-cash-collectors-table-wrap">
+                <table class="treasurer-cash-collectors-table">
+                    <thead>
+                        <tr>
+                            <th>NO.</th>
+                            <th>COLLECTOR ID</th>
+                            <th>FULL NAME</th>
+                            <th>CONTACT NUMBER</th>
+                            <th>STATUS</th>
+                            <th>DATE HIRED</th>
+                            <th>ACTION</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($visibleCollectorRecords as $collector)
+                            <tr>
+                                <td>{{ $loop->iteration }}</td>
+                                <td>COL-{{ str_pad($collector->id, 4, '0', STR_PAD_LEFT) }}</td>
+                                <td class="collector-name-cell">
+                                    <span>
+                                        <img src="{{ market_role_avatar($collector->usertype, $collector->profile) }}" alt="">
+                                        <b>{{ $collector->full_name }}</b>
+                                    </span>
+                                </td>
+                                <td>{{ $collector->phone_num }}</td>
+                                <td><span class="collector-status-pill {{ strtolower($collector->status) }}">{{ str($collector->status)->title() }}</span></td>
+                                <td>{{ $collector->created_at?->format('F d, Y') }}</td>
+                                <td>
+                                    <div class="collector-action-stack">
+                                        <button type="button" class="view" title="View" data-open-dialog="treasurerViewCollector{{ $collector->id }}"><i class="bi bi-eye-fill"></i></button>
+                                        <button type="button" class="edit" title="Edit" data-open-dialog="treasurerEditCollector{{ $collector->id }}"><i class="bi bi-pencil-fill"></i></button>
+                                        <form method="POST" action="{{ route('treasurer.collectors.destroy', $collector) }}">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="button" class="delete" title="Delete" data-confirm-delete><i class="bi bi-trash-fill"></i></button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="7">No collectors found.</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+            <div class="treasurer-cash-collectors-footer">
+                <span>Showing 1 to {{ $visibleCollectorRecords->count() }} of {{ $filteredCollectorRecords->count() }} entries</span>
+                <div><a href="{{ route('treasurer.assignments', ['collectors' => 1]) }}">&lt;</a><b>1</b><a href="{{ route('treasurer.assignments', ['collectors' => 1]) }}">&gt;</a></div>
+            </div>
+        </section>
+
+        <dialog id="treasurerAddCollector" class="market-dialog treasurer-add-collector-dialog">
+            <form method="POST" action="{{ route('treasurer.collectors.store') }}" enctype="multipart/form-data">
+                @csrf
+                <div class="treasurer-add-collector-heading">
+                    <button type="button" data-close-dialog><i class="bi bi-arrow-left-circle-fill"></i></button>
+                    <i class="bi bi-person-fill"></i>
+                    <div><h2>ADD COLLECTOR</h2><p>CASH TICKET COLLECTION</p></div>
+                    <button type="button" data-close-dialog><i class="bi bi-x-circle"></i></button>
+                </div>
+                <div class="treasurer-add-collector-body">
+                    <section class="collector-form-panel">
+                        <h3><i class="bi bi-clipboard2-check"></i> COLLECTOR INFORMATION</h3>
+                        <div class="collector-form-grid">
+                            <label>Full Name:<input name="full_name" value="{{ old('full_name') }}" placeholder="Enter full name" required></label>
+                            <label>Collector ID:<input value="Auto-generated" readonly></label>
+                            <label>Date of Birth:<input type="date" name="birth_date" value="{{ old('birth_date') }}"></label>
+                            <label>Sex:<select name="sex"><option value="">Select gender</option><option>MALE</option><option>FEMALE</option></select></label>
+                            <label>Contact Number:<input name="phone_num" value="{{ old('phone_num') }}" placeholder="09xxxxxxxxx" required></label>
+                            <label>Email Address:<input type="email" name="email" value="{{ old('email') }}" placeholder="Enter email (optional)"></label>
+                            <label>Date Hired:<input type="date" name="date_hired" value="{{ old('date_hired', now()->toDateString()) }}"></label>
+                            <label>Status:<select name="status" required><option value="">Select status</option><option value="ACTIVE">Active</option><option value="INACTIVE">Inactive</option></select></label>
+                            <label class="collector-address-field">Address:<input name="address" value="{{ old('address') }}" placeholder="Enter complete address" required></label>
+                            <input type="hidden" name="designation" value="Revenue Collector Clerk">
+                        </div>
+                    </section>
+                    <section class="collector-profile-panel">
+                        <h3><i class="bi bi-eye-fill"></i> COLLECTOR PROFILE</h3>
+                        <div class="collector-profile-preview">
+                            <img src="{{ asset('assets/einspect/USERS/3-Collector Clerk.png') }}" alt="" data-collector-photo-preview>
+                        </div>
+                        <label class="collector-upload-button">
+                            <i class="bi bi-upload"></i>
+                            <span>Upload Photo</span>
+                            <input type="file" name="profile_image" accept="image/*" hidden data-collector-photo-input>
+                        </label>
+                        <small class="collector-upload-file" data-collector-photo-file></small>
+                    </section>
+                </div>
+                <footer class="dialog-actions treasurer-add-collector-actions">
+                    <button type="submit" class="button button-primary">Save</button>
+                    <button type="button" class="button button-muted" data-close-dialog>Cancel</button>
+                </footer>
+            </form>
+        </dialog>
+
+        @foreach ($visibleCollectorRecords as $collector)
+            <dialog id="treasurerViewCollector{{ $collector->id }}" class="market-dialog treasurer-add-collector-dialog treasurer-view-collector-dialog">
+                <section>
+                    <div class="treasurer-add-collector-heading">
+                        <button type="button" data-close-dialog><i class="bi bi-arrow-left-circle-fill"></i></button>
+                        <i class="bi bi-person-vcard-fill"></i>
+                        <div><h2>COLLECTOR</h2><p>CASH TICKET COLLECTION</p></div>
+                        <button type="button" data-close-dialog><i class="bi bi-x-circle"></i></button>
+                    </div>
+                    <div class="treasurer-add-collector-body">
+                        <section class="collector-form-panel">
+                            <h3><i class="bi bi-clipboard2-check"></i> COLLECTOR INFORMATION</h3>
+                            <div class="collector-form-grid">
+                                <label>Full Name:<input value="{{ $collector->full_name }}" readonly></label>
+                                <label>Collector ID:<input value="COL-{{ str_pad($collector->id, 4, '0', STR_PAD_LEFT) }}" readonly></label>
+                                <label>Contact Number:<input value="{{ $collector->phone_num }}" readonly></label>
+                                <label>Email Address:<input value="{{ $collector->email }}" readonly></label>
+                                <label>Date Hired:<input value="{{ $collector->created_at?->format('m/d/Y') }}" readonly></label>
+                                <label>Status:<input value="{{ str($collector->status)->title() }}" readonly></label>
+                                <label class="collector-address-field">Address:<input value="{{ $collector->address }}" readonly></label>
+                                <label class="collector-address-field">Designation:<input value="{{ $collector->designation }}" readonly></label>
+                            </div>
+                        </section>
+                        <section class="collector-profile-panel">
+                            <h3><i class="bi bi-eye-fill"></i> COLLECTOR PROFILE</h3>
+                            <div class="collector-profile-preview">
+                                <img src="{{ market_role_avatar($collector->usertype, $collector->profile) }}" alt="">
+                            </div>
+                        </section>
+                    </div>
+                    <footer class="dialog-actions treasurer-add-collector-actions">
+                        <button type="button" class="button button-muted" data-close-dialog>Cancel</button>
+                    </footer>
+                </section>
+            </dialog>
+
+            <dialog id="treasurerEditCollector{{ $collector->id }}" class="market-dialog treasurer-add-collector-dialog">
+                <form method="POST" action="{{ route('treasurer.collectors.update', $collector) }}" enctype="multipart/form-data">
+                    @csrf
+                    @method('PUT')
+                    <div class="treasurer-add-collector-heading">
+                        <button type="button" data-close-dialog><i class="bi bi-arrow-left-circle-fill"></i></button>
+                        <i class="bi bi-person-fill"></i>
+                        <div><h2>EDIT COLLECTOR</h2><p>CASH TICKET COLLECTION</p></div>
+                        <button type="button" data-close-dialog><i class="bi bi-x-circle"></i></button>
+                    </div>
+                    <div class="treasurer-add-collector-body">
+                        <section class="collector-form-panel">
+                            <h3><i class="bi bi-clipboard2-check"></i> COLLECTOR INFORMATION</h3>
+                            <div class="collector-form-grid">
+                                <label>First Name:<input name="firstname" value="{{ old('firstname', $collector->firstname) }}" required></label>
+                                <label>Collector ID:<input value="COL-{{ str_pad($collector->id, 4, '0', STR_PAD_LEFT) }}" readonly></label>
+                                <label>Middle Name:<input name="middlename" value="{{ old('middlename', $collector->middlename) }}"></label>
+                                <label>Last Name:<input name="lastname" value="{{ old('lastname', $collector->lastname) }}" required></label>
+                                <label>Contact Number:<input name="phone_num" value="{{ old('phone_num', $collector->phone_num) }}" required></label>
+                                <label>Email Address:<input type="email" name="email" value="{{ old('email', $collector->email) }}"></label>
+                                <label>Date Hired:<input value="{{ $collector->created_at?->format('Y-m-d') }}" readonly></label>
+                                <label>Status:<select name="status" required><option value="ACTIVE" @selected($collector->status === 'ACTIVE')>Active</option><option value="INACTIVE" @selected($collector->status === 'INACTIVE')>Inactive</option></select></label>
+                                <label class="collector-address-field">Address:<input name="address" value="{{ old('address', $collector->address) }}" required></label>
+                                <input type="hidden" name="designation" value="{{ $collector->designation ?: 'Revenue Collector Clerk' }}">
+                            </div>
+                        </section>
+                        <section class="collector-profile-panel">
+                            <h3><i class="bi bi-eye-fill"></i> COLLECTOR PROFILE</h3>
+                            <div class="collector-profile-preview">
+                                <img src="{{ market_role_avatar($collector->usertype, $collector->profile) }}" alt="" data-collector-photo-preview="collector{{ $collector->id }}">
+                            </div>
+                            <label class="collector-upload-button">
+                                <i class="bi bi-upload"></i>
+                                <span>Upload Photo</span>
+                                <input type="file" name="profile_image" accept="image/*" hidden data-collector-photo-input="collector{{ $collector->id }}">
+                            </label>
+                            <small class="collector-upload-file" data-collector-photo-file="collector{{ $collector->id }}"></small>
+                        </section>
+                    </div>
+                    <footer class="dialog-actions treasurer-add-collector-actions">
+                        <button type="submit" class="button button-primary">Save</button>
+                        <button type="button" class="button button-muted" data-close-dialog>Cancel</button>
+                    </footer>
+                </form>
+            </dialog>
+        @endforeach
+    @else
     <section class="cash-ticket-workflow-shell treasurer-cash-workflow">
         <div class="workflow-title">
             <i class="bi bi-ticket-perforated-fill"></i>
@@ -545,10 +771,22 @@
             <footer class="dialog-actions cash-ticket-sticky-actions"><button type="button" class="button button-muted" data-close-dialog>Close</button></footer>
         </section>
     </dialog>
+    @endif
 @endsection
 
 @push('scripts')
     <script>
+        $('[data-collector-photo-input]').on('change', function () {
+            const file = this.files?.[0];
+            if (!file) return;
+            const previewKey = $(this).attr('data-collector-photo-input');
+            const selector = previewKey ? `[data-collector-photo-preview="${previewKey}"]` : '[data-collector-photo-preview]';
+            const preview = $(selector).get(0);
+            if (preview) preview.src = URL.createObjectURL(file);
+            const fileLabel = $(previewKey ? `[data-collector-photo-file="${previewKey}"]` : '[data-collector-photo-file]').get(0);
+            if (fileLabel) fileLabel.textContent = file.name;
+        });
+
         const treasurerCollectionRowsByDateSection = @json($collectionRowsByDateSection);
         const treasurerCollectionTotalsByDate = @json($collectionTotalsByDate);
         const treasurerCollectionMonth = @json($calendarMonth->format('m'));

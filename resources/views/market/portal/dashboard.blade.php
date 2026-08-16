@@ -1,7 +1,71 @@
 @extends('market.layouts.portal')
 
 @section('content')
-    @if (auth()->user()->isRole('TENANT'))
+    @if (auth()->user()->isRole('ADMINISTRATOR'))
+        <section class="administrator-dashboard">
+            <header class="administrator-dashboard-title">
+                <i class="bi bi-grid-fill"></i>
+                <div>
+                    <h1>DASHBOARD</h1>
+                    <p>E-Inspect Public Market Inspection Recording Management System</p>
+                </div>
+            </header>
+
+            <div class="administrator-dashboard-stats">
+                @foreach ($stats as $stat)
+                    <article class="administrator-dashboard-stat {{ $stat['tone'] }}">
+                        <div class="administrator-stat-icon"><i class="bi {{ $stat['icon'] }}"></i></div>
+                        <div>
+                            <span>{{ $stat['label'] }}</span>
+                            <strong>{{ $stat['value'] }}</strong>
+                        </div>
+                    </article>
+                @endforeach
+            </div>
+
+            <div class="administrator-pie-grid">
+                <article>
+                    <h2>TOTAL COLLECTION</h2>
+                    <div class="administrator-pie blue"></div>
+                    <small>Cash Ticket / Stall Rental</small>
+                </article>
+                <article>
+                    <h2>TOTAL INSPECTION</h2>
+                    <div class="administrator-pie green"></div>
+                    <small>Poultry / Pork / Beef</small>
+                </article>
+                <article>
+                    <h2>TOTAL STALL RENTAL</h2>
+                    <div class="administrator-pie gold"></div>
+                    <small>Paid / Unpaid / Overdue</small>
+                </article>
+                <article>
+                    <h2>TOTAL STALLS</h2>
+                    <div class="administrator-pie red"></div>
+                    <small>Available / Occupied</small>
+                </article>
+            </div>
+
+            <section class="administrator-dashboard-chart">
+                <header>
+                    <h2>E-INSPECT PUBLIC MARKET DATA CHART</h2>
+                    <div>
+                        <select><option>Select Category</option></select>
+                        <select><option>All Months</option></select>
+                        <select><option>{{ now()->year }}</option></select>
+                    </div>
+                </header>
+                <div class="administrator-chart-plot">
+                    @foreach (($chartValues ?? collect(array_fill(0, 12, 8))) as $height)
+                        <div>
+                            <span style="height: {{ $height }}%"></span>
+                            <small>{{ now()->startOfYear()->addMonths($loop->index)->format('M') }}</small>
+                        </div>
+                    @endforeach
+                </div>
+            </section>
+        </section>
+    @elseif (auth()->user()->isRole('TENANT'))
         <section class="tenant-dashboard">
             <header class="tenant-dashboard-title">
                 <i class="bi bi-grid-fill"></i>

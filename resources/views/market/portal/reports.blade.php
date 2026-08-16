@@ -57,7 +57,7 @@
                             <a class="pdf" target="_blank" href="{{ route('reports.print', ['view' => 1, 'report' => $selectedReport, 'month' => $selectedMonthValue, 'section' => $currentSection]) }}" title="Print or save as PDF"><i class="bi bi-file-earmark-pdf-fill"></i></a>
                             <a class="word" href="{{ route('reports.office', ['report' => $selectedReport, 'format' => 'doc', 'month' => $selectedMonthValue, 'section' => $currentSection]) }}" title="Download Word"><i class="bi bi-file-earmark-word-fill"></i></a>
                             <a class="excel" href="{{ route('reports.office', ['report' => $selectedReport, 'format' => 'xls', 'month' => $selectedMonthValue, 'section' => $currentSection]) }}" title="Download Excel"><i class="bi bi-file-earmark-excel-fill"></i></a>
-                            <button type="button" title="Print" onclick="window.print()"><i class="bi bi-printer-fill"></i> Print Report</button>
+                            <button type="button" title="Print" data-print-report><i class="bi bi-printer-fill"></i> Print Report</button>
                         </div>
                     </form>
                     @if ($selectedReport === 'stall-rental')
@@ -69,7 +69,7 @@
                         </nav>
                     @endif
 
-                    <article class="clerk-official-report">
+                    <article class="clerk-official-report print-report-area">
                         <header>
                             <img src="{{ asset('assets/einspect/HOMEPAGE/Logo.png') }}" alt="">
                             <p>Republic of the Philippines<br>Office of the Municipal Treasurer<br><strong>MUNICIPALITY OF PANDAN</strong></p>
@@ -128,6 +128,215 @@
                         <footer>
                             <strong>{{ strtoupper(auth()->user()->full_name) }}</strong>
                             <span>{{ auth()->user()->designation ?: 'Revenue Collector Clerk II' }}</span>
+                        </footer>
+                    </article>
+                </section>
+            @endunless
+        </section>
+    @elseif (auth()->user()->isRole(\App\Models\User::ROLE_TREASURER) || auth()->user()->isRole(\App\Models\User::ROLE_ADMINISTRATOR))
+        @include('market.tenant.applications.css.header')
+        @php
+            $isAdminReport = auth()->user()->isRole(\App\Models\User::ROLE_ADMINISTRATOR);
+            $showReport = request()->boolean('view');
+            $selectedReport = $report;
+            $selectedMonthValue = request('month') ?: now()->format('Y-m');
+            $reportMonth = $selectedMonth ?? \Carbon\Carbon::createFromFormat('Y-m', $selectedMonthValue)->startOfMonth();
+            $currentSection = strtoupper(request('section', ''));
+            $sectionTabs = ['' => 'All', 'MIXED' => 'Mixed Section', 'BEEF' => 'Beef Section', 'PORK' => 'Pork Section', 'POULTRY' => 'Poultry Section', 'FISH' => 'Fish Section'];
+            $baseQuery = ['view' => 1, 'report' => $selectedReport, 'month' => $selectedMonthValue];
+            $reportScope = request('scope', in_array($selectedReport, ['cash-ticket', 'payments'], true) ? 'clerk' : 'treasurer');
+            $reportRoute = $isAdminReport ? 'administrator.reports' : 'treasurer.reports';
+            $isClerkStallReport = $reportScope === 'clerk' && $selectedReport === 'stall-rental';
+            $isPaymentReport = $selectedReport === 'payments' || $isClerkStallReport;
+            $isInspectionReport = $selectedReport === 'inspection';
+        @endphp
+
+        <section class="clerk-report-page treasurer-report-page {{ $isAdminReport ? 'administrator-report-page' : '' }}">
+            <header class="tenant-page-title clerk-report-title">
+                <div>
+                    <i class="bi bi-file-earmark-text"></i>
+                    <div><h1>REPORT</h1><p>Dashboard | Report</p></div>
+                </div>
+            </header>
+
+            @unless ($showReport)
+                <section class="treasurer-report-entry">
+                    <div class="treasurer-report-card-shell">
+                        <div class="treasurer-report-banner">
+                            <i class="bi bi-file-earmark-text-fill"></i>
+                            <div><h2>REPORT</h2><p>PUBLIC MARKET PANDAN, ANTIQUE</p></div>
+                        </div>
+                        <div class="treasurer-report-choice-grid">
+                            <button type="button" class="treasurer-report-choice treasurer" data-open-dialog="treasurerReportDialog">
+                                <img src="{{ asset('assets/einspect/USERS/2-Treasurer.png') }}" alt="">
+                                <span>TREASURER</span>
+                            </button>
+                            <button type="button" class="treasurer-report-choice clerk" data-open-dialog="clerkReportDialog">
+                                <img src="{{ asset('assets/einspect/USERS/3-Collector Clerk.png') }}" alt="">
+                                <span>CLERK</span>
+                            </button>
+                            @if ($isAdminReport)
+                                <button type="button" class="treasurer-report-choice inspector" data-open-dialog="inspectorReportDialog">
+                                    <img src="{{ asset('assets/einspect/USERS/4-Sanitary Inspector.png') }}" alt="">
+                                    <span>INSPECTOR</span>
+                                </button>
+                            @endif
+                        </div>
+                    </div>
+                </section>
+
+                <dialog id="treasurerReportDialog" class="market-dialog treasurer-report-selector-dialog">
+                    <form method="GET" action="{{ route($reportRoute) }}">
+                        <button type="button" class="tenant-dialog-close" data-close-dialog><i class="bi bi-x-circle-fill"></i></button>
+                        <div class="treasurer-report-selector-hero">
+                            <img src="{{ asset('assets/einspect/USERS/2-Treasurer.png') }}" alt="">
+                            <div><h2>TREASURER</h2><p>LIST OF TENANTS AND REQUISITION AND COLLECTION OF DEPOSIT</p></div>
+                        </div>
+                        <label>Report Type:
+                            <span><i class="bi bi-file-earmark-text-fill"></i><select name="report" required>
+                                <option value="" disabled selected>Select Report Type</option>
+                                <option value="stall-rental">List of Tenants</option>
+                                <option value="payments">Requisition and Collection of Deposit</option>
+                            </select></span>
+                        </label>
+                        <label>Select Date:
+                            <span><i class="bi bi-calendar3"></i><input type="month" name="month" value="{{ now()->format('Y-m') }}" required></span>
+                        </label>
+                        <input type="hidden" name="scope" value="treasurer">
+                        <input type="hidden" name="view" value="1">
+                        <button class="button clerk-report-view-button">View Report</button>
+                    </form>
+                </dialog>
+
+                <dialog id="clerkReportDialog" class="market-dialog treasurer-report-selector-dialog">
+                    <form method="GET" action="{{ route($reportRoute) }}">
+                        <button type="button" class="tenant-dialog-close" data-close-dialog><i class="bi bi-x-circle-fill"></i></button>
+                        <div class="treasurer-report-selector-hero clerk">
+                            <img src="{{ asset('assets/einspect/USERS/3-Collector Clerk.png') }}" alt="">
+                            <div><h2>CLERK</h2><p>CASH TICKET AND STALL RENTAL COLLECTION REPORT</p></div>
+                        </div>
+                        <label>Report Type:
+                            <span><i class="bi bi-file-earmark-text-fill"></i><select name="report" required>
+                                <option value="" disabled selected>Select Report Type</option>
+                                <option value="stall-rental">Stall Rental</option>
+                                <option value="cash-ticket">Cash Ticket</option>
+                            </select></span>
+                        </label>
+                        <label>Select Date:
+                            <span><i class="bi bi-calendar3"></i><input type="month" name="month" value="{{ now()->format('Y-m') }}" required></span>
+                        </label>
+                        <input type="hidden" name="scope" value="clerk">
+                        <input type="hidden" name="view" value="1">
+                        <button class="button clerk-report-view-button">View Report</button>
+                    </form>
+                </dialog>
+
+                @if ($isAdminReport)
+                    <dialog id="inspectorReportDialog" class="market-dialog treasurer-report-selector-dialog">
+                        <form method="GET" action="{{ route($reportRoute) }}">
+                            <button type="button" class="tenant-dialog-close" data-close-dialog><i class="bi bi-x-circle-fill"></i></button>
+                            <div class="treasurer-report-selector-hero inspector">
+                                <img src="{{ asset('assets/einspect/USERS/4-Sanitary Inspector.png') }}" alt="">
+                                <div><h2>INSPECTOR</h2><p>SLAUGHTERED LIVESTOCK INSPECTION REPORT</p></div>
+                            </div>
+                            <label>Report Type:
+                                <span><i class="bi bi-file-earmark-text-fill"></i><select name="report" required>
+                                    <option value="inspection">Inspection</option>
+                                </select></span>
+                            </label>
+                            <label>Select Date:
+                                <span><i class="bi bi-calendar3"></i><input type="month" name="month" value="{{ now()->format('Y-m') }}" required></span>
+                            </label>
+                            <input type="hidden" name="scope" value="inspector">
+                            <input type="hidden" name="view" value="1">
+                            <button class="button clerk-report-view-button">View Report</button>
+                        </form>
+                    </dialog>
+                @endif
+            @else
+                <section class="clerk-report-sheet treasurer-report-sheet">
+                    <form class="clerk-report-toolbar" method="GET" action="{{ route($reportRoute) }}">
+                        <input type="hidden" name="view" value="1">
+                        <input type="hidden" name="scope" value="{{ $reportScope }}">
+                        <input type="hidden" name="report" value="{{ $selectedReport }}">
+                        <label>Select Month and Year
+                            <span><i class="bi bi-calendar3"></i><input type="month" name="month" value="{{ $selectedMonthValue }}"></span>
+                        </label>
+                        <button class="clerk-report-reload" type="submit"><i class="bi bi-arrow-clockwise"></i> Reload</button>
+                        <div class="clerk-report-downloads">
+                            <span>Download</span>
+                            <a class="pdf" target="_blank" href="{{ route('reports.print', ['view' => 1, 'scope' => $reportScope, 'report' => $selectedReport, 'month' => $selectedMonthValue, 'section' => $currentSection]) }}" title="Print or save as PDF"><i class="bi bi-file-earmark-pdf-fill"></i></a>
+                            <a class="word" href="{{ route('reports.office', ['report' => $selectedReport, 'format' => 'doc', 'scope' => $reportScope, 'month' => $selectedMonthValue, 'section' => $currentSection]) }}" title="Download Word"><i class="bi bi-file-earmark-word-fill"></i></a>
+                            <a class="excel" href="{{ route('reports.office', ['report' => $selectedReport, 'format' => 'xls', 'scope' => $reportScope, 'month' => $selectedMonthValue, 'section' => $currentSection]) }}" title="Download Excel"><i class="bi bi-file-earmark-excel-fill"></i></a>
+                            <button type="button" title="Print" data-print-report><i class="bi bi-printer-fill"></i> Print Report</button>
+                        </div>
+                    </form>
+                    @if (in_array($selectedReport, ['stall-rental', 'payments'], true))
+                        <nav class="clerk-report-tabs">
+                            <span>TOTAL:<strong>{{ $rows->count() }}</strong></span>
+                            @foreach ($sectionTabs as $section => $label)
+                                <a class="{{ $currentSection === $section ? 'active' : '' }}" href="{{ route($reportRoute, array_merge($baseQuery, ['scope' => $reportScope, 'section' => $section])) }}">{{ $label }}</a>
+                            @endforeach
+                        </nav>
+                    @endif
+
+                    <article class="clerk-official-report print-report-area">
+                        <header>
+                            <img src="{{ asset('assets/einspect/HOMEPAGE/Logo.png') }}" alt="">
+                            <p>Republic of the Philippines<br>Office of the Municipal Treasurer<br><strong>MUNICIPALITY OF PANDAN</strong></p>
+                        </header>
+                        <h2>
+                            @if ($selectedReport === 'cash-ticket')
+                                LIST OF CASH TICKET COLLECTION OF {{ strtoupper($reportMonth->format('F Y')) }}
+                            @elseif ($isInspectionReport)
+                                SLAUGHTERED LIVESTOCK INSPECTION REPORT OF {{ strtoupper($reportMonth->format('F Y')) }}
+                            @elseif ($isPaymentReport)
+                                LIST OF TENANT'S FEE IN STALL RENTAL OF {{ strtoupper($reportMonth->format('F Y')) }}
+                            @else
+                                LIST OF TENANTS {{ $currentSection ? 'IN '.strtoupper(str($currentSection)->title()).' SECTION ' : '' }}REPORT OF {{ strtoupper($reportMonth->format('F Y')) }}
+                            @endif
+                        </h2>
+
+                        <div class="clerk-report-table-wrap">
+                            <table class="clerk-report-table">
+                                <thead>
+                                    @if ($selectedReport === 'cash-ticket')
+                                        <tr><th>NO.</th><th>REFERENCE</th><th>COLLECTOR</th><th>STALL SECTION</th><th>NO. OF TICKETS</th><th>TOTAL COLLECTED</th><th>DATE COLLECTED</th><th>STATUS</th></tr>
+                                    @elseif ($isInspectionReport)
+                                        <tr><th>NO.</th><th>INSPECTION NO.</th><th>OWNER</th><th>ADDRESS</th><th>TYPE</th><th>DATE OF INSPECTION</th><th>INSPECTION RESULT</th><th>STATUS</th></tr>
+                                    @elseif ($isPaymentReport)
+                                        <tr><th>NO.</th><th>TENANT'S ID</th><th>TENANT</th><th>STALL<br>SECTION</th><th>STALL<br>NUMBER</th><th>STALL FEE</th><th>DATE OF<br>PAYMENT</th><th>PAYMENT<br>STATUS</th><th>SHORT<br>CHARGE/S</th></tr>
+                                    @else
+                                        <tr><th>NO.</th><th>TENANT'S ID</th><th>TENANT</th><th>ADDRESS</th><th>CONTACT<br>NUMBER</th><th>STALL<br>SECTION</th><th>STALL<br>NUMBER</th><th>STATUS</th></tr>
+                                    @endif
+                                </thead>
+                                <tbody>
+                                    @forelse ($rows as $row)
+                                        @if ($selectedReport === 'cash-ticket')
+                                            <tr><td>{{ $loop->iteration }}</td><td>{{ $row->collection_number }}</td><td>{{ $row->collector?->full_name }}</td><td>{{ str($row->stall_section)->title() }} Section</td><td>{{ number_format($row->ticket_quantity) }}</td><td>P{{ number_format((float) $row->amount, 2) }}</td><td>{{ $row->collection_date->format('F d, Y') }}</td><td><span class="clerk-payment-pill paid">{{ str($row->status)->title() }}</span></td></tr>
+                                        @elseif ($isInspectionReport)
+                                            <tr><td>{{ $loop->iteration }}</td><td>{{ $row->request_number }}</td><td>{{ $row->owner_name }}</td><td>{{ $row->address }}</td><td>{{ str($row->livestock_type)->title() }}</td><td>{{ $row->scheduled_at->format('F d, Y | g:i A') }}</td><td>{{ $row->inspection_result ?: 'Pending Inspection' }}</td><td><span class="clerk-payment-pill {{ $row->status === 'COMPLETED' ? 'paid' : 'overdue' }}">{{ str($row->status)->title() }}</span></td></tr>
+                                        @elseif ($isPaymentReport)
+                                            @php
+                                                $tenant = $row->tenant;
+                                                $application = $row->stallApplication;
+                                                $stall = $application?->stall;
+                                                $paymentStatus = $row->status === 'PAID' ? 'PAID' : (($row->status === 'OVERDUE' || $row->due_date->isPast()) ? 'OVERDUE' : 'UNPAID');
+                                            @endphp
+                                            <tr><td>{{ $loop->iteration }}</td><td>TEN-{{ $tenant?->created_at?->format('Y') ?? now()->year }}-{{ str_pad($tenant?->id ?? $row->tenant_id, 5, '0', STR_PAD_LEFT) }}</td><td>{{ $tenant?->full_name ?? $application?->business_owner ?? 'Tenant' }}</td><td>{{ str($stall?->section ?? $application?->preferred_section ?? 'Unassigned')->title() }} Section</td><td>{{ $stall?->stall_number ? str_pad($stall->stall_number, 3, '0', STR_PAD_LEFT) : ($application?->preferred_stall_number ? str_pad($application->preferred_stall_number, 3, '0', STR_PAD_LEFT) : '---') }}</td><td>P{{ number_format((float) $row->amount, 2) }}</td><td>{{ ($row->paid_at ?? $row->due_date)->format('F d, Y') }}</td><td><span class="clerk-payment-pill {{ strtolower($paymentStatus) }}">{{ str($paymentStatus)->title() }}</span></td><td>{{ (float) $row->shortage_amount > 0 ? 'P'.number_format((float) $row->shortage_amount, 2) : 'None' }}</td></tr>
+                                        @else
+                                            @php $tenant = $row->tenant; $stall = $row->stall; @endphp
+                                            <tr><td>{{ $loop->iteration }}</td><td>TEN-{{ $tenant?->created_at?->format('Y') ?? now()->year }}-{{ str_pad($tenant?->id ?? $row->tenant_id, 5, '0', STR_PAD_LEFT) }}</td><td>{{ $tenant?->full_name ?? $row->business_owner ?? 'Tenant' }}</td><td>{{ $tenant?->address ?? $row->business_address ?? 'Pandan, Antique' }}</td><td>{{ $tenant?->phone_num ?? $row->contact_number ?? '-' }}</td><td>{{ str($stall?->section ?? $row->preferred_section ?? 'Unassigned')->title() }} Section</td><td>{{ $stall?->stall_number ? str_pad($stall->stall_number, 3, '0', STR_PAD_LEFT) : ($row->preferred_stall_number ? str_pad($row->preferred_stall_number, 3, '0', STR_PAD_LEFT) : '---') }}</td><td><span class="clerk-payment-pill paid">{{ str($tenant?->status ?? $row->status)->title() }}</span></td></tr>
+                                        @endif
+                                    @empty
+                                        <tr><td colspan="{{ $isPaymentReport ? 9 : 8 }}" class="empty-state">No report data available.</td></tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                        <footer>
+                            <strong>{{ strtoupper(auth()->user()->full_name) }}</strong>
+                            <span>{{ $isInspectionReport ? 'Rural Sanitary Inspector I' : ($isPaymentReport || $selectedReport === 'cash-ticket' ? 'Revenue Collector Clerk II' : 'Municipal Treasurer') }}</span>
                         </footer>
                     </article>
                 </section>
@@ -192,3 +401,18 @@
     </section>
     @endif
 @endsection
+
+@push('scripts')
+    <script>
+        document.querySelectorAll('[data-print-report]').forEach((button) => {
+            button.addEventListener('click', () => {
+                document.body.classList.add('print-report-only');
+                window.print();
+            });
+        });
+
+        window.addEventListener('afterprint', () => {
+            document.body.classList.remove('print-report-only');
+        });
+    </script>
+@endpush
