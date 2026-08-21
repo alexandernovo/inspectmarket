@@ -184,14 +184,14 @@
                         </thead>
                         <tbody>
                             @forelse ($rows as $payment)
-                                <tr data-payment-date="{{ $payment->paid_at?->toDateString() ?? $payment->due_date->toDateString() }}">
+                                <tr data-payment-date="{{ $payment->paid_at?->toDateString() ?? $payment->due_date?->toDateString() ?? '' }}">
                                     <td>{{ $loop->iteration }}</td>
                                     <td>{{ $payment->tenant?->full_name ?? 'Tenant' }}</td>
                                     <td>{{ $payment->stallApplication?->stall?->stall_number ?? 'Unassigned' }}</td>
                                     <td>{{ str($payment->stallApplication?->stall?->section ?? $payment->stallApplication?->preferred_section ?? 'Unassigned')->title() }} Section</td>
                                     <td>P{{ number_format($payment->amount, 2) }}</td>
                                     <td><span class="status status-{{ strtolower($payment->status) }}">{{ str($payment->status)->title() }}</span></td>
-                                    <td>{{ ($payment->paid_at ?? $payment->due_date)->format('F d, Y') }}</td>
+                                    <td>{{ ($payment->paid_at ?? $payment->due_date)?->format('F d, Y') ?? '-' }}</td>
                                     <td>{{ $payment->shortage_amount > 0 ? 'P'.number_format($payment->shortage_amount, 2) : 'None' }}</td>
                                     <td>
                                         <div class="inline-actions">

@@ -893,6 +893,100 @@ td small { color: var(--muted); }
 .administrator-member-grid .full { grid-column: 1 / -1; }
 .administrator-member-actions .button-primary { background: #a45c00; }
 .administrator-member-actions .button-muted { color: #fff; background: #760008; }
+.administrator-settings-page {
+    min-height: 100%;
+    padding: 14px 20px 18px;
+    color: #111;
+    background: #d3d3d3;
+}
+.administrator-settings-card {
+    width: 82%;
+    max-width: 1160px;
+    margin: 32px auto 0;
+    padding: 18px;
+    border: 8px solid #fff;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0 5px 18px rgba(0,0,0,.12);
+}
+.administrator-settings-hero {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    min-height: 130px;
+    border-radius: 6px;
+    color: #fff;
+    background: #650006;
+    text-align: left;
+}
+.administrator-settings-hero i {
+    font-size: 4.4rem;
+}
+.administrator-settings-hero h2 {
+    margin: 0;
+    font-family: var(--display-font);
+    font-size: 2.75rem;
+    line-height: .95;
+}
+.administrator-settings-hero p {
+    margin: 5px 0 0;
+    font-size: 1.15rem;
+    font-weight: 700;
+}
+.administrator-settings-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px 18px;
+    padding: 22px 8px 10px;
+}
+.administrator-settings-grid label {
+    display: grid;
+    gap: 7px;
+    margin: 0;
+    font-size: .95rem;
+    font-weight: 700;
+}
+.administrator-settings-grid label span {
+    display: grid;
+    grid-template-columns: 54px 1fr;
+    min-height: 48px;
+    border: 1px solid #760008;
+    border-radius: 4px;
+    overflow: hidden;
+    background: #fff;
+}
+.administrator-settings-grid i {
+    display: grid;
+    place-items: center;
+    color: #fff;
+    background: #760008;
+    font-size: 1.45rem;
+}
+.administrator-settings-grid input {
+    width: 100%;
+    border: 0;
+    padding: 8px 12px;
+    font-size: 1rem;
+}
+.administrator-settings-grid small {
+    color: #b0000a;
+    font-size: .8rem;
+    font-weight: 700;
+}
+.administrator-settings-actions {
+    display: flex;
+    justify-content: flex-end;
+    padding: 12px 8px 2px;
+}
+.administrator-settings-actions .button {
+    min-width: 150px;
+    min-height: 44px;
+    border: 0;
+    border-radius: 5px;
+    background: #a45c00;
+    font-size: 1rem;
+}
 
 .treasurer-dashboard { min-height: 100%; padding: 14px 20px 18px; color: #111; }
 .treasurer-dashboard-title { display: flex; align-items: center; gap: 12px; min-height: 72px; }

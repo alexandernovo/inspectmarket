@@ -248,7 +248,7 @@
                         $historyKey = $payment->tenant_id.'-'.($payment->stall_application_id ?: 0);
                         $historyRows = $tenantRentalPaymentHistories->get($historyKey, collect());
                         $nextDue = $historyRows->where('status', '!=', 'PAID')->sortBy('due_date')->first()?->due_date ?? $payment->due_date;
-                        $currentPaymentStatus = $payment->status === 'PAID' ? 'PAID' : (($payment->status === 'OVERDUE' || $payment->due_date->isPast()) ? 'OVERDUE' : 'UNPAID');
+                        $currentPaymentStatus = $payment->status === 'PAID' ? 'PAID' : (($payment->status === 'OVERDUE' || ($payment->due_date?->isPast() ?? false)) ? 'OVERDUE' : 'UNPAID');
                         $tenantId = 'TEN - '.($tenant?->created_at?->format('Y') ?? now()->year).' - '.str_pad($tenant?->id ?? $payment->tenant_id, 5, '0', STR_PAD_LEFT);
                         $document = $application?->documents?->first(fn ($file) => str($file->original_name)->lower()->contains(['permit', 'business']))
                             ?? $application?->documents?->firstWhere('document_type', 'APPLICATION_REQUIREMENT')
@@ -274,7 +274,7 @@
                                     <small>Tenant ID</small>
                                     <strong>{{ $tenantId }}</strong>
                                     <small>Date Started:</small>
-                                    <b>{{ ($tenant?->created_at ?? $application?->created_at ?? $payment->created_at)->format('F d, Y') }}</b>
+                                    <b>{{ ($tenant?->created_at ?? $application?->created_at ?? $payment->created_at)?->format('F d, Y') ?? '-' }}</b>
                                 </aside>
                             </header>
 
@@ -296,7 +296,7 @@
                                 <article class="payment">
                                     <h3><i class="bi bi-wallet2"></i> PAYMENT INFORMATION</h3>
                                     <p>Monthly Rental Fee: <strong>P{{ number_format((float) $payment->amount, 2) }}</strong></p>
-                                    <p>Payment Day: <strong>Every {{ $payment->due_date->day }}th</strong></p>
+                                    <p>Payment Day: <strong>{{ $payment->due_date ? 'Every '.$payment->due_date->day.'th' : 'Not set' }}</strong></p>
                                     <p>Total Payment: <strong>P{{ number_format((float) $historyRows->where('status', 'PAID')->sum('amount'), 2) }}</strong></p>
                                     <p>Short Charge/s: <strong class="danger">P{{ number_format((float) $historyRows->sum('shortage_amount'), 2) }}</strong></p>
                                     <i class="bi bi-wallet-fill panel-illustration"></i>
@@ -315,10 +315,10 @@
                                 <thead><tr><th>YEAR</th><th>MONTH</th><th>STALL RENTAL FEE</th><th>STATUS</th><th>DATE RENEWED</th><th>DATE EXPIRED</th><th>SHORT CHARGE/S</th><th>OR RECEIPT</th></tr></thead>
                                 <tbody>
                                     @forelse ($historyRows as $history)
-                                        @php $historyStatus = $history->status === 'PAID' ? 'PAID' : (($history->status === 'OVERDUE' || $history->due_date->isPast()) ? 'OVERDUE' : 'UNPAID'); @endphp
-                                        <tr data-rental-year="{{ $history->period_month->format('Y') }}">
+                                        @php $historyStatus = $history->status === 'PAID' ? 'PAID' : (($history->status === 'OVERDUE' || ($history->due_date?->isPast() ?? false)) ? 'OVERDUE' : 'UNPAID'); @endphp
+                                        <tr data-rental-year="{{ $history->period_month?->format('Y') ?? '-' }}">
                                             @if ($loop->first)
-                                                <td class="clerk-rental-year-cell" rowspan="{{ $historyRows->filter(fn ($row) => $row->period_month->format('Y') === $historyYears->first())->count() }}">
+                                                <td class="clerk-rental-year-cell" rowspan="{{ $historyRows->filter(fn ($row) => $row->period_month?->format('Y') === $historyYears->first())->count() }}">
                                                     <span class="clerk-year-box">
                                                         <select class="clerk-rental-year-filter" aria-label="Filter payment history by year">
                                                             @foreach ($historyYears as $year)
@@ -328,11 +328,11 @@
                                                     </span>
                                                 </td>
                                             @endif
-                                            <td>{{ $history->period_month->format('F') }}</td>
+                                            <td>{{ $history->period_month?->format('F') ?? '-' }}</td>
                                             <td>P{{ number_format((float) $history->amount, 2) }}</td>
                                             <td><span class="clerk-payment-pill {{ strtolower($historyStatus) }}">{{ str($historyStatus)->title() }}</span></td>
-                                            <td>{{ ($history->paid_at ?? $history->period_month)->format('F d, Y') }}</td>
-                                            <td>{{ $history->due_date->format('F d, Y') }}</td>
+                                            <td>{{ ($history->paid_at ?? $history->period_month)?->format('F d, Y') ?? '-' }}</td>
+                                            <td>{{ $history->due_date?->format('F d, Y') ?? '-' }}</td>
                                             <td>{{ (float) $history->shortage_amount > 0 ? 'P'.number_format((float) $history->shortage_amount, 2) : 'None' }}</td>
                                             <td><a class="clerk-receipt-icon" href="{{ route('payments.receipt', $history) }}" target="_blank"><i class="bi bi-receipt"></i></a></td>
                                         </tr>

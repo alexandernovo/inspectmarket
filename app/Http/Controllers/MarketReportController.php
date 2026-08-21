@@ -39,7 +39,7 @@ class MarketReportController extends Controller
             'inspection' => LivestockInspection::with(['tenant', 'inspector'])
                 ->when($month, fn (Builder $query) => $query->whereBetween('scheduled_at', [$month, $month->copy()->endOfMonth()]))
                 ->when($livestock, fn (Builder $query) => $query->where('livestock_type', $livestock))
-                ->when($user->isRole(User::ROLE_INSPECTOR), fn (Builder $query) => $query->where('status', 'COMPLETED'))
+                ->when($user->isRole(User::ROLE_INSPECTOR) || ($user->isRole(User::ROLE_ADMINISTRATOR) && $scope === 'inspector'), fn (Builder $query) => $query->where('status', 'COMPLETED'))
                 ->latest('scheduled_at')->get(),
             'payments' => Payment::with(['tenant', 'stallApplication.stall'])
                 ->when($month, fn (Builder $query) => $query->whereBetween('period_month', [$month, $month->copy()->endOfMonth()]))

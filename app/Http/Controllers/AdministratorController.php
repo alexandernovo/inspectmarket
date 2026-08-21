@@ -182,7 +182,7 @@ class AdministratorController extends Controller
 
             $rentalStatus = fn (Payment $payment) => $payment->status === 'PAID'
                 ? 'PAID'
-                : (($payment->status === 'OVERDUE' || $payment->due_date->isPast()) ? 'OVERDUE' : 'UNPAID');
+                : (($payment->status === 'OVERDUE' || ($payment->due_date?->isPast() ?? false)) ? 'OVERDUE' : 'UNPAID');
             $filteredPayments = $query->get();
             $statusCounts = [
                 'ALL' => $filteredPayments->count(),
@@ -276,7 +276,7 @@ class AdministratorController extends Controller
 
             $rentalStatus = fn (Payment $payment) => $payment->status === 'PAID'
                 ? 'PAID'
-                : (($payment->status === 'OVERDUE' || $payment->due_date->isPast()) ? 'OVERDUE' : 'UNPAID');
+                : (($payment->status === 'OVERDUE' || ($payment->due_date?->isPast() ?? false)) ? 'OVERDUE' : 'UNPAID');
             $filteredPayments = $query->get();
             $statusCounts = [
                 'ALL' => $filteredPayments->count(),
@@ -455,7 +455,7 @@ class AdministratorController extends Controller
 
             $rentalStatus = fn (Payment $payment) => $payment->status === 'PAID'
                 ? 'PAID'
-                : (($payment->status === 'OVERDUE' || $payment->due_date->isPast()) ? 'OVERDUE' : 'UNPAID');
+                : (($payment->status === 'OVERDUE' || ($payment->due_date?->isPast() ?? false)) ? 'OVERDUE' : 'UNPAID');
             $filteredPayments = $query->get();
             $statusCounts = [
                 'ALL' => $filteredPayments->count(),

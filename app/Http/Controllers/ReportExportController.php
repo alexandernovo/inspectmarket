@@ -63,8 +63,8 @@ class ReportExportController extends Controller
                     $row->reference_number,
                     $row->tenant?->full_name,
                     $row->amount,
-                    $row->period_month->format('Y-m'),
-                    $row->due_date->toDateString(),
+                    $row->period_month?->format('Y-m') ?? '-',
+                    $row->due_date?->toDateString() ?? '-',
                     $row->paid_at?->toDateTimeString(),
                     $row->status,
                 ]),
@@ -119,6 +119,7 @@ class ReportExportController extends Controller
         $month = $request->date('month')?->startOfMonth();
         $section = strtoupper($request->string('section')->toString());
         $scope = strtolower($request->string('scope')->toString());
+        $livestock = strtoupper($request->string('livestock')->toString());
         $treasurerListReport = ($user->isRole(User::ROLE_TREASURER) || $user->isRole(User::ROLE_ADMINISTRATOR)) && $scope === 'treasurer';
 
         return match ($report) {
@@ -147,25 +148,50 @@ class ReportExportController extends Controller
                 ]),
             ],
             'inspection' => [
-                'Slaughtered Livestock Inspection Report',
-                ['Inspection No.', 'Owner', 'Address', 'Type', 'Date of Inspection', 'Inspection Result', 'Status'],
-                tap(LivestockInspection::with(['tenant', 'inspector']), function ($query) use ($user, $month) {
+                ($livestock ?: 'Livestock').' Slaughtered Inspected Report',
+                $livestock === 'POULTRY'
+                    ? ['No.', 'Owner', 'Address', 'Type of Poultry', 'Number of Slaughtered', 'Inspection Result', 'Date and Time of Inspection']
+                    : ['No.', 'Owner', 'Address', 'Age', 'Weight', 'Number of Slaughtered', 'Inspection Result', 'Date and Time of Inspection'],
+                tap(LivestockInspection::with(['tenant', 'inspector']), function ($query) use ($user, $month, $livestock, $scope) {
                     abort_unless($user->isRole(User::ROLE_ADMINISTRATOR) || $user->isRole(User::ROLE_INSPECTOR), 403);
-                    if ($user->isRole(User::ROLE_INSPECTOR)) {
+                    if ($user->isRole(User::ROLE_INSPECTOR) || ($user->isRole(User::ROLE_ADMINISTRATOR) && $scope === 'inspector')) {
                         $query->where('status', 'COMPLETED');
                     }
                     if ($month) {
                         $query->whereBetween('scheduled_at', [$month, $month->copy()->endOfMonth()]);
                     }
-                })->latest('scheduled_at')->get()->map(fn ($row) => [
-                    $row->request_number,
-                    $row->owner_name,
-                    $row->address,
-                    $row->livestock_type,
-                    $row->scheduled_at->toDateTimeString(),
-                    $row->inspection_result ?: 'Pending Inspection',
-                    $row->status,
-                ]),
+                    if ($livestock) {
+                        $query->where('livestock_type', $livestock);
+                    }
+                })->latest('scheduled_at')->get()->values()->map(function ($row, $index) use ($livestock) {
+                    $result = match ($row->inspection_result) {
+                        'PASSED' => 'Passed with Human Consumption',
+                        'CONDEMNED' => 'Condemned',
+                        'REINSPECTION' => 'For Further Examination',
+                        default => '-',
+                    };
+
+                    return $livestock === 'POULTRY'
+                        ? [
+                            $index + 1,
+                            $row->owner_name,
+                            $row->address,
+                            $row->breed ?: 'Chicken',
+                            $row->animal_count,
+                            $result,
+                            $row->scheduled_at?->toDateTimeString() ?? '-',
+                        ]
+                        : [
+                            $index + 1,
+                            $row->owner_name,
+                            $row->address,
+                            $row->animal_age ?: '-',
+                            $row->live_weight !== null ? number_format((float) $row->live_weight, 2).' kg' : '-',
+                            $row->animal_count,
+                            $result,
+                            $row->scheduled_at?->toDateTimeString() ?? '-',
+                        ];
+                }),
             ],
             'stall-rental' => [
                 $treasurerListReport ? 'List of Tenants Report' : 'Stall Rental Collection Report',
@@ -219,7 +245,7 @@ class ReportExportController extends Controller
                         str($stall?->section ?? $application?->preferred_section ?? 'Unassigned')->title().' Section',
                         $stall?->stall_number ?? $application?->preferred_stall_number ?? 'Unassigned',
                         number_format((float) $row->amount, 2),
-                        ($row->paid_at ?? $row->due_date)->toDateString(),
+                        ($row->paid_at ?? $row->due_date)?->toDateString() ?? '-',
                         $row->status,
                         (float) $row->shortage_amount > 0 ? number_format((float) $row->shortage_amount, 2) : 'None',
                     ];

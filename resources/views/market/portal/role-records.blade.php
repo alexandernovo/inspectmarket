@@ -113,7 +113,7 @@
                             <thead><tr><th>NO.</th><th>REFERENCE</th><th>TENANT</th><th>PERIOD</th><th>AMOUNT</th><th>DUE DATE</th><th>STATUS</th><th>ACTION</th></tr></thead>
                             <tbody>
                                 @forelse ($rows as $row)
-                                    <tr><td>{{ $loop->iteration }}</td><td>{{ $row->reference_number }}</td><td>{{ $row->tenant?->full_name }}</td><td>{{ $row->period_month->format('F Y') }}</td><td>P{{ number_format($row->amount, 2) }}</td><td>{{ $row->due_date->format('M d, Y') }}</td><td><span class="status status-{{ strtolower($row->status) }}">{{ str($row->status)->title() }}</span></td><td><a class="table-action" href="{{ route('payments.receipt', $row) }}"><i class="bi bi-eye-fill"></i></a></td></tr>
+                                    <tr><td>{{ $loop->iteration }}</td><td>{{ $row->reference_number }}</td><td>{{ $row->tenant?->full_name }}</td><td>{{ $row->period_month?->format('F Y') ?? '-' }}</td><td>P{{ number_format($row->amount, 2) }}</td><td>{{ $row->due_date?->format('M d, Y') ?? '-' }}</td><td><span class="status status-{{ strtolower($row->status) }}">{{ str($row->status)->title() }}</span></td><td><a class="table-action" href="{{ route('payments.receipt', $row) }}"><i class="bi bi-eye-fill"></i></a></td></tr>
                                 @empty
                                     <tr><td colspan="8" class="empty-state">No records found.</td></tr>
                                 @endforelse

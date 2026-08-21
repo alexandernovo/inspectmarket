@@ -99,12 +99,12 @@
                     <tbody>
                         @forelse ($payments as $payment)
                             <tr>
-                                <td>{{ $payment->period_month->format('Y') }}</td>
-                                <td>{{ $payment->period_month->format('F') }}</td>
+                                <td>{{ $payment->period_month?->format('Y') ?? '-' }}</td>
+                                <td>{{ $payment->period_month?->format('F') ?? '-' }}</td>
                                 <td>P{{ number_format($payment->amount, 2) }}</td>
                                 <td><span class="status status-{{ strtolower($payment->status) }}">{{ $payment->status }}</span></td>
                                 <td>{{ $payment->paid_at?->format('F d, Y') ?? '-' }}</td>
-                                <td>{{ $payment->due_date->format('F d, Y') }}</td>
+                                <td>{{ $payment->due_date?->format('F d, Y') ?? '-' }}</td>
                                 <td>{{ $payment->shortage_amount > 0 ? 'P'.number_format($payment->shortage_amount, 2) : 'None' }}</td>
                                 <td>
                                     <div class="inline-actions">
@@ -160,9 +160,9 @@
                             <tr>
                                 <td>{{ $payment->reference_number }}</td>
                                 <td>{{ $payment->tenant?->full_name ?? 'Tenant' }}</td>
-                                <td>{{ $payment->period_month->format('F Y') }}</td>
+                                <td>{{ $payment->period_month?->format('F Y') ?? '-' }}</td>
                                 <td>P{{ number_format($payment->amount, 2) }}</td>
-                                <td>{{ $payment->due_date->format('M d, Y') }}</td>
+                                <td>{{ $payment->due_date?->format('M d, Y') ?? '-' }}</td>
                                 <td><span class="status status-{{ strtolower($payment->status) }}">{{ $payment->status }}</span></td>
                                 <td>
                                     @if ($payment->receipt_path)

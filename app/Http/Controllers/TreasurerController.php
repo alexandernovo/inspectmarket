@@ -226,7 +226,7 @@ class TreasurerController extends Controller
             return 'PAID';
         }
 
-        if ($payment->status === 'OVERDUE' || $payment->due_date->isPast()) {
+        if ($payment->status === 'OVERDUE' || ($payment->due_date?->isPast() ?? false)) {
             return 'OVERDUE';
         }
 

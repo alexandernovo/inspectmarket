@@ -16,7 +16,7 @@
             <dt>Reference</dt><dd>{{ $payment->reference_number }}</dd>
             <dt>O.R. Number</dt><dd>{{ $payment->or_number ?? 'Pending assignment' }}</dd>
             <dt>Tenant</dt><dd>{{ $payment->tenant?->full_name }}</dd>
-            <dt>Period</dt><dd>{{ $payment->period_month->format('F Y') }}</dd>
+            <dt>Period</dt><dd>{{ $payment->period_month?->format('F Y') ?? '-' }}</dd>
             <dt>Amount</dt><dd>₱{{ number_format($payment->amount, 2) }}</dd>
             <dt>Payment method</dt><dd>{{ $payment->payment_method }}</dd>
             <dt>Date paid</dt><dd>{{ $payment->paid_at?->format('F d, Y g:i A') ?? 'Not yet paid' }}</dd>
