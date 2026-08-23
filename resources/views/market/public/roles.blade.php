@@ -17,7 +17,7 @@
     @endphp
 
     @include('market.public.header', ['active' => '', 'announcementCount' => $announcementCount])
-    <main class="role-selection-page">
+    <main @class(['role-selection-page', 'role-selection-register' => $mode === 'register'])>
         <div class="role-selection-heading">
             <img src="{{ asset('assets/einspect/HOMEPAGE/Logo.png') }}" alt="Municipality of Pandan seal">
             <h1>E-INSPECT:</h1>
@@ -66,7 +66,9 @@
                             <a class="forgot-link" href="{{ route('account.forgot') }}">Forgot Password?</a>
                             <button type="submit" class="button button-primary">Login</button>
                         </form>
-                        <p class="account-prompt">Don't have an account? <a href="{{ route('account.register', ['role' => $slug]) }}">Sign in</a></p>
+                        @if ($slug !== 'administrator')
+                            <p class="account-prompt">Don't have an account? <a href="{{ route('public.roles', 'register') }}#register-{{ $slug }}">Sign in</a></p>
+                        @endif
                     </div>
                 </section>
             @else
@@ -77,7 +79,7 @@
                         <div class="account-card-role">
                             <img src="{{ asset('assets/einspect/USERS/'.$image) }}" alt="{{ $label }}">
                             <h1>SIGN IN</h1>
-                            <p>Register your phone number to create your {{ strtolower($label) }} account</p>
+                            <p data-register-instruction>Register your phone number to create your {{ strtolower($label) }} account</p>
                         </div>
                         <form action="{{ route('account.register.code', ['role' => $slug]) }}" method="POST" class="js-home-register-form" data-role="{{ $slug }}" data-verify-url="{{ route('account.verify') }}" data-create-url="{{ route('account.store') }}">
                             @csrf
@@ -97,8 +99,8 @@
                                 <label>First Name<span><i class="bi bi-person-fill"></i><input type="text" name="firstname" placeholder="Enter first name"></span></label>
                                 <label>Last Name<span><i class="bi bi-person-fill"></i><input type="text" name="lastname" placeholder="Enter last name"></span></label>
                                 <label>Username<span><i class="bi bi-person-fill"></i><input type="text" name="username" placeholder="Enter username"></span></label>
-                                <label>Password<span><i class="bi bi-lock-fill"></i><input type="password" name="password" placeholder="Enter password" required></span></label>
-                                <label>Confirm Password<span><i class="bi bi-lock-fill"></i><input type="password" name="password_confirmation" placeholder="Confirm password" required></span></label>
+                                <label>Password<span><i class="bi bi-lock-fill"></i><input type="password" name="password" placeholder="Enter password" required><button type="button" class="password-toggle" aria-label="Show password"><i class="bi bi-eye-fill"></i></button></span></label>
+                                <label>Confirm Password<span><i class="bi bi-lock-fill"></i><input type="password" name="password_confirmation" placeholder="Confirm password" required><button type="button" class="password-toggle" aria-label="Show password"><i class="bi bi-eye-fill"></i></button></span></label>
                                 <button class="button button-primary">Create Account</button>
                             </div>
                         </form>
@@ -112,11 +114,12 @@
 
     <script src="{{ asset('assets/js/sweetalert2.js') }}"></script>
     <script>
-        document.querySelectorAll('.password-toggle').forEach((toggle) => {
-            toggle.addEventListener('click', () => {
+        document.addEventListener('click', (event) => {
+            const toggle = event.target.closest('.password-toggle');
+            if (toggle) {
                 const input = toggle.closest('span')?.querySelector('input');
                 if (input) input.type = input.type === 'password' ? 'text' : 'password';
-            });
+            }
         });
 
         const closeRoleModal = () => {
@@ -135,10 +138,21 @@
         });
 
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
+        const stepText = {
+            phone: 'Register your phone number to create your account',
+            verify: 'Enter the verification code sent to your phone',
+            password: 'Create your username and password'
+        };
         const showRegisterStep = (form, step) => {
             form.querySelectorAll('[data-register-step]').forEach((pane) => {
-                pane.hidden = pane.dataset.registerStep !== step;
+                const active = pane.dataset.registerStep === step;
+                pane.hidden = !active;
+                pane.querySelectorAll('input, select, textarea, button').forEach((field) => {
+                    field.disabled = !active;
+                });
             });
+            const instruction = form.closest('.role-modal-card')?.querySelector('[data-register-instruction]');
+            if (instruction) instruction.textContent = stepText[step] || stepText.phone;
             form.dataset.step = step;
         };
         const formMessage = (xhr) => {
@@ -201,6 +215,7 @@
                         showRegisterStep(form, 'verify');
                         const debug = payload.debug_code ? ` Local code: ${payload.debug_code}` : '';
                         await swalPopup('Verification Sent', `${payload.message}${debug}`);
+                        form.querySelector('.otp-inputs input')?.focus();
                     } else if (step === 'verify') {
                         await postRegisterForm(form.dataset.verifyUrl, form);
                         showRegisterStep(form, 'password');

@@ -14,6 +14,7 @@ use App\Models\User;
 use App\Models\VerificationCode;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 
@@ -492,6 +493,54 @@ it('completes tenant phone verification and account registration', function () {
 
     $this->assertAuthenticated();
     expect(User::where('username', 'newtenant')->whereNotNull('phone_verified_at')->exists())->toBeTrue();
+});
+
+it('runs homepage signup by ajax while sms is disabled for tests', function () {
+    config([
+        'services.twilio.enabled' => false,
+        'services.twilio.sid' => 'AC_test_sid',
+        'services.twilio.auth_token' => 'test-token',
+        'services.twilio.from' => '+15550001111',
+    ]);
+
+    Http::fake();
+
+    $this->postJson(route('account.register.code', ['role' => 'tenant']), [
+        'phone_num' => '09990002222',
+    ])
+        ->assertOk()
+        ->assertJsonPath('message', 'Verification code sent.')
+        ->assertJsonPath('phone', '09990002222')
+        ->assertJsonStructure(['debug_code']);
+
+    Http::assertNothingSent();
+
+    $code = VerificationCode::where('phone_num', '09990002222')
+        ->where('purpose', 'REGISTER')
+        ->latest()
+        ->firstOrFail()
+        ->code;
+
+    $this->postJson(route('account.verify'), ['code' => $code])
+        ->assertOk()
+        ->assertJsonPath('message', 'Phone number verified.')
+        ->assertJsonPath('next', 'password');
+
+    $this->postJson(route('account.store'), [
+        'firstname' => 'Ajax',
+        'lastname' => 'Tenant',
+        'username' => 'ajaxtenant',
+        'email' => 'ajaxtenant@example.test',
+        'address' => 'Pandan, Antique',
+        'password' => 'password123',
+        'password_confirmation' => 'password123',
+    ])
+        ->assertOk()
+        ->assertJsonPath('message', 'Your tenant account is ready.')
+        ->assertJsonPath('redirect', route('tenant.dashboard'));
+
+    $this->assertAuthenticated();
+    expect(User::where('username', 'ajaxtenant')->whereNotNull('phone_verified_at')->exists())->toBeTrue();
 });
 
 it('resets a password with a verified phone code', function () {

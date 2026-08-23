@@ -4,15 +4,18 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\VerificationCode;
+use App\Services\Sms\TwilioSms;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
+use Throwable;
 
 class AccountController extends Controller
 {
     public function register(Request $request, string $role)
     {
         $role = $this->validRole($role);
+        abort_if($role === User::ROLE_ADMINISTRATOR, 404);
 
         return view('market.auth.account', [
             'mode' => 'register',
@@ -21,20 +24,37 @@ class AccountController extends Controller
         ]);
     }
 
-    public function sendRegistrationCode(Request $request, string $role)
+    public function sendRegistrationCode(Request $request, string $role, TwilioSms $sms)
     {
         $role = $this->validRole($role);
+        abort_if($role === User::ROLE_ADMINISTRATOR, 404);
+
         $data = $request->validate([
             'phone_num' => ['required', 'string', 'max:30', 'unique:users,phone_num'],
         ]);
 
         $code = $this->issueCode($data['phone_num'], 'REGISTER');
+
+        try {
+            $sms->send($data['phone_num'], "Your E-Inspect registration code is {$code}. It expires in 10 minutes.");
+        } catch (Throwable $exception) {
+            return $this->smsFailure($request, $exception->getMessage());
+        }
+
         $request->session()->put([
             'account.phone' => $data['phone_num'],
             'account.role' => $role,
             'account.purpose' => 'REGISTER',
             'account.debug_code' => $code,
         ]);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => 'Verification code sent.',
+                'phone' => $data['phone_num'],
+                'debug_code' => config('app.debug') ? $code : null,
+            ]);
+        }
 
         return redirect()->route('account.verify.form')
             ->with('success', 'Verification code sent. In local development, use the code shown below.');
@@ -72,11 +92,25 @@ class AccountController extends Controller
             ->first();
 
         if (! $verification) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'The verification code is invalid or expired.',
+                    'errors' => ['code' => ['The verification code is invalid or expired.']],
+                ], 422);
+            }
+
             return back()->withErrors(['code' => 'The verification code is invalid or expired.']);
         }
 
         $verification->update(['used_at' => now()]);
         $request->session()->put('account.verified', true);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => 'Phone number verified.',
+                'next' => $purpose === 'REGISTER' ? 'password' : 'reset-password',
+            ]);
+        }
 
         return redirect()->route(
             $purpose === 'REGISTER' ? 'account.password.form' : 'account.reset.form'
@@ -130,7 +164,21 @@ class AccountController extends Controller
             Auth::login($user);
             $request->session()->regenerate();
 
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Your tenant account is ready.',
+                    'redirect' => route('tenant.dashboard'),
+                ]);
+            }
+
             return redirect()->route('tenant.dashboard')->with('success', 'Your tenant account is ready.');
+        }
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => 'Account created. An administrator must activate this staff account.',
+                'redirect' => route('portal.login', ['role' => $user->role_slug]),
+            ]);
         }
 
         return redirect()->route('portal.login', ['role' => strtolower($role)])
@@ -146,18 +194,33 @@ class AccountController extends Controller
         ]);
     }
 
-    public function sendResetCode(Request $request)
+    public function sendResetCode(Request $request, TwilioSms $sms)
     {
         $data = $request->validate([
             'phone_num' => ['required', 'string', 'exists:users,phone_num'],
         ]);
 
         $code = $this->issueCode($data['phone_num'], 'RESET');
+
+        try {
+            $sms->send($data['phone_num'], "Your E-Inspect password reset code is {$code}. It expires in 10 minutes.");
+        } catch (Throwable $exception) {
+            return $this->smsFailure($request, $exception->getMessage());
+        }
+
         $request->session()->put([
             'account.phone' => $data['phone_num'],
             'account.purpose' => 'RESET',
             'account.debug_code' => $code,
         ]);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => 'Password reset code sent.',
+                'phone' => $data['phone_num'],
+                'debug_code' => config('app.debug') ? $code : null,
+            ]);
+        }
 
         return redirect()->route('account.verify.form')
             ->with('success', 'Password reset code sent.');
@@ -187,6 +250,13 @@ class AccountController extends Controller
         $user->update(['password' => $data['password']]);
         $request->session()->forget('account');
 
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => 'Password reset successfully.',
+                'redirect' => route('portal.login', ['role' => $user->role_slug]),
+            ]);
+        }
+
         return redirect()->route('portal.login', ['role' => $user->role_slug])
             ->with('success', 'Password reset successfully.');
     }
@@ -208,6 +278,18 @@ class AccountController extends Controller
         ]);
 
         return $code;
+    }
+
+    private function smsFailure(Request $request, string $message)
+    {
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => $message,
+                'errors' => ['phone_num' => [$message]],
+            ], 422);
+        }
+
+        return back()->withErrors(['phone_num' => $message])->onlyInput('phone_num');
     }
 
     private function validRole(string $role): string
