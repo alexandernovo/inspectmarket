@@ -6,12 +6,13 @@
         $selectedCalendarYear = (int) request('collection_year', now()->year);
         $calendarMonth = \Carbon\Carbon::create($selectedCalendarYear, $selectedCalendarMonth, 1)->startOfMonth();
         $collectedDays = $collections->filter(fn ($item) => $item->collection_date->isSameMonth($calendarMonth))->pluck('collection_date')->map->day->all();
+        $cashTicketAssetModule = 'CLERK';
         $sections = [
-            'FISH' => ['label' => 'Fish Section', 'image' => 'Fish Section.png', 'collector_image' => 'I-Clerk.png'],
-            'POULTRY' => ['label' => 'Poultry Section', 'image' => 'Poultry Section.png', 'collector_image' => '3-Collector Clerk.png'],
-            'PORK' => ['label' => 'Pork Section', 'image' => 'Pork Section.png', 'collector_image' => 'C-Clerk.png'],
-            'BEEF' => ['label' => 'Beef Section', 'image' => 'Beef Section.png', 'collector_image' => '3-Collector Clerk.png'],
-            'MIXED' => ['label' => 'Mixed Section', 'image' => 'Mixed Section.png', 'collector_image' => 'C-Clerk.png'],
+            'FISH' => ['label' => 'Fish Section', 'image' => 'Fish Section.png', 'collector_image' => 1],
+            'POULTRY' => ['label' => 'Poultry Section', 'image' => 'Poultry Section.png', 'collector_image' => 2],
+            'PORK' => ['label' => 'Pork Section', 'image' => 'Pork Section.png', 'collector_image' => 3],
+            'BEEF' => ['label' => 'Beef Section', 'image' => 'Beef Section.png', 'collector_image' => 4],
+            'MIXED' => ['label' => 'Mixed Section', 'image' => 'Mixed Section.png', 'collector_image' => 5],
         ];
         $workflowAssignments = ($assignments ?? collect())->filter(fn ($item) => !str_starts_with($item->assignment_number ?? '', 'CTA-DEMO-')
             && $item->assigned_date
@@ -79,8 +80,8 @@
         $sectionOptions = collect($sections)->map(fn ($details, $section) => [
             'key' => $section,
             'label' => $details['label'],
-            'image' => asset('assets/einspect/HOMEPAGE/'.$details['image']),
-            'collector_image' => asset('assets/einspect/USERS/'.$details['collector_image']),
+            'image' => market_section_image($section, $cashTicketAssetModule),
+            'collector_image' => market_collector_image($details['collector_image'], $cashTicketAssetModule),
         ])->values();
         $step3Done = $assignedTickets->where('status', 'COMPLETED')->isNotEmpty() || $workflowCollections->whereIn('status', ['REPORTED', 'SUBMITTED'])->isNotEmpty();
         $workflowSteps = [
@@ -250,13 +251,13 @@
                     @foreach ($sections as $section => $details)
                         @php $rowIndex = $assignmentInputIndex++; @endphp
                         <tr data-section-row="{{ $section }}">
-                            <td><img class="section-image" src="{{ asset('assets/einspect/HOMEPAGE/'.$details['image']) }}" alt=""></td>
+                            <td><img class="section-image" src="{{ market_section_image($section, $cashTicketAssetModule) }}" alt=""></td>
                             <td>
                                 <select name="assignments[{{ $rowIndex }}][stall_section]" required>
                                     <option value="{{ $section }}">{{ $details['label'] }}</option>
                                 </select>
                             </td>
-                            <td><img class="collector-image" src="{{ asset('assets/einspect/USERS/'.$details['collector_image']) }}" alt=""></td>
+                            <td><img class="collector-image" src="{{ market_collector_image($details['collector_image'], $cashTicketAssetModule) }}" alt=""></td>
                             <td><input type="number" class="collector-count" value="0" min="0" data-collector-count readonly></td>
                             <td>
                                 <select name="assignments[{{ $rowIndex }}][collector_id][]" class="cash-collector-select" data-cash-collector-select multiple>
@@ -313,9 +314,9 @@
                                 $rowQuantity = $sectionAssignments->sum('ticket_quantity') ?: 20;
                             @endphp
                             <tr>
-                                <td><img class="section-image" src="{{ asset('assets/einspect/HOMEPAGE/'.$details['image']) }}" alt=""></td>
+                                <td><img class="section-image" src="{{ market_section_image($section, $cashTicketAssetModule) }}" alt=""></td>
                                 <td>{{ $details['label'] }}</td>
-                                <td><img class="collector-image" src="{{ asset('assets/einspect/USERS/'.$details['collector_image']) }}" alt=""></td>
+                                <td><img class="collector-image" src="{{ market_collector_image($details['collector_image'], $cashTicketAssetModule) }}" alt=""></td>
                                 <td>{{ $collectorNames->count() }}</td>
                                 <td>{{ $collectorNames->isNotEmpty() ? $collectorNames->join(', ', ' & ') : 'No collector assigned' }}</td>
                                 <td><i class="bi bi-ticket-perforated-fill cash-ticket-sample"></i></td>
@@ -389,9 +390,9 @@
                             $rowQuantity = $sectionAssignments->sum('ticket_quantity') ?: 20;
                         @endphp
                         <tr data-date-section="{{ $section }}">
-                            <td><img class="section-image" src="{{ asset('assets/einspect/HOMEPAGE/'.$details['image']) }}" alt=""></td>
+                            <td><img class="section-image" src="{{ market_section_image($section, $cashTicketAssetModule) }}" alt=""></td>
                             <td>{{ $details['label'] }}</td>
-                            <td><img class="collector-image" src="{{ asset('assets/einspect/USERS/'.$details['collector_image']) }}" alt=""></td>
+                            <td><img class="collector-image" src="{{ market_collector_image($details['collector_image'], $cashTicketAssetModule) }}" alt=""></td>
                             <td>{{ $collectorNames->count() }}</td>
                             <td>{{ $collectorNames->isNotEmpty() ? $collectorNames->join(', ', ' & ') : 'No collector assigned' }}</td>
                             <td><i class="bi bi-ticket-perforated-fill cash-ticket-sample"></i></td>

@@ -45,3 +45,39 @@ if (!function_exists('market_notification_avatar')) {
             : asset('assets/einspect/USERS/'.$avatar);
     }
 }
+
+if (!function_exists('market_einspect_asset')) {
+    function market_einspect_asset(string $path): string
+    {
+        return asset('assets/einspect/'.$path);
+    }
+}
+
+if (!function_exists('market_section_image')) {
+    function market_section_image(?string $section, string $module = 'HOMEPAGE'): string
+    {
+        $sectionName = str((string) $section)->trim()->title()->toString();
+        if ($sectionName === '') {
+            $sectionName = 'Fish';
+        }
+
+        $filename = $sectionName.' Section.png';
+        $candidate = public_path('assets/einspect/'.$module.'/IMAGES/'.$filename);
+
+        return file_exists($candidate)
+            ? asset('assets/einspect/'.$module.'/IMAGES/'.$filename)
+            : asset('assets/einspect/HOMEPAGE/'.$filename);
+    }
+}
+
+if (!function_exists('market_collector_image')) {
+    function market_collector_image(int|string|null $number = 1, string $module = 'CLERK'): string
+    {
+        $collectorNumber = max(1, min(8, (int) $number));
+        $candidate = public_path("assets/einspect/{$module}/IMAGES/Collector {$collectorNumber}.png");
+
+        return file_exists($candidate)
+            ? asset("assets/einspect/{$module}/IMAGES/Collector {$collectorNumber}.png")
+            : asset('assets/einspect/USERS/3-Collector Clerk.png');
+    }
+}

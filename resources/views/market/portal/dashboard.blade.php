@@ -13,10 +13,18 @@
 
             <div class="administrator-dashboard-stats">
                 @foreach ($stats as $stat)
+                    @php $statImageClass = isset($stat['image']) ? str($stat['image'])->afterLast('/')->beforeLast('.')->slug() : null; @endphp
                     <article class="administrator-dashboard-stat {{ $stat['tone'] }}">
-                        <div class="administrator-stat-icon"><i class="bi {{ $stat['icon'] }}"></i></div>
+                        <div class="administrator-stat-icon {{ $statImageClass ? 'administrator-stat-icon-'.$statImageClass : '' }}">
+                            @if (!empty($stat['image']))
+                                <img src="{{ asset('assets/einspect/'.$stat['image']) }}" alt="">
+                            @else
+                                <i class="bi {{ $stat['icon'] }}"></i>
+                            @endif
+                        </div>
                         <div>
                             <span>{{ $stat['label'] }}</span>
+                            @if (!empty($stat['sublabel']))<small>( {{ $stat['sublabel'] }} )</small>@endif
                             <strong>{{ $stat['value'] }}</strong>
                         </div>
                     </article>
@@ -145,8 +153,16 @@
 
             <div class="clerk-dashboard-stats">
                 @foreach ($stats as $stat)
-                    <article class="clerk-dashboard-stat {{ $stat['tone'] }}">
-                        <div class="clerk-stat-visual">
+                    @php
+                        $statImageClass = str($stat['image'])->afterLast('/')->beforeLast('.')->slug();
+                        $statDialog = match ((string) $statImageClass) {
+                            'unpaid-tenant' => 'clerkUnpaidTenantsDialog',
+                            'paid-tenant' => 'clerkPaidTenantsDialog',
+                            default => null,
+                        };
+                    @endphp
+                    <article class="clerk-dashboard-stat {{ $stat['tone'] }} {{ $statDialog ? 'clerk-dashboard-stat-clickable' : '' }}" @if($statDialog) role="button" tabindex="0" data-open-dialog="{{ $statDialog }}" @endif>
+                        <div class="clerk-stat-visual clerk-stat-visual-{{ $statImageClass }}">
                             <img src="{{ asset('assets/einspect/'.$stat['image']) }}" alt="">
                         </div>
                         <div>
@@ -241,6 +257,70 @@
                     @endforeach
                 </div>
             </section>
+
+            @php
+                $clerkTenantDialogs = [
+                    [
+                        'id' => 'clerkUnpaidTenantsDialog',
+                        'tone' => 'red',
+                        'title' => 'STALL RENTAL',
+                        'subtitle' => 'UNPAID TENANTS',
+                        'date_label' => 'DUE DATE',
+                        'rows' => $unpaidTenantPayments ?? collect(),
+                    ],
+                    [
+                        'id' => 'clerkPaidTenantsDialog',
+                        'tone' => 'green',
+                        'title' => 'STALL RENTAL',
+                        'subtitle' => 'PAID TENANTS',
+                        'date_label' => 'DATE OF PAYMENT',
+                        'rows' => $paidTenantPayments ?? collect(),
+                    ],
+                ];
+            @endphp
+            @foreach ($clerkTenantDialogs as $dialog)
+                <dialog id="{{ $dialog['id'] }}" class="clerk-stat-dialog clerk-stat-dialog-{{ $dialog['tone'] }}">
+                    <section>
+                        <header>
+                            <i class="bi bi-person-fill"></i>
+                            <div><h2>{{ $dialog['title'] }}</h2><p>{{ $dialog['subtitle'] }}</p></div>
+                            <button type="button" data-close-dialog aria-label="Close"><i class="bi bi-x-circle-fill"></i></button>
+                        </header>
+                        <div class="table-wrap">
+                            <table class="clerk-stat-dialog-table">
+                                <thead>
+                                    <tr><th>NO.</th><th>TENANT</th><th>STALL NUMBER</th><th>STALL SECTION</th><th>STALL FEE</th><th>PAYMENT STATUS</th><th>{{ $dialog['date_label'] }}</th><th>SHORT CHARGE/S</th></tr>
+                                </thead>
+                                <tbody>
+                                    @forelse ($dialog['rows'] as $payment)
+                                        @php
+                                            $displayStatus = $payment->status === 'PAID'
+                                                ? 'PAID'
+                                                : (($payment->due_date && $payment->due_date->isPast()) ? 'OVERDUE' : 'UNPAID');
+                                            $displayDate = $payment->status === 'PAID'
+                                                ? $payment->paid_at
+                                                : $payment->due_date;
+                                        @endphp
+                                        <tr>
+                                            <td>{{ $loop->iteration }}</td>
+                                            <td>{{ $payment->tenant?->full_name ?? 'Tenant' }}</td>
+                                            <td>{{ $payment->stallApplication?->stall?->stall_number ?? 'Unassigned' }}</td>
+                                            <td>{{ str($payment->stallApplication?->stall?->section ?? $payment->stallApplication?->preferred_section ?? 'Unassigned')->title() }} Section</td>
+                                            <td>P{{ number_format($payment->amount, 2) }}</td>
+                                            <td><span class="status status-{{ strtolower($displayStatus) }}">{{ str($displayStatus)->title() }}</span></td>
+                                            <td>{{ $displayDate?->format('F d, Y') ?? '-' }}</td>
+                                            <td>{{ $payment->shortage_amount > 0 ? 'P'.number_format($payment->shortage_amount, 2) : 'None' }}</td>
+                                        </tr>
+                                    @empty
+                                        <tr><td colspan="8" class="empty-state">No {{ strtolower($dialog['subtitle']) }} records found.</td></tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                        <footer>Showing 1 to {{ min(5, $dialog['rows']->count()) }} of {{ $dialog['rows']->count() }} entries <span>&lt; <b>1</b> &gt;</span></footer>
+                    </section>
+                </dialog>
+            @endforeach
         </section>
     @elseif (auth()->user()->isRole('TREASURER'))
         <section class="treasurer-dashboard">
@@ -254,9 +334,21 @@
 
             <div class="treasurer-dashboard-stats">
                 @foreach ($stats as $stat)
-                    <article class="treasurer-dashboard-stat {{ $stat['tone'] }}">
-                        <div class="treasurer-stat-visual">
-                            <i class="bi {{ $stat['icon'] }}"></i>
+                    @php
+                        $statImageClass = isset($stat['image']) ? str($stat['image'])->afterLast('/')->beforeLast('.')->slug() : null;
+                        $statDialog = match ((string) $statImageClass) {
+                            'unpaid-tenant' => 'treasurerUnpaidTenantsDialog',
+                            'paid-tenant' => 'treasurerPaidTenantsDialog',
+                            default => null,
+                        };
+                    @endphp
+                    <article class="treasurer-dashboard-stat {{ $stat['tone'] }} {{ $statDialog ? 'treasurer-dashboard-stat-clickable' : '' }}" @if($statDialog) role="button" tabindex="0" data-open-dialog="{{ $statDialog }}" @endif>
+                        <div class="treasurer-stat-visual {{ $statImageClass ? 'treasurer-stat-visual-'.$statImageClass : '' }}">
+                            @if (!empty($stat['image']))
+                                <img src="{{ asset('assets/einspect/'.$stat['image']) }}" alt="">
+                            @else
+                                <i class="bi {{ $stat['icon'] }}"></i>
+                            @endif
                         </div>
                         <div>
                             <span>{{ $stat['label'] }}</span>
@@ -317,6 +409,70 @@
                     @endforeach
                 </div>
             </section>
+
+            @php
+                $treasurerTenantDialogs = [
+                    [
+                        'id' => 'treasurerUnpaidTenantsDialog',
+                        'tone' => 'red',
+                        'title' => 'STALL RENTAL',
+                        'subtitle' => 'UNPAID TENANTS',
+                        'date_label' => 'DUE DATE',
+                        'rows' => $unpaidTenantPayments ?? collect(),
+                    ],
+                    [
+                        'id' => 'treasurerPaidTenantsDialog',
+                        'tone' => 'green',
+                        'title' => 'STALL RENTAL',
+                        'subtitle' => 'PAID TENANTS',
+                        'date_label' => 'DATE OF PAYMENT',
+                        'rows' => $paidTenantPayments ?? collect(),
+                    ],
+                ];
+            @endphp
+            @foreach ($treasurerTenantDialogs as $dialog)
+                <dialog id="{{ $dialog['id'] }}" class="clerk-stat-dialog clerk-stat-dialog-{{ $dialog['tone'] }}">
+                    <section>
+                        <header>
+                            <i class="bi bi-person-fill"></i>
+                            <div><h2>{{ $dialog['title'] }}</h2><p>{{ $dialog['subtitle'] }}</p></div>
+                            <button type="button" data-close-dialog aria-label="Close"><i class="bi bi-x-circle-fill"></i></button>
+                        </header>
+                        <div class="table-wrap">
+                            <table class="clerk-stat-dialog-table">
+                                <thead>
+                                    <tr><th>NO.</th><th>TENANT</th><th>STALL NUMBER</th><th>STALL SECTION</th><th>STALL FEE</th><th>PAYMENT STATUS</th><th>{{ $dialog['date_label'] }}</th><th>SHORT CHARGE/S</th></tr>
+                                </thead>
+                                <tbody>
+                                    @forelse ($dialog['rows'] as $payment)
+                                        @php
+                                            $displayStatus = $payment->status === 'PAID'
+                                                ? 'PAID'
+                                                : (($payment->due_date && $payment->due_date->isPast()) ? 'OVERDUE' : 'UNPAID');
+                                            $displayDate = $payment->status === 'PAID'
+                                                ? $payment->paid_at
+                                                : $payment->due_date;
+                                        @endphp
+                                        <tr>
+                                            <td>{{ $loop->iteration }}</td>
+                                            <td>{{ $payment->tenant?->full_name ?? 'Tenant' }}</td>
+                                            <td>{{ $payment->stallApplication?->stall?->stall_number ?? 'Unassigned' }}</td>
+                                            <td>{{ str($payment->stallApplication?->stall?->section ?? $payment->stallApplication?->preferred_section ?? 'Unassigned')->title() }} Section</td>
+                                            <td>P{{ number_format($payment->amount, 2) }}</td>
+                                            <td><span class="status status-{{ strtolower($displayStatus) }}">{{ str($displayStatus)->title() }}</span></td>
+                                            <td>{{ $displayDate?->format('F d, Y') ?? '-' }}</td>
+                                            <td>{{ $payment->shortage_amount > 0 ? 'P'.number_format($payment->shortage_amount, 2) : 'None' }}</td>
+                                        </tr>
+                                    @empty
+                                        <tr><td colspan="8" class="empty-state">No {{ strtolower($dialog['subtitle']) }} records found.</td></tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                        <footer>Showing 1 to {{ min(5, $dialog['rows']->count()) }} of {{ $dialog['rows']->count() }} entries <span>&lt; <b>1</b> &gt;</span></footer>
+                    </section>
+                </dialog>
+            @endforeach
         </section>
     @else
         <div class="stat-grid">

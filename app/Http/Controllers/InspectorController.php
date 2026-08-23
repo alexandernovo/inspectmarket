@@ -25,10 +25,10 @@ class InspectorController extends Controller
         return view('market.inspector.dashboard', [
             'pageTitle' => 'Inspector Dashboard',
             'stats' => [
-                ['label' => 'Total Requests', 'sublabel' => 'Slaughtered Inspection', 'value' => LivestockInspection::where('request_source', '!=', 'INSPECTOR')->count(), 'tone' => 'blue', 'icon' => 'bi-people-fill'],
-                ['label' => 'Total Inspect', 'sublabel' => 'Poultry Slaughtered', 'value' => LivestockInspection::where('livestock_type', 'POULTRY')->whereIn('status', ['APPROVED', 'COMPLETED'])->sum('animal_count'), 'tone' => 'green', 'icon' => 'bi-egg-fried'],
-                ['label' => 'Total Inspect', 'sublabel' => 'Pork Slaughtered', 'value' => LivestockInspection::where('livestock_type', 'PORK')->whereIn('status', ['APPROVED', 'COMPLETED'])->sum('animal_count'), 'tone' => 'red', 'icon' => 'bi-piggy-bank-fill'],
-                ['label' => 'Total Inspect', 'sublabel' => 'Beef Slaughtered', 'value' => LivestockInspection::where('livestock_type', 'BEEF')->whereIn('status', ['APPROVED', 'COMPLETED'])->sum('animal_count'), 'tone' => 'gold', 'icon' => 'bi-heart-pulse-fill'],
+                ['label' => 'Total Requests', 'sublabel' => 'Slaughtered Inspection', 'value' => LivestockInspection::where('request_source', '!=', 'INSPECTOR')->count(), 'tone' => 'blue', 'image' => 'Tenant.png'],
+                ['label' => 'Total Inspect', 'sublabel' => 'Poultry Slaughtered', 'value' => LivestockInspection::where('livestock_type', 'POULTRY')->whereIn('status', ['APPROVED', 'COMPLETED'])->sum('animal_count'), 'tone' => 'green', 'image' => 'Poultry Inspect .png'],
+                ['label' => 'Total Inspect', 'sublabel' => 'Pork Slaughtered', 'value' => LivestockInspection::where('livestock_type', 'PORK')->whereIn('status', ['APPROVED', 'COMPLETED'])->sum('animal_count'), 'tone' => 'red', 'image' => 'Pork Inspect.png'],
+                ['label' => 'Total Inspect', 'sublabel' => 'Beef Slaughtered', 'value' => LivestockInspection::where('livestock_type', 'BEEF')->whereIn('status', ['APPROVED', 'COMPLETED'])->sum('animal_count'), 'tone' => 'gold', 'image' => 'Beef Inspect.png'],
             ],
             'monthlyTotals' => $monthlyTotals,
             'chartYears' => LivestockInspection::query()

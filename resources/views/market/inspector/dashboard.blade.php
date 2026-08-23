@@ -22,7 +22,9 @@
         <div class="inspector-stat-grid">
             @foreach ($stats as $stat)
                 <article class="inspector-stat {{ $stat['tone'] }}">
-                    <i class="bi {{ $stat['icon'] }}"></i>
+                    <div class="inspector-stat-image">
+                        <img src="{{ asset('assets/einspect/INSPECTOR/IMAGES/'.$stat['image']) }}" alt="{{ $stat['sublabel'] }}">
+                    </div>
                     <div>
                         <span>{{ $stat['label'] }}</span>
                         <small>( {{ $stat['sublabel'] }} )</small>

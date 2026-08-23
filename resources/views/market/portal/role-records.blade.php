@@ -26,7 +26,7 @@
                 <i class="bi bi-person-badge-fill"></i>
                 <div><h1>{{ $roleTitle }}</h1><p>Dashboard | {{ str($roleRecord)->title() }}</p></div>
             </header>
-            <form class="administrator-record-card {{ $directRecordArea ? 'administrator-direct-record-card' : '' }}" method="GET" action="{{ route('administrator.records', ['role' => $roleRecord, 'area' => $directRecordArea ?? $areas[0]]) }}">
+            <form class="administrator-record-card {{ $directRecordArea ? 'administrator-direct-record-card' : '' }} {{ $roleRecord === 'clerk' ? 'administrator-clerk-record-card' : '' }}" method="GET" action="{{ route('administrator.records', ['role' => $roleRecord, 'area' => $directRecordArea ?? $areas[0]]) }}">
                 <div class="administrator-record-banner">
                     <img src="{{ asset('assets/einspect/USERS/'.$roleImage) }}" alt="">
                     <div><h2>{{ $roleTitle }} RECORDS</h2><p>{{ $roleSubtitle }}</p></div>

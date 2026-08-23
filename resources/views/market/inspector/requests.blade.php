@@ -82,7 +82,7 @@
 
             <section class="inspector-request-details">
                 <header>
-                    <i data-request-type-icon class="bi bi-egg-fried"></i>
+                    <img data-request-type-icon src="{{ asset('assets/einspect/INSPECTOR/ICONS/Poultry.png') }}" alt="Poultry">
                     <h2>REQUEST INSPECTION FORM</h2>
                     <p data-request-type-label>(Poultry Slaughtered Livestock)</p>
                 </header>
@@ -149,6 +149,11 @@
             const calendarMonth = document.querySelector('[data-inspector-calendar-month]');
             const calendarYear = document.querySelector('[data-inspector-calendar-year]');
             const calendarMonthNumber = document.querySelector('[data-inspector-calendar-month-number]');
+            const requestTypeIcons = {
+                POULTRY: "{{ asset('assets/einspect/INSPECTOR/ICONS/Poultry.png') }}",
+                PORK: "{{ asset('assets/einspect/INSPECTOR/ICONS/Pork.png') }}",
+                BEEF: "{{ asset('assets/einspect/INSPECTOR/ICONS/Beef.png') }}"
+            };
 
             const table = $('#inspectorRequestsTable').DataTable({
                 processing: true,
@@ -251,7 +256,9 @@
                 $('[data-request-email]').val(record.email || '');
                 $('[data-request-status-select]').val('');
                 $('[data-request-type-label]').text('(' + record.livestock_type.charAt(0) + record.livestock_type.slice(1).toLowerCase() + ' Slaughtered Livestock)');
-                $('[data-request-type-icon]').attr('class', 'bi ' + (record.livestock_type === 'POULTRY' ? 'bi-egg-fried' : record.livestock_type === 'PORK' ? 'bi-piggy-bank-fill' : 'bi-heart-pulse-fill'));
+                $('[data-request-type-icon]')
+                    .attr('src', requestTypeIcons[record.livestock_type] || requestTypeIcons.BEEF)
+                    .attr('alt', record.livestock_type.charAt(0) + record.livestock_type.slice(1).toLowerCase());
                 calendarYear.value = record.scheduled_date.slice(0, 4);
                 calendarMonth.value = Number(record.scheduled_date.slice(5, 7));
                 renderInspectorCalendar(record.scheduled_date);

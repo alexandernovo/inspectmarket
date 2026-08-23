@@ -34,13 +34,14 @@
         ? asset('assets/einspect/USERS/3-Collector Clerk.png')
         : market_role_avatar($user->usertype, $user->profile);
     $portalRoleLabel = $role === 'clerk' ? 'RC Clerk' : ucfirst($role);
+    $portalWelcomeLabel = $role === 'administrator' ? 'Admin' : ucfirst($role);
     $menus = [
         'administrator' => [
             ['label' => 'Dashboard', 'route' => 'administrator.dashboard', 'icon' => 'bi-grid'],
-            ['label' => 'Treasurer', 'route' => 'administrator.records', 'params' => ['role' => 'treasurer'], 'icon' => 'bi-person-badge', 'group' => 'MEMBERS'],
-            ['label' => 'Clerk', 'route' => 'administrator.records', 'params' => ['role' => 'clerk'], 'icon' => 'bi-person-vcard', 'group' => 'MEMBERS'],
-            ['label' => 'Inspector', 'route' => 'administrator.records', 'params' => ['role' => 'inspector'], 'icon' => 'bi-clipboard2-pulse', 'group' => 'MEMBERS'],
-            ['label' => 'Tenant', 'route' => 'administrator.records', 'params' => ['role' => 'tenant'], 'icon' => 'bi-people', 'group' => 'MEMBERS'],
+            ['label' => 'Treasurer', 'route' => 'administrator.records', 'params' => ['role' => 'treasurer'], 'icon' => 'bi-person-badge', 'image' => 'assets/einspect/USERS/2-Treasurer.png', 'group' => 'MEMBERS'],
+            ['label' => 'Clerk', 'route' => 'administrator.records', 'params' => ['role' => 'clerk'], 'icon' => 'bi-person-vcard', 'image' => 'assets/einspect/USERS/3-Collector Clerk.png', 'group' => 'MEMBERS'],
+            ['label' => 'Inspector', 'route' => 'administrator.records', 'params' => ['role' => 'inspector'], 'icon' => 'bi-clipboard2-pulse', 'image' => 'assets/einspect/USERS/4-Sanitary Inspector.png', 'group' => 'MEMBERS'],
+            ['label' => 'Tenant', 'route' => 'administrator.records', 'params' => ['role' => 'tenant'], 'icon' => 'bi-people', 'image' => 'assets/einspect/USERS/5-Tenants.png', 'group' => 'MEMBERS'],
             ['label' => 'Report', 'route' => 'administrator.reports', 'icon' => 'bi-file-earmark-bar-graph'],
             ['label' => 'Settings', 'route' => 'administrator.settings', 'icon' => 'bi-gear'],
         ],
@@ -61,9 +62,9 @@
         ],
         'inspector' => [
             ['label' => 'Dashboard', 'route' => 'inspector.dashboard', 'icon' => 'bi-grid-fill', 'group' => null],
-            ['label' => 'Poultry', 'route' => 'inspector.inspections', 'params' => ['type' => 'poultry'], 'icon' => 'bi-egg-fried', 'group' => 'SLAUGHTERED INSPECT'],
-            ['label' => 'Meat', 'route' => 'inspector.inspections', 'params' => ['type' => 'pork'], 'icon' => 'bi-piggy-bank-fill', 'group' => 'SLAUGHTERED INSPECT'],
-            ['label' => 'Beef', 'route' => 'inspector.inspections', 'params' => ['type' => 'beef'], 'icon' => 'bi-heart-pulse-fill', 'group' => 'SLAUGHTERED INSPECT'],
+            ['label' => 'Poultry', 'route' => 'inspector.inspections', 'params' => ['type' => 'poultry'], 'icon' => 'bi-egg-fried', 'image' => 'assets/einspect/INSPECTOR/ICONS/Poultry.png', 'group' => 'SLAUGHTERED INSPECT'],
+            ['label' => 'Meat', 'route' => 'inspector.inspections', 'params' => ['type' => 'pork'], 'icon' => 'bi-piggy-bank-fill', 'image' => 'assets/einspect/INSPECTOR/ICONS/Pork.png', 'group' => 'SLAUGHTERED INSPECT'],
+            ['label' => 'Beef', 'route' => 'inspector.inspections', 'params' => ['type' => 'beef'], 'icon' => 'bi-heart-pulse-fill', 'image' => 'assets/einspect/INSPECTOR/ICONS/Beef.png', 'group' => 'SLAUGHTERED INSPECT'],
             ['label' => 'Request Inspection', 'route' => 'inspector.inspections', 'icon' => 'bi-people-fill', 'badge' => $pendingInspectionCount],
             ['label' => 'Report', 'route' => 'inspector.reports', 'icon' => 'bi-file-earmark-bar-graph'],
         ],
@@ -99,7 +100,7 @@
             </a>
             <div class="portal-user">
                 <img src="{{ $portalAvatar }}" alt="{{ $user->full_name }}">
-                <span>Welcome {{ ucfirst($role) }}!</span>
+                <span>Welcome {{ $portalWelcomeLabel }}!</span>
             </div>
             <nav class="portal-menu" aria-label="Portal navigation">
                 @php $currentGroup = null; @endphp
@@ -130,7 +131,11 @@
                         'portal-menu-item-grouped' => $menuGroup,
                         'portal-menu-item-group-end' => $menuGroup && $menuGroup !== $nextGroup,
                     ])>
-                        <i class="bi {{ $menu['icon'] }}"></i>
+                        @if (!empty($menu['image']))
+                            <img class="portal-menu-icon-image" src="{{ asset($menu['image']) }}" alt="">
+                        @else
+                            <i class="bi {{ $menu['icon'] }}"></i>
+                        @endif
                         <span>{{ $menu['label'] }}</span>
                         @if (!empty($menu['badge']))<b class="portal-menu-badge">{{ $menu['badge'] }}</b>@endif
                     </a>

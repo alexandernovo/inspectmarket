@@ -4,9 +4,9 @@
     @php
         $inspectionMonth = now()->startOfMonth();
         $livestockChoices = [
-            'BEEF' => ['label' => 'BEEF', 'image' => 'Beef Section.png', 'class' => 'beef', 'icon' => 'bi bi-cow'],
-            'POULTRY' => ['label' => 'POULTRY', 'image' => 'Poultry Section.png', 'class' => 'poultry', 'icon' => 'bi bi-egg-fried'],
-            'PORK' => ['label' => 'PORK', 'image' => 'Pork Section.png', 'class' => 'pork', 'icon' => 'bi bi-piggy-bank-fill'],
+            'BEEF' => ['label' => 'BEEF', 'image' => 'Beef Section.png', 'class' => 'beef', 'icon' => 'Beef.png'],
+            'POULTRY' => ['label' => 'POULTRY', 'image' => 'Poultry Section.png', 'class' => 'poultry', 'icon' => 'Poultry.png'],
+            'PORK' => ['label' => 'PORK', 'image' => 'Pork Section.png', 'class' => 'pork', 'icon' => 'Pork.png'],
         ];
     @endphp
 
@@ -101,7 +101,7 @@
                     ->sort()
                     ->values();
             @endphp
-            <dialog id="tenant-inspection-{{ strtolower($type) }}" class="inspection-request-modal" data-inspection-dialog="{{ $type }}">
+            <dialog id="tenant-inspection-{{ strtolower($type) }}" class="inspection-request-modal tenant-inspection-modal" data-inspection-dialog="{{ $type }}">
                 <form action="{{ route('tenant.inspections.store') }}" method="POST" class="inspection-modal-card" data-tenant-inspection-form data-store-url="{{ route('tenant.inspections.store') }}" data-reservations='@json($reservationDetails)'>
                     @csrf
                     <button type="button" class="login-close" aria-label="Close" data-close-tenant-inspection><i class="bi bi-x-circle-fill"></i></button>
@@ -134,7 +134,7 @@
                     </div>
 
                     <div class="inspection-form-panel">
-                        <div class="inspection-form-heading"><i class="{{ $choice['icon'] }}"></i><h1 data-inspection-form-title>REQUEST INSPECTION FORM</h1><p>({{ ucfirst(strtolower($type)) }} Slaughtered Livestock)</p></div>
+                        <div class="inspection-form-heading"><img src="{{ asset('assets/einspect/HOMEPAGE/ICONS/'.$choice['icon']) }}" alt="{{ $choice['label'] }}"><h1 data-inspection-form-title>REQUEST INSPECTION FORM</h1><p>({{ ucfirst(strtolower($type)) }} Slaughtered Livestock)</p></div>
                         <h2>REQUESTER INFORMATION:</h2>
                         <label>Complete Name:<b>*</b><span class="triple-input"><input name="first_name" value="{{ auth()->user()->firstname }}" required><input name="middle_name" value="{{ auth()->user()->middlename }}"><input name="last_name" value="{{ auth()->user()->lastname }}" required></span></label>
                         <label>Address:<b>*</b><span class="triple-input"><input name="barangay" placeholder="Barangay" required><input name="municipality" value="Pandan" required><input name="province" value="Antique" required></span></label>

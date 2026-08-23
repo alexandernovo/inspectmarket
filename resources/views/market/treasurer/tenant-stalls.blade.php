@@ -22,6 +22,7 @@
         $tenantStallSectionUpdateRoute = $tenantStallSectionUpdateRoute ?? 'treasurer.stall-map.sections.update';
         $tenantApplicationShowStallButton = $tenantApplicationShowStallButton ?? true;
         $tenantRentalPayments = $tenantRentalPayments ?? collect();
+        $tenantStallsAssetModule = auth()->user()->isRole('TENANT') ? 'TENANT' : 'TREASURER';
         $tenantRentalHistoryRoute = $tenantRentalHistoryRoute ?? 'treasurer.rentals.history.update';
         $tenantRentalPaymentHistories = $tenantRentalPayments->isNotEmpty()
             ? \App\Models\Payment::with(['tenant', 'stallApplication.stall', 'stallApplication.documents'])
@@ -182,7 +183,7 @@
                             @foreach (['FISH', 'PORK', 'POULTRY', 'BEEF', 'MIXED'] as $section)
                                 @php $sectionStalls = $stalls->where('section', $section); @endphp
                                 <section class="section-{{ strtolower($section) }}" data-stall-map-section="Global-{{ $section }}">
-                                    <h3><img src="{{ asset('assets/einspect/HOMEPAGE/'.str($section)->title().' Section.png') }}" alt="">{{ str($section)->title() }} Section</h3>
+                                    <h3><img src="{{ market_section_image($section, $tenantStallsAssetModule) }}" alt="">{{ str($section)->title() }} Section</h3>
                                     <div data-stall-map-boxes="Global-{{ $section }}">
                                         @foreach ($sectionStalls as $stall)
                                             <button type="button" class="{{ $stall->status === 'AVAILABLE' ? 'available' : 'occupied' }}">{{ $stall->stall_number }}</button>
@@ -219,7 +220,7 @@
                                             $totalOccupied += $sectionOccupied;
                                         @endphp
                                         <tr data-stall-section-row="Global-{{ $section }}">
-                                            <td><img src="{{ asset('assets/einspect/HOMEPAGE/'.$meta['image']) }}" alt="">{{ $meta['label'] }}</td>
+                                            <td><img src="{{ market_section_image($section, $tenantStallsAssetModule) }}" alt="">{{ $meta['label'] }}</td>
                                             <td>
                                                 <div class="tenant-stall-count-control">
                                                     <button type="button" data-stall-count-minus="Global-{{ $section }}">-</button>
@@ -291,7 +292,7 @@
                                             <strong>None</strong>
                                         @endif
                                     </p>
-                                    <img src="{{ asset('assets/einspect/HOMEPAGE/'.str($stall?->section ?? $application?->preferred_section ?? 'Fish')->title().' Section.png') }}" alt="">
+                                    <img src="{{ market_section_image($stall?->section ?? $application?->preferred_section ?? 'Fish', $tenantStallsAssetModule) }}" alt="">
                                 </article>
                                 <article class="payment">
                                     <h3><i class="bi bi-wallet2"></i> PAYMENT INFORMATION</h3>
@@ -376,7 +377,7 @@
                                     <p>Stall Number: <strong>---</strong></p>
                                     <p>Stall Status: <span class="clerk-payment-pill unpaid">No Record</span></p>
                                     <p>Business Permit: <strong>None</strong></p>
-                                    <img src="{{ asset('assets/einspect/HOMEPAGE/'.str($currentSection)->title().' Section.png') }}" alt="">
+                                    <img src="{{ market_section_image($currentSection, $tenantStallsAssetModule) }}" alt="">
                                 </article>
                                 <article class="payment">
                                     <h3><i class="bi bi-wallet2"></i> PAYMENT INFORMATION</h3>
@@ -584,7 +585,7 @@
                             @foreach (['FISH', 'PORK', 'POULTRY', 'BEEF', 'MIXED'] as $section)
                                 @php $sectionStalls = $stalls->where('section', $section); @endphp
                                 <section class="section-{{ strtolower($section) }}" data-stall-map-section="{{ $application->id }}-{{ $section }}">
-                                    <h3><img src="{{ asset('assets/einspect/HOMEPAGE/'.str($section)->title().' Section.png') }}" alt="">{{ str($section)->title() }} Section</h3>
+                                    <h3><img src="{{ market_section_image($section, $tenantStallsAssetModule) }}" alt="">{{ str($section)->title() }} Section</h3>
                                     <div data-stall-map-boxes="{{ $application->id }}-{{ $section }}">
                                     @foreach ($sectionStalls as $stall)
                                         <button type="button" class="{{ $stall->status === 'AVAILABLE' ? 'available' : 'occupied' }}" @unless($tenantStallsReadOnly) data-pick-stall="{{ $application->id }}" data-stall-id="{{ $stall->id }}" @endunless>{{ $stall->stall_number }}</button>
@@ -627,7 +628,7 @@
                                         $totalOccupied += $sectionOccupied;
                                     @endphp
                                     <tr data-stall-section-row="{{ $application->id }}-{{ $section }}">
-                                        <td><img src="{{ asset('assets/einspect/HOMEPAGE/'.$meta['image']) }}" alt="">{{ $meta['label'] }}</td>
+                                        <td><img src="{{ market_section_image($section, $tenantStallsAssetModule) }}" alt="">{{ $meta['label'] }}</td>
                                         <td>
                                             <div class="tenant-stall-count-control">
                                                 <button type="button" data-stall-count-minus="{{ $application->id }}-{{ $section }}">-</button>

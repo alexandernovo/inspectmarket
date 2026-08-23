@@ -30,10 +30,10 @@ class AdministratorController extends Controller
         return view('market.portal.dashboard', [
             'pageTitle' => 'Administrator Dashboard',
             'stats' => [
-                ['label' => 'Total Collected Amount', 'value' => 'P'.number_format($cashTotal, 2), 'tone' => 'blue', 'icon' => 'bi-cash-stack'],
-                ['label' => 'Total Inspected Tenants', 'value' => LivestockInspection::where('status', 'COMPLETED')->distinct('tenant_id')->count('tenant_id'), 'tone' => 'green', 'icon' => 'bi-person-check-fill'],
-                ['label' => 'Total Cash Ticket', 'value' => number_format((int) CashTicketCollection::sum('ticket_quantity')), 'tone' => 'gold', 'icon' => 'bi-ticket-perforated-fill'],
-                ['label' => 'Total Stalls', 'value' => $stallTotal, 'tone' => 'red', 'icon' => 'bi-shop-window'],
+                ['label' => 'Total Collected Fee', 'sublabel' => 'Stall Rental', 'value' => 'P'.number_format($stallCollection, 2), 'tone' => 'blue', 'image' => 'USERS/H-Treasurer.png'],
+                ['label' => 'Total Inspected', 'sublabel' => 'Slaughtered Livestock', 'value' => LivestockInspection::where('status', 'COMPLETED')->sum('animal_count'), 'tone' => 'green', 'image' => 'USERS/J-Inspector.png'],
+                ['label' => 'Total Collected Fee', 'sublabel' => 'Cash Ticket', 'value' => 'P'.number_format($cashTotal, 2), 'tone' => 'gold', 'image' => 'USERS/I-Clerk.png'],
+                ['label' => 'Total Tenants', 'sublabel' => 'Stall Rental', 'value' => $tenantTotal, 'tone' => 'red', 'image' => 'USERS/5-Tenants.png'],
             ],
             'rows' => StallApplication::with(['tenant', 'stall'])->latest()->limit(8)->get(),
             'rowType' => 'applications',

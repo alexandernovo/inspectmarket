@@ -28,9 +28,9 @@ class TenantController extends Controller
         return view('market.portal.dashboard', [
             'pageTitle' => 'Tenant Dashboard',
             'stats' => [
-                ['label' => 'Total Tenants', 'value' => User::where('usertype', User::ROLE_TENANT)->where('status', 'ACTIVE')->count(), 'image' => 'USERS/5-Tenants.png', 'tone' => 'blue'],
-                ['label' => 'Total Vacancy', 'value' => Stall::where('status', 'AVAILABLE')->count(), 'image' => 'HOMEPAGE/Stall.png', 'tone' => 'green'],
-                ['label' => 'Total Occupied', 'value' => Stall::where('status', 'OCCUPIED')->count(), 'image' => 'HOMEPAGE/Fish Section.png', 'tone' => 'red'],
+                ['label' => 'Total Tenants', 'value' => User::where('usertype', User::ROLE_TENANT)->where('status', 'ACTIVE')->count(), 'image' => 'TENANT/IMAGES/Tenant.png', 'tone' => 'blue'],
+                ['label' => 'Total Vacancy', 'value' => Stall::where('status', 'AVAILABLE')->count(), 'image' => 'TENANT/IMAGES/Available Stall.png', 'tone' => 'green'],
+                ['label' => 'Total Occupied', 'value' => Stall::where('status', 'OCCUPIED')->count(), 'image' => 'TENANT/IMAGES/Occupied Stall.png', 'tone' => 'red'],
                 ['label' => 'Total Payment Fee', 'value' => 'P '.number_format($user->payments()->where('status', 'PAID')->sum('amount'), 2), 'icon' => 'bi-cash-stack', 'tone' => 'gold'],
             ],
             'rowType' => 'inspections',

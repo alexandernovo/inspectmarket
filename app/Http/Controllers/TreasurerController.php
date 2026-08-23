@@ -34,16 +34,27 @@ class TreasurerController extends Controller
             ->map(fn ($rows) => $rows->sum('amount'));
         $chartTotals = collect(range(1, 12))->map(fn ($month) => (float) ($cashTicketMonthly[$month] ?? 0) + (float) ($stallRentalMonthly[$month] ?? 0));
         $maxTotal = max(1, $chartTotals->max());
+        $paidTenantPayments = Payment::with(['tenant', 'stallApplication.stall'])
+            ->where('status', 'PAID')
+            ->latest('paid_at')
+            ->latest('due_date')
+            ->get();
+        $unpaidTenantPayments = Payment::with(['tenant', 'stallApplication.stall'])
+            ->whereIn('status', ['PENDING', 'OVERDUE', 'DISAPPROVED'])
+            ->latest('due_date')
+            ->get();
 
         return view('market.portal.dashboard', [
             'pageTitle' => 'Treasurer Dashboard',
             'stats' => [
-                ['label' => 'Cash Tickets', 'sublabel' => 'Total Collection', 'value' => 'P'.number_format(CashTicketCollection::sum('amount'), 2), 'tone' => 'blue', 'icon' => 'bi-ticket-perforated-fill'],
-                ['label' => 'Stall Rental', 'sublabel' => 'Total Payment', 'value' => 'P'.number_format(Payment::where('status', 'PAID')->sum('amount'), 2), 'tone' => 'green', 'icon' => 'bi-shop-window'],
-                ['label' => 'Unpaid Rentals', 'sublabel' => 'Pending Payment', 'value' => Payment::where('status', 'PENDING')->count(), 'tone' => 'red', 'icon' => 'bi-wallet2'],
-                ['label' => 'Active Stalls', 'sublabel' => 'Approved Tenants', 'value' => StallApplication::where('status', 'APPROVED')->count(), 'tone' => 'gold', 'icon' => 'bi-grid-3x3-gap-fill'],
+                ['label' => 'Cash Tickets', 'sublabel' => 'Total Collection', 'value' => 'P'.number_format(CashTicketCollection::sum('amount'), 2), 'tone' => 'blue', 'image' => 'CLERK/IMAGES/Cash Ticket.jpg'],
+                ['label' => 'Stall Rental', 'sublabel' => 'Total Payment', 'value' => 'P'.number_format(Payment::where('status', 'PAID')->sum('amount'), 2), 'tone' => 'gold', 'image' => 'TREASURER/IMAGES/Requisition and Issue Slip.png'],
+                ['label' => 'Unpaid Tenants', 'sublabel' => 'Stall Rental', 'value' => $unpaidTenantPayments->unique('tenant_id')->count(), 'tone' => 'red', 'image' => 'TREASURER/IMAGES/Unpaid Tenant.png'],
+                ['label' => 'Paid Tenants', 'sublabel' => 'Stall Rental', 'value' => $paidTenantPayments->unique('tenant_id')->count(), 'tone' => 'green', 'image' => 'TREASURER/IMAGES/Paid Tenant.png'],
             ],
             'rows' => StallApplication::with(['tenant', 'stall'])->latest()->limit(8)->get(),
+            'paidTenantPayments' => $paidTenantPayments,
+            'unpaidTenantPayments' => $unpaidTenantPayments,
             'rowType' => 'applications',
             'chartTitle' => 'Revenue and stall activity',
             'chartTotals' => $chartTotals,

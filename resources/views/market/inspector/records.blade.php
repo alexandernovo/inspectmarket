@@ -8,6 +8,11 @@
             'PORK' => 'bi-piggy-bank-fill',
             default => 'bi-heart-pulse-fill',
         };
+        $typeAsset = match ($livestockType) {
+            'POULTRY' => 'Poultry.png',
+            'PORK' => 'Pork.png',
+            default => 'Beef.png',
+        };
         $inspectorPageTitle = $inspectorPageTitle ?? strtoupper($typeLabel);
         $inspectorPageBreadcrumb = $inspectorPageBreadcrumb ?? 'Dashboard | '.$typeLabel;
         $inspectorShowTypeTabs = $inspectorShowTypeTabs ?? false;
@@ -24,14 +29,14 @@
             @if ($inspectorTitleAvatar)
                 <img class="administrator-role-title-avatar" src="{{ asset('assets/einspect/USERS/'.$inspectorTitleAvatar) }}" alt="">
             @else
-                <i class="bi {{ $typeIcon }}"></i>
+                <img class="inspector-page-title-icon" src="{{ asset('assets/einspect/INSPECTOR/ICONS/'.$typeAsset) }}" alt="{{ $typeLabel }}">
             @endif
             <div><h1>{{ $inspectorPageTitle }}</h1><p>{{ $inspectorPageBreadcrumb }}</p></div>
             @if ($inspectorShowTypeTabs)
                 <nav class="administrator-inspector-type-tabs">
-                    <a class="{{ $livestockType === 'BEEF' ? 'active' : '' }}" href="{{ $inspectorRecordUrl('BEEF') }}"><i class="bi bi-heart-pulse-fill"></i> Beef</a>
-                    <a class="{{ $livestockType === 'PORK' ? 'active' : '' }}" href="{{ $inspectorRecordUrl('PORK') }}"><i class="bi bi-piggy-bank-fill"></i> Pork</a>
-                    <a class="{{ $livestockType === 'POULTRY' ? 'active' : '' }}" href="{{ $inspectorRecordUrl('POULTRY') }}"><i class="bi bi-egg-fried"></i> Poultry</a>
+                    <a class="{{ $livestockType === 'BEEF' ? 'active' : '' }}" href="{{ $inspectorRecordUrl('BEEF') }}"><img src="{{ asset('assets/einspect/INSPECTOR/ICONS/Beef.png') }}" alt=""> Beef</a>
+                    <a class="{{ $livestockType === 'PORK' ? 'active' : '' }}" href="{{ $inspectorRecordUrl('PORK') }}"><img src="{{ asset('assets/einspect/INSPECTOR/ICONS/Pork.png') }}" alt=""> Pork</a>
+                    <a class="{{ $livestockType === 'POULTRY' ? 'active' : '' }}" href="{{ $inspectorRecordUrl('POULTRY') }}"><img src="{{ asset('assets/einspect/INSPECTOR/ICONS/Poultry.png') }}" alt=""> Poultry</a>
                 </nav>
             @endif
         </header>
@@ -42,7 +47,7 @@
                 <label>From:<input type="date" id="recordFrom"></label>
                 <label>To:<input type="date" id="recordTo"></label>
                 <button type="button" id="recordFilter"><i class="bi bi-funnel-fill"></i> Filter</button>
-                <div class="inspector-record-title"><i class="bi {{ $typeIcon }}"></i><strong>{{ strtoupper($typeLabel) }} SLAUGHTERED</strong></div>
+                <div class="inspector-record-title"><img src="{{ asset('assets/einspect/INSPECTOR/ICONS/'.$typeAsset) }}" alt=""><strong>{{ strtoupper($typeLabel) }} SLAUGHTERED</strong></div>
                 <label class="inspector-record-search"><input type="search" id="recordSearch" placeholder="Search"><i class="bi bi-search"></i></label>
                 @if ($inspectorCanMutateRecords)
                     <button type="button" class="inspector-add-button" id="addInspection"><i class="bi bi-plus-circle"></i> Add Inspect</button>
@@ -70,7 +75,7 @@
 
             <section class="inspector-form-column">
                 <header class="inspector-form-hero">
-                    <i class="bi {{ $typeIcon }}"></i>
+                    <img src="{{ asset('assets/einspect/INSPECTOR/ICONS/'.$typeAsset) }}" alt="">
                     <div><h2>{{ strtoupper($typeLabel) }}</h2><p>SLAUGHTERED INSPECTION FORM</p></div>
                     <button type="button" data-close-inspector-record aria-label="Close"><i class="bi bi-x-circle-fill"></i></button>
                 </header>

@@ -208,7 +208,7 @@
                                         <strong>None</strong>
                                     @endif
                                 </p>
-                                <img src="{{ asset('assets/einspect/HOMEPAGE/'.str($stall?->section ?? $application?->preferred_section ?? 'Fish')->title().' Section.png') }}" alt="">
+                                <img src="{{ market_section_image($stall?->section ?? $application?->preferred_section ?? 'Fish', 'CLERK') }}" alt="">
                             </article>
                             <article class="payment">
                                 <h3><i class="bi bi-wallet2"></i> PAYMENT INFORMATION</h3>

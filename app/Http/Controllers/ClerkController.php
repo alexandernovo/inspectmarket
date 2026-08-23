@@ -16,6 +16,15 @@ class ClerkController extends Controller
     public function dashboard()
     {
         $paymentRows = Payment::with(['tenant', 'stallApplication.stall'])->latest('due_date')->limit(8)->get();
+        $paidTenantPayments = Payment::with(['tenant', 'stallApplication.stall'])
+            ->where('status', 'PAID')
+            ->latest('paid_at')
+            ->latest('due_date')
+            ->get();
+        $unpaidTenantPayments = Payment::with(['tenant', 'stallApplication.stall'])
+            ->whereIn('status', ['PENDING', 'OVERDUE', 'DISAPPROVED'])
+            ->latest('due_date')
+            ->get();
         $cashTicketMonthly = collect(range(1, 12))->map(
             fn (int $month) => (float) CashTicketCollection::whereYear('collection_date', now()->year)
                 ->whereMonth('collection_date', $month)
@@ -33,12 +42,14 @@ class ClerkController extends Controller
         return view('market.portal.dashboard', [
             'pageTitle' => 'Clerk Dashboard',
             'stats' => [
-                ['label' => 'Total Collected Fee', 'sublabel' => 'Cash Tickets', 'value' => number_format(CashTicketCollection::sum('amount'), 0), 'image' => 'HOMEPAGE/Market.png', 'tone' => 'blue'],
-                ['label' => 'Total Collected Fee', 'sublabel' => 'Stall Rental', 'value' => number_format(Payment::where('status', 'PAID')->sum('amount'), 0), 'image' => 'HOMEPAGE/Stall.png', 'tone' => 'gold'],
-                ['label' => 'Unpaid Tenants', 'sublabel' => 'Stall Rental', 'value' => Payment::whereIn('status', ['PENDING', 'OVERDUE', 'DISAPPROVED'])->distinct('tenant_id')->count('tenant_id'), 'image' => 'USERS/E-Male Tenant.png', 'tone' => 'red'],
-                ['label' => 'Paid Tenants', 'sublabel' => 'Stall Rental', 'value' => Payment::where('status', 'PAID')->distinct('tenant_id')->count('tenant_id'), 'image' => 'USERS/F-Female Tenant.png', 'tone' => 'green'],
+                ['label' => 'Total Collected Fee', 'sublabel' => 'Cash Tickets', 'value' => number_format(CashTicketCollection::sum('amount'), 0), 'image' => 'CLERK/IMAGES/Cash Ticket.jpg', 'tone' => 'blue'],
+                ['label' => 'Total Collected Fee', 'sublabel' => 'Stall Rental', 'value' => number_format(Payment::where('status', 'PAID')->sum('amount'), 0), 'image' => 'CLERK/IMAGES/Requisition and Issue Slip.png', 'tone' => 'gold'],
+                ['label' => 'Unpaid Tenants', 'sublabel' => 'Stall Rental', 'value' => Payment::whereIn('status', ['PENDING', 'OVERDUE', 'DISAPPROVED'])->distinct('tenant_id')->count('tenant_id'), 'image' => 'CLERK/IMAGES/Unpaid Tenant.png', 'tone' => 'red'],
+                ['label' => 'Paid Tenants', 'sublabel' => 'Stall Rental', 'value' => Payment::where('status', 'PAID')->distinct('tenant_id')->count('tenant_id'), 'image' => 'CLERK/IMAGES/Paid Tenant.png', 'tone' => 'green'],
             ],
             'rows' => $paymentRows,
+            'paidTenantPayments' => $paidTenantPayments,
+            'unpaidTenantPayments' => $unpaidTenantPayments,
             'rowType' => 'payments',
             'chartTitle' => 'CASH TICKET AND STALL RENTAL DATA CHART',
             'chartTotals' => $chartTotals,

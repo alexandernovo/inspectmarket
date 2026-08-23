@@ -5,12 +5,12 @@
     </a>
     <button type="button" class="mobile-nav-toggle" aria-label="Toggle navigation"><i class="bi bi-list"></i></button>
     <nav>
-        <a href="{{ route('home') }}" @class(['active' => ($active ?? '') === 'home'])><i class="bi bi-house-fill"></i> Home</a>
-        <a href="{{ route('public.service', 'contact') }}" @class(['active' => ($active ?? '') === 'contact'])><i class="bi bi-envelope-paper-fill"></i> Contact</a>
-        <a href="{{ route('public.service', 'stall-rental') }}" @class(['active' => ($active ?? '') === 'stall-rental'])><i class="bi bi-shop-window"></i> Stall Rental</a>
-        <a href="{{ route('public.service', 'slaughtered-inspection') }}" @class(['active' => ($active ?? '') === 'slaughtered-inspection'])>Slaughtered Inspect</a>
+        <a href="{{ route('home') }}" @class(['active' => ($active ?? '') === 'home'])><img src="{{ asset('assets/einspect/HOMEPAGE/ICONS/Home.png') }}" alt=""> Home</a>
+        <a href="{{ route('public.service', 'contact') }}" @class(['active' => ($active ?? '') === 'contact'])><img src="{{ asset('assets/einspect/HOMEPAGE/ICONS/Contact.png') }}" alt=""> Contact</a>
+        <a href="{{ route('public.service', 'stall-rental') }}" @class(['active' => ($active ?? '') === 'stall-rental'])><img src="{{ asset('assets/einspect/HOMEPAGE/ICONS/Stall Rental.png') }}" alt=""> Stall Rental</a>
+        <a href="{{ route('public.service', 'slaughtered-inspection') }}" @class(['active' => ($active ?? '') === 'slaughtered-inspection'])><img src="{{ asset('assets/einspect/HOMEPAGE/ICONS/Slaughtered Inspect.png') }}" alt=""> Slaughtered Inspect</a>
         <a href="{{ route('public.service', 'announcements') }}" @class(['active' => ($active ?? '') === 'announcements'])>
-            <i class="bi bi-megaphone-fill"></i> Announcements
+            <img src="{{ asset('assets/einspect/HOMEPAGE/ICONS/Announcement.png') }}" alt=""> Announcements
             @if (($announcementCount ?? 0) > 0)<b>{{ $announcementCount }}</b>@endif
         </a>
         @auth

@@ -268,9 +268,9 @@
         @elseif ($screen === 'inspection-request')
             @php
                 $livestockChoices = [
-                    'BEEF' => ['label' => 'BEEF', 'image' => 'Beef Section.png', 'class' => 'beef', 'icon' => 'bi bi-cow'],
-                    'POULTRY' => ['label' => 'POULTRY', 'image' => 'Poultry Section.png', 'class' => 'poultry', 'icon' => 'bi bi-egg-fried'],
-                    'PORK' => ['label' => 'PORK', 'image' => 'Pork Section.png', 'class' => 'pork', 'icon' => 'bi bi-piggy-bank-fill'],
+                    'BEEF' => ['label' => 'BEEF', 'image' => 'Beef Slaughtered.png', 'class' => 'beef', 'icon' => 'Beef.png'],
+                    'POULTRY' => ['label' => 'POULTRY', 'image' => 'Poultry Slaughtered.png', 'class' => 'poultry', 'icon' => 'Poultry.png'],
+                    'PORK' => ['label' => 'PORK', 'image' => 'Pork Slaughtered.png', 'class' => 'pork', 'icon' => 'Pork.png'],
                 ];
             @endphp
             @guest
@@ -317,20 +317,26 @@
 
             @foreach ($livestockChoices as $type => $choice)
                 @php
-                    $monthlyInspections = ($inspections->get($type, collect()))
-                        ->filter(fn ($inspection) => $inspection->scheduled_at->isSameMonth($inspectionMonth));
-                    $reservedDays = $monthlyInspections->pluck('scheduled_at')->map->day->unique()->values()->all();
-                    $reservationDetails = $monthlyInspections
-                        ->groupBy(fn ($inspection) => (string) $inspection->scheduled_at->day)
-                        ->map(fn ($dayInspections) => $dayInspections->map(fn ($inspection) => [
-                            'time' => $inspection->scheduled_at->format('g:i A'),
-                            'request_number' => $inspection->request_number,
-                            'owner_name' => $inspection->owner_name,
-                            'status' => $inspection->status,
-                        ])->values())
+                    $typeInspections = $inspections->get($type, collect());
+                    $reservationDetails = $typeInspections
+                        ->groupBy(fn ($inspection) => $inspection->scheduled_at->format('Y-m'))
+                        ->map(fn ($monthInspections) => $monthInspections
+                            ->groupBy(fn ($inspection) => (string) $inspection->scheduled_at->day)
+                            ->map(fn ($dayInspections) => $dayInspections->map(fn ($inspection) => [
+                                'time' => $inspection->scheduled_at->format('g:i A'),
+                                'request_number' => $inspection->request_number,
+                                'owner_name' => $inspection->owner_name,
+                                'status' => $inspection->status,
+                            ])->values())
+                        )
                         ->toArray();
+                    $calendarYears = collect(range(now()->year - 1, now()->year + 2))
+                        ->merge($typeInspections->pluck('scheduled_at')->map->year)
+                        ->unique()
+                        ->sort()
+                        ->values();
                 @endphp
-                <section id="inspection-{{ strtolower($type) }}" class="inspection-request-modal">
+                <section id="inspection-{{ strtolower($type) }}" class="inspection-request-modal public-inspection-modal">
                     <button type="button" class="modal-backdrop" aria-label="Close" data-close-public-modal></button>
                     <form action="{{ route('public.inspection.store') }}" method="POST" class="inspection-modal-card" data-inspection-form data-reservations='@json($reservationDetails)'>
                         @csrf
@@ -343,19 +349,21 @@
                         <input type="hidden" name="email">
 
                         <div class="inspection-calendar-panel">
-                            <div class="inspection-calendar-header"><strong>{{ $inspectionMonth->format('n') }}</strong><span>{{ strtoupper($inspectionMonth->format('F')) }}</span><strong>{{ $inspectionMonth->format('Y') }}</strong></div>
-                            <div class="inspection-calendar-weekdays">@foreach (['SUN','MON','TUE','WED','THU','FRI','SAT'] as $day)<span>{{ $day }}</span>@endforeach</div>
-                            <div class="inspection-calendar-days">
-                                @for ($blank = 0; $blank < $inspectionMonth->dayOfWeek; $blank++)<span class="blank"></span>@endfor
-                                @for ($day = 1; $day <= $inspectionMonth->daysInMonth; $day++)
-                                    @php
-                                        $date = \Carbon\Carbon::create($inspectionMonth->year, $inspectionMonth->month, $day);
-                                        $isBooked = in_array($day, $reservedDays);
-                                        $isUnavailable = ! $isBooked && ($day < now()->day || $date->isWeekend());
-                                    @endphp
-                                    <button type="button" @class(['reserved' => $isBooked, 'unavailable' => $isUnavailable, 'available' => ! $isBooked && ! $isUnavailable]) data-inspection-day="{{ $day }}">{{ $day }}@if($isBooked)<small>RESERVED</small>@elseif($isUnavailable)<small>UNAVAILABLE</small>@endif</button>
-                                @endfor
+                            <div class="inspection-calendar-header">
+                                <strong data-calendar-month-number>{{ $inspectionMonth->format('n') }}</strong>
+                                <select data-calendar-month aria-label="Calendar month">
+                                    @foreach (range(1, 12) as $month)
+                                        <option value="{{ $month }}" @selected($month === $inspectionMonth->month)>{{ strtoupper(\Carbon\Carbon::create()->month($month)->format('F')) }}</option>
+                                    @endforeach
+                                </select>
+                                <select data-calendar-year aria-label="Calendar year">
+                                    @foreach ($calendarYears as $year)
+                                        <option value="{{ $year }}" @selected($year === $inspectionMonth->year)>{{ $year }}</option>
+                                    @endforeach
+                                </select>
                             </div>
+                            <div class="inspection-calendar-weekdays">@foreach (['SUN','MON','TUE','WED','THU','FRI','SAT'] as $day)<span>{{ $day }}</span>@endforeach</div>
+                            <div class="inspection-calendar-days" data-calendar-days></div>
                             <div class="reserved-note" data-reserved-note hidden>
                                 <button type="button" aria-label="Close reserved time" data-close-reserved-note>&times;</button>
                                 <strong>RESERVED TIME</strong>
@@ -367,7 +375,7 @@
 
                         <div class="inspection-form-panel">
                             <div class="inspection-form-heading">
-                                <i class="{{ $choice['icon'] }}"></i>
+                                <img src="{{ asset('assets/einspect/HOMEPAGE/ICONS/'.$choice['icon']) }}" alt="{{ $choice['label'] }}">
                                 <h1>REQUEST INSPECTION FORM</h1>
                                 <p>({{ ucfirst(strtolower($type)) }} Slaughtered Livestock)</p>
                             </div>
@@ -459,33 +467,78 @@
                 const timeInput = form.querySelector('[data-time-input]');
                 const reservedNote = form.querySelector('[data-reserved-note]');
                 const reservedDetails = form.querySelector('[data-reserved-details]');
-                const reservations = JSON.parse(form.dataset.reservations || '{}');
+                const daysContainer = form.querySelector('[data-calendar-days]');
 
-                form.querySelectorAll('[data-inspection-day]').forEach((dayButton) => {
-                    dayButton.addEventListener('click', () => {
-                        const day = dayButton.dataset.inspectionDay;
+                const calendarKey = (year, month) => `${year}-${String(month).padStart(2, '0')}`;
+                const getReservations = () => JSON.parse(form.dataset.reservations || '{}');
 
-                        if (dayButton.classList.contains('reserved')) {
-                            if (!reservedNote || !reservedDetails) return;
+                const renderCalendar = () => {
+                    const month = Number(form.querySelector('[data-calendar-month]').value);
+                    const year = Number(form.querySelector('[data-calendar-year]').value);
+                    const monthNumber = form.querySelector('[data-calendar-month-number]');
+                    const monthReservations = getReservations()[calendarKey(year, month)] || {};
+                    const firstDay = new Date(year, month - 1, 1).getDay();
+                    const daysInMonth = new Date(year, month, 0).getDate();
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
 
-                            const details = reservations[day] || [];
-                            reservedDetails.innerHTML = details.length
-                                ? details.map((inspection) => `<article><b>${inspection.time}</b><span>${inspection.request_number}</span><small>${inspection.owner_name} &middot; ${inspection.status}</small></article>`).join('')
-                                : '<p>No reservation details found.</p>';
-                            reservedNote.hidden = false;
-                            form.querySelectorAll('[data-inspection-day]').forEach((button) => button.classList.toggle('selected', button === dayButton));
-                            return;
-                        }
+                    monthNumber.textContent = month;
+                    daysContainer.innerHTML = '';
 
-                        if (dayButton.classList.contains('unavailable')) return;
+                    for (let blank = 0; blank < firstDay; blank += 1) {
+                        const spacer = document.createElement('span');
+                        spacer.className = 'blank';
+                        daysContainer.appendChild(spacer);
+                    }
 
+                    for (let day = 1; day <= daysInMonth; day += 1) {
+                        const date = new Date(year, month - 1, day);
+                        const isReserved = Boolean(monthReservations[String(day)]);
+                        const isUnavailable = !isReserved && (date < today || date.getDay() === 0 || date.getDay() === 6);
+                        const button = document.createElement('button');
+                        button.type = 'button';
+                        button.dataset.inspectionDay = String(day);
+                        button.className = isReserved ? 'reserved' : (isUnavailable ? 'unavailable' : 'available');
+                        button.innerHTML = `<span>${day}</span>${isReserved ? '<small>RESERVED</small>' : (isUnavailable ? '<small>UNAVAILABLE</small>' : '')}`;
+                        daysContainer.appendChild(button);
+                    }
+                };
+
+                renderCalendar();
+
+                form.querySelectorAll('[data-calendar-month], [data-calendar-year]').forEach((select) => {
+                    select.addEventListener('change', () => {
+                        dateInput.value = '';
                         reservedNote?.setAttribute('hidden', '');
-
-                        const paddedDay = day.padStart(2, '0');
-                        const month = String({{ $inspectionMonth->month }}).padStart(2, '0');
-                        dateInput.value = `{{ $inspectionMonth->year }}-${month}-${paddedDay}`;
-                        form.querySelectorAll('[data-inspection-day]').forEach((button) => button.classList.toggle('selected', button === dayButton));
+                        renderCalendar();
                     });
+                });
+
+                daysContainer.addEventListener('click', (event) => {
+                    const dayButton = event.target.closest('[data-inspection-day]');
+                    if (!dayButton) return;
+
+                    const day = dayButton.dataset.inspectionDay;
+                    const month = Number(form.querySelector('[data-calendar-month]').value);
+                    const year = Number(form.querySelector('[data-calendar-year]').value);
+                    const details = getReservations()[calendarKey(year, month)]?.[day] || [];
+
+                    if (dayButton.classList.contains('reserved')) {
+                        if (!reservedNote || !reservedDetails) return;
+
+                        reservedDetails.innerHTML = details.length
+                            ? details.map((inspection) => `<article><b>${inspection.time}</b><span>${inspection.request_number}</span><small>${inspection.owner_name} &middot; ${inspection.status}</small></article>`).join('')
+                            : '<p>No reservation details found.</p>';
+                        reservedNote.hidden = false;
+                        form.querySelectorAll('[data-inspection-day]').forEach((button) => button.classList.toggle('selected', button === dayButton));
+                        return;
+                    }
+
+                    if (dayButton.classList.contains('unavailable')) return;
+
+                    reservedNote?.setAttribute('hidden', '');
+                    dateInput.value = `${year}-${String(month).padStart(2, '0')}-${day.padStart(2, '0')}`;
+                    form.querySelectorAll('[data-inspection-day]').forEach((button) => button.classList.toggle('selected', button === dayButton));
                 });
 
                 form.querySelector('[data-close-reserved-note]')?.addEventListener('click', () => {

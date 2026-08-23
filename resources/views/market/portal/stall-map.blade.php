@@ -39,7 +39,7 @@
                 <section style="{{ $section == 'MIXED' ? 'bottom: 20px !important' : '' }}"
                     class="wireframe-stall-section wireframe-stall-{{ $meta['class'] }}">
                     <h2 class="{{ $section == 'MIXED' ? 'd-flex justify-content-center' : '' }}"><img
-                            src="{{ asset('assets/einspect/HOMEPAGE/' . $meta['image']) }}"
+                            src="{{ market_section_image($section, 'TENANT') }}"
                             alt="">{{ $section }}
                         SECTION</h2>
                     <div class="wireframe-stall-row">
